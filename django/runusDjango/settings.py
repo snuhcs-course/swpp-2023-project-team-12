@@ -34,7 +34,9 @@ SECRET_KEY =env('SECRET_KEY')
 DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1',
-                ".ap-northeast-2.compute.amazonaws.com"]
+                ".ap-northeast-2.compute.amazonaws.com",
+                "google.com",
+                "10.0.2.2"]
 
 
 # Application definition
@@ -46,6 +48,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'account',
+    'DATA_APP'
 ]
 
 MIDDLEWARE = [
@@ -90,6 +94,9 @@ DATABASES = {
         'PASSWORD': env("DATABASE_PASSWORD"),
         'HOST': env("DATABASE_HOST"),
         'PORT': env("DATABASE_PORT", cast=int),
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'",
+        },
 
     }
 }
