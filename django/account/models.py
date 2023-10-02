@@ -1,10 +1,38 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.contrib.auth.models import UserManager
+
+class MyUserManager(UserManager):
+    def create_user(self, nickname, username, email, phone_num, password, **extra_fields):
+        if not nickname:
+            raise ValueError("SET USERID")
+        if not username:
+            raise ValueError("SET USERNAME")
+        if not password:
+            raise ValueError("SET PASSWORD")
+        email = self.normalize_email(email)
+        user = self.model(nickname=nickname, username=username, phone_num=phone_num, email=email)
+        user.set_password(password)
+        user.save()
+
+        return user
+
+
+class CustomUser(AbstractBaseUser, PermissionsMixin):
+    objects = MyUserManager()
+    nickname = models.CharField(null=False, max_length=100, unique=True)
+    username = models.CharField(null=False, max_length=100, unique=True)
+    email = models.EmailField(max_length=50, null=True)
+    phone_num = models.CharField(max_length=11, blank=False)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
+    USERNAME_FIELD = 'username'
+
+    def __str__(self):
+        return self.username
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    nickname = models.CharField(max_length=10, blank=False)
-    phone_num = models.CharField(max_length=11, blank=False)
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     max_speed = models.IntegerField(default=6)
     level = models.IntegerField(default=1)
     exp = models.FloatField(default=0)
