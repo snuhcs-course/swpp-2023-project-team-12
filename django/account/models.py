@@ -20,8 +20,8 @@ class MyUserManager(UserManager):
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     objects = MyUserManager()
-    nickname = models.CharField(null=False, max_length=100, unique=True)
     username = models.CharField(null=False, max_length=100, unique=True)
+    nickname = models.CharField(null=False, max_length=100, unique=True)
     email = models.EmailField(max_length=50, null=True)
     phone_num = models.CharField(max_length=11, blank=False)
     is_staff = models.BooleanField(default=False)
@@ -31,11 +31,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.username
 
-class UserProfile(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    max_speed = models.IntegerField(default=6)
-    level = models.IntegerField(default=1)
-    exp = models.FloatField(default=0)
+# class UserProfile(models.Model):
+#     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+#     max_speed = models.IntegerField(default=6)
+#     level = models.IntegerField(default=1)
+#     exp = models.FloatField(default=0)
 
-    def __str__(self):
-        return f"id={self.id}, user_id={self.user.id}, nickname={self.nickname}, phone_num={self.phone_num}, max_speed={self.max_speed}, level={self.level}, exp={self.exp}"
+#     def __str__(self):
+#         return f"id={self.id}, user_id={self.user.id}, nickname={self.nickname}, phone_num={self.phone_num}, max_speed={self.max_speed}, level={self.level}, exp={self.exp}"
