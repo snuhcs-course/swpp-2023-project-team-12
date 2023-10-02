@@ -9,13 +9,16 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView textView;
-
+    private Button loginButton;
+    private Button signUpButton;
     private JsonPlaceHolderAPI jsonPlaceHolderAPI;
 
     @Override
@@ -23,7 +26,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        textView = findViewById(R.id.textView);
 
 //        Retrofit retrofit = new Retrofit.Builder()
 //                .baseUrl("http://ec2-43-201-102-185.ap-northeast-2.compute.amazonaws.com:3000")
@@ -31,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
 //                .build();
 //
 //        JsonPlaceHolderAPI jsonPlaceHolderAPI = retrofit.create(JsonPlaceHolderAPI.class);
-
+/*
         jsonPlaceHolderAPI = RetrofitClient.getClient().create(JsonPlaceHolderAPI.class);
         Call<List<Post>> call = jsonPlaceHolderAPI.getPosts();
 
@@ -60,7 +62,22 @@ public class MainActivity extends AppCompatActivity {
                 textView.setText(t.getMessage());
             }
 
+        });*/
+        loginButton = findViewById(R.id.LoginActivityButton);
+        signUpButton = findViewById(R.id.SignUpActivityButton);
+        loginButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(intent);
+            }
         });
-
+        signUpButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                Intent intent = new Intent(MainActivity.this, SignUpActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 }
