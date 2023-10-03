@@ -24,12 +24,12 @@ class LoginSerializer(serializers.Serializer):
 
         if username is None:
             raise serializers.ValidationError(
-                'An email address is required to log in.'
+                'An username should be included to log in.'
             )
         
         if password is None:
             raise serializers.ValidationError(
-                'A password is required to log in.'
+                'A password should be included to log in.'
             )
 
         if username and password:
