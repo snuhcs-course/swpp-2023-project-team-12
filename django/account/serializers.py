@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import CustomUser
 from django.contrib.auth.hashers import check_password
+from django.contrib.auth import authenticate
 
 class UserCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
@@ -12,26 +13,39 @@ class UserCreateSerializer(serializers.ModelSerializer):
         fields = ['username', 'nickname', 'email', 'phone_num','password']
 
 
-class LoginSerializer(serializers.ModelSerializer):
-    def validate(self, data):
+class LoginSerializer(serializers.Serializer):
 
+    username = serializers.CharField(max_length=255, write_only=True)
+    password = serializers.CharField(max_length=128, write_only=True)
+
+    def validate(self, data):
         username = data.get('username', None)
         password = data.get('password', None)
 
+        if username is None:
+            raise serializers.ValidationError(
+                'An email address is required to log in.'
+            )
+        
+        if password is None:
+            raise serializers.ValidationError(
+                'A password is required to log in.'
+            )
 
-        if not CustomUser.objects.filter(username=username).exists():
-            raise serializers.ValidationError("No user exists")
+        if username and password:
+            user = authenticate(
+                username=username, 
+                password=password
+                )
+            if user is None:
+                raise serializers.ValidationError("Login error")
+        else:
+            raise serializers.ValidationError("Must include Username and password")
         
-        user = CustomUser.objects.get(username=username)
-        
-        if not check_password(password, user.password):
-            raise serializers.ValidationError("Password Error")
-        
-        return {"user":user}
+        data['user'] = user
+        return data
     
-    class Meta:
-        model = CustomUser
-        fields = ['username', 'password']
+
 
             
 
