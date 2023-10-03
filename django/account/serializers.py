@@ -32,15 +32,12 @@ class LoginSerializer(serializers.Serializer):
                 'A password should be included to log in.'
             )
 
-        if username and password:
-            user = authenticate(
-                username=username, 
-                password=password
-                )
-            if user is None:
-                raise serializers.ValidationError("Login error")
-        else:
-            raise serializers.ValidationError("Must include Username and password")
+        user = authenticate(
+            username=username, 
+            password=password
+            )
+        if user is None:
+            raise serializers.ValidationError("Login error")
         
         data['user'] = user
         return data
