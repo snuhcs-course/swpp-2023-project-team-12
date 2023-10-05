@@ -6,9 +6,9 @@ import retrofit2.http.Body;
 import retrofit2.http.POST;
 
 public interface AccountApi {
-    @POST("/signup/")
+    @POST("/account/signup/")
     Call<ResponseBody> postSignUpData(@Body SignUpData data);
 
-    @POST("/login/")
+    @POST("/account/login/")
     Call<ResponseBody> postLoginData(@Body AccountData data);
 }
