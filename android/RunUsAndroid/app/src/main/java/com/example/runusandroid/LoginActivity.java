@@ -47,6 +47,7 @@ public class LoginActivity extends AppCompatActivity {
                         }
                         else{
                             Log.d("Login","Login Failed, Status Code : " + response.code());
+                            Toast.makeText(LoginActivity.this, "Login Failed", Toast.LENGTH_SHORT).show();
                         }
                     }
 

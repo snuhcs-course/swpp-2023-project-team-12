@@ -12,7 +12,7 @@ public class SignUpData {
     String nickname;
     @SerializedName("email")
     String email;
-    @SerializedName("phone_number")
+    @SerializedName("phone_num")
     String phone_number;
 
 
