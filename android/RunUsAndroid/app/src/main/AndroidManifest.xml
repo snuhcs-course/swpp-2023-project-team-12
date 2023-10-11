@@ -33,6 +33,10 @@
 
         <activity android:name=".LoginActivity"></activity>
         <activity android:name=".SignUpActivity"></activity>
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCfVqeXF2-0QAfE-cb6BwF0PGYo5_ekUn8"/>
     </application>
 
 </manifest>
