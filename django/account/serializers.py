@@ -19,7 +19,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
             'gender', 
             'height', 
             'weight', 
-            'age'
+            'age',
             ]
 
 
