@@ -12,32 +12,26 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="com.example.runusandroid.ui.dashboard.DashboardFragment"
-        android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
-
-    <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="com.example.runusandroid.ui.notifications.NotificationsFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
-
-    <fragment
         android:id="@+id/navigation_history"
         android:name="com.example.runusandroid.ui.history.HistoryFragment"
-        android:label="history"
+        android:label="@string/title_history"
         tools:layout="@layout/fragment_history" />
 
     <fragment
         android:id="@+id/navigation_single_mode"
         android:name="com.example.runusandroid.ui.single_mode.SingleModeFragment"
-        android:label="single_mode"
+        android:label="@string/title_single_mode"
         tools:layout="@layout/fragment_single_mode" />
 
     <fragment
         android:id="@+id/navigation_multi_mode"
         android:name="com.example.runusandroid.ui.multi_mode.MultiModeFragment"
-        android:label="multi_mode"
+        android:label="@string/title_multi_mode"
         tools:layout="@layout/fragment_multi_mode" />
+
+    <fragment
+        android:id="@+id/navigation_user_setting"
+        android:name="com.example.runusandroid.ui.user_setting.UserSettingFragment"
+        android:label="@string/title_user_setting"
+        tools:layout="@layout/fragment_user_setting" />
 </navigation>

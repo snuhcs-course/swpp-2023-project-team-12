@@ -10,7 +10,7 @@ public class SingleModeViewModel extends ViewModel {
 
     public SingleModeViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("This is multi mode fragment");
+        mText.setValue("This is single mode fragment");
     }
 
     public LiveData<String> getText() {
