@@ -8,7 +8,7 @@
 
     <TextView
         android:id="@+id/SignUpText"
-        android:paddingVertical="100dp"
+        android:paddingVertical="30dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Sign Up"
@@ -56,12 +56,44 @@
         android:inputType="text"
         app:layout_constraintTop_toBottomOf="@id/SignUpEmailInput" />
 
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/SignUpGenderInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Gender"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/SignUpPhoneNumberInput" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/SignUpHeightInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Height"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/SignUpGenderInput" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/SignUpWeightInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Weight"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/SignUpHeightInput" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/SignUpAgeInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Age"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/SignUpWeightInput" />
+
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/SignUpBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Sign Up"
-        app:layout_constraintTop_toBottomOf="@id/SignUpPhoneNumberInput" />
+        app:layout_constraintTop_toBottomOf="@id/SignUpAgeInput" />
 
 
 

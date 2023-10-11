@@ -20,6 +20,10 @@ public class SignUpActivity extends AppCompatActivity {
     private TextView signUpNicknameInput;
     private TextView signUpEmailInput;
     private TextView signUpPhoneNumberInput;
+    private TextView signUpGenderInput;
+    private TextView signUpHeightInput;
+    private TextView signUpWeightInput;
+    private TextView signUpAgeInput;
     private Button signUpButton;
     private AccountApi accountApi;
     @Override
@@ -32,6 +36,10 @@ public class SignUpActivity extends AppCompatActivity {
         signUpNicknameInput = findViewById(R.id.SignUpNicknameInput);
         signUpPhoneNumberInput = findViewById(R.id.SignUpPhoneNumberInput);
         signUpEmailInput = findViewById(R.id.SignUpEmailInput);
+        signUpGenderInput = findViewById(R.id.SignUpGenderInput);
+        signUpHeightInput = findViewById(R.id.SignUpHeightInput);
+        signUpWeightInput = findViewById(R.id.SignUpWeightInput);
+        signUpAgeInput = findViewById(R.id.SignUpAgeInput);
         signUpButton = findViewById(R.id.SignUpBtn);
 
         accountApi = RetrofitClient.getClient().create(AccountApi.class);
@@ -44,8 +52,22 @@ public class SignUpActivity extends AppCompatActivity {
                 String nickname = signUpNicknameInput.getText().toString();
                 String email = signUpEmailInput.getText().toString();
                 String phoneNumber = signUpPhoneNumberInput.getText().toString();
+                int gender = Integer.parseInt(signUpGenderInput.getText().toString());
+                float height = Float.parseFloat(signUpHeightInput.getText().toString());
+                float weight = Float.parseFloat(signUpWeightInput.getText().toString());
+                int age = Integer.parseInt(signUpAgeInput.getText().toString());
 
-                SignUpData requestData = new SignUpData(userName, password, nickname, email, phoneNumber);
+                SignUpData requestData = new SignUpData(
+                        userName,
+                        password,
+                        nickname,
+                        email,
+                        phoneNumber,
+                        gender,
+                        height,
+                        weight,
+                        age
+                );
 
                 accountApi.postSignUpData(requestData).enqueue(new Callback<ResponseBody>() {
                     @Override
