@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.contrib.auth.models import UserManager
 
 class MyUserManager(UserManager):
-    def create_user(self, nickname, username, email, phone_num, password, **extra_fields):
+    def create_user(self, nickname, username, email, phone_num, password, gender, height, weight, age, **extra_fields):
         if not nickname:
             raise ValueError("SET USERID")
         if not username:
@@ -11,7 +11,16 @@ class MyUserManager(UserManager):
         if not password:
             raise ValueError("SET PASSWORD")
         email = self.normalize_email(email)
-        user = self.model(nickname=nickname, username=username, phone_num=phone_num, email=email)
+        user = self.model(
+            nickname=nickname, 
+            username=username, 
+            phone_num=phone_num, 
+            email=email,
+            gender=gender,
+            height=height,
+            weight=weight,
+            age=age,
+            )
         user.set_password(password)
         user.save()
 
@@ -24,10 +33,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     nickname = models.CharField(null=False, max_length=100, unique=True)
     email = models.EmailField(max_length=50, null=True)
     phone_num = models.CharField(max_length=11, blank=False)
-    gender = models.IntegerField(default=0)
+    gender = models.IntegerField(default=3)
     height = models.FloatField(default=0)
     weight = models.FloatField(default=0)
-    age = models.IntegerField(default=0)
+    age = models.IntegerField(default=20)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     USERNAME_FIELD = 'username'
