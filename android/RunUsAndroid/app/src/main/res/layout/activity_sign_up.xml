@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SignUpActivity">
+
+    <TextView
+        android:id="@+id/SignUpText"
+        android:paddingVertical="30dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sign Up"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/SignUpIdInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Id"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/SignUpText" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/SignUpPasswordInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Password"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/SignUpIdInput" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/SignUpNicknameInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nickname"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/SignUpPasswordInput" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/SignUpEmailInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Email"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/SignUpNicknameInput" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/SignUpPhoneNumberInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Phone Number"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/SignUpEmailInput" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/SignUpGenderInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Gender"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/SignUpPhoneNumberInput" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/SignUpHeightInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Height"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/SignUpGenderInput" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/SignUpWeightInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Weight"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/SignUpHeightInput" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/SignUpAgeInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Age"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/SignUpWeightInput" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/SignUpBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Sign Up"
+        app:layout_constraintTop_toBottomOf="@id/SignUpAgeInput" />
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
