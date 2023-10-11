@@ -24,6 +24,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     nickname = models.CharField(null=False, max_length=100, unique=True)
     email = models.EmailField(max_length=50, null=True)
     phone_num = models.CharField(max_length=11, blank=False)
+    gender = models.IntegerField(default=0)
+    height = models.FloatField(default=0)
+    weight = models.FloatField(default=0)
+    age = models.IntegerField(default=0)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     USERNAME_FIELD = 'username'

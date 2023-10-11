@@ -10,7 +10,17 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'nickname', 'email', 'phone_num','password']
+        fields = [
+            'username', 
+            'nickname', 
+            'email', 
+            'phone_num',
+            'password', 
+            'gender', 
+            'height', 
+            'weight', 
+            'age'
+            ]
 
 
 class LoginSerializer(serializers.Serializer):
