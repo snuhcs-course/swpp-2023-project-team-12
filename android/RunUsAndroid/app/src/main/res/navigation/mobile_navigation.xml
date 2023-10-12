@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/navigation_home">
+
+    <fragment
+        android:id="@+id/navigation_home"
+        android:name="com.example.runusandroid.ui.home.HomeFragment"
+        android:label="@string/title_home"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/navigation_history"
+        android:name="com.example.runusandroid.ui.history.HistoryFragment"
+        android:label="@string/title_history"
+        tools:layout="@layout/fragment_history" />
+
+    <fragment
+        android:id="@+id/navigation_single_mode"
+        android:name="com.example.runusandroid.ui.single_mode.SingleModeFragment"
+        android:label="@string/title_single_mode"
+        tools:layout="@layout/fragment_single_mode" />
+
+    <fragment
+        android:id="@+id/navigation_multi_mode"
+        android:name="com.example.runusandroid.ui.multi_mode.MultiModeFragment"
+        android:label="@string/title_multi_mode"
+        tools:layout="@layout/fragment_multi_mode" />
+
+    <fragment
+        android:id="@+id/navigation_user_setting"
+        android:name="com.example.runusandroid.ui.user_setting.UserSettingFragment"
+        android:label="@string/title_user_setting"
+        tools:layout="@layout/fragment_user_setting" />
+</navigation>
