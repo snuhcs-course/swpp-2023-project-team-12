@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/createRoomModal"
+    android:layout_width="300dp"
+    android:layout_height="500dp"
+    android:orientation="vertical"
+    android:padding="20dp">
+    <!-- 그룹명 -->
+    <EditText
+        android:id="@+id/editTextGroupName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:hint="그룹명"
+        android:inputType="text" />
+
+    <!-- 거리 -->
+    <EditText
+        android:id="@+id/editTextDistance"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="거리 (Km)"
+        android:inputType="numberDecimal" />
+    <!-- 시간 -->
+    <EditText
+        android:id="@+id/editTextTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:hint="시간"
+        android:inputType="text" />
+
+    <EditText
+        android:id="@+id/editTextMembers"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="인원 (명)"
+        android:inputType="number" />
+    <!-- 태그 -->
+    <EditText
+        android:id="@+id/editTextTag"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:hint="태그"
+        android:inputType="text" />
+
+    <!-- 완료 버튼 -->
+    <Button
+        android:id="@+id/buttonComplete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#4AA570"
+        android:text="완료" />
+
+</LinearLayout>
