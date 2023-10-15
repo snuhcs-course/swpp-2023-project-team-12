@@ -6,11 +6,14 @@ import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
+import android.os.SystemClock;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -40,6 +43,7 @@ public class SingleModeFragment extends Fragment {
     private FragmentSingleModeBinding binding;
     private GoogleMap mMap;
     private List<LatLng> pathPoints = new ArrayList<>();
+    Chronometer currentTimeText;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -50,8 +54,11 @@ public class SingleModeFragment extends Fragment {
         View root = binding.getRoot();
 
         MainActivity2 mainActivity = (MainActivity2) getActivity();
-
+        Button showMissionButton = (Button) binding.showMissionButton;
         Button quitButton = (Button) binding.quitButton;
+        TextView currentDistanceText = (TextView) binding.currentDistanceText;
+        currentTimeText = (Chronometer) binding.currentTimeText;
+        currentTimeText.setBase(SystemClock.elapsedRealtime());
 
         // clicking the quit button will print location in log. for testing
         quitButton.setOnClickListener(new View.OnClickListener() {
@@ -60,6 +67,19 @@ public class SingleModeFragment extends Fragment {
                 mainActivity.getLastLocation();
             }
         });
+
+        // time ticking begins right away
+        currentTimeText.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+            public void onChronometerTick(Chronometer chronometer) {
+                long time = SystemClock.elapsedRealtime() - chronometer.getBase();
+                // TODO: hardcoded time zone
+                chronometer.setText(DateFormat.format("HH:mm:ss", time - 3600 * 9 * 1000));
+            }
+        });
+        currentTimeText.start();
+
+
+
 
 
         LocationRequest locationRequest = LocationRequest.create();
@@ -117,9 +137,12 @@ public class SingleModeFragment extends Fragment {
         });
 
 
+
+
         // Viewmodel contains status, and when status changes (observe), the text will change
         final TextView textView = binding.textSingleMode;
         singleModeViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
+
         return root;
     }
 
@@ -127,5 +150,10 @@ public class SingleModeFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+        currentTimeText.stop();
     }
+
+
+
+
 }

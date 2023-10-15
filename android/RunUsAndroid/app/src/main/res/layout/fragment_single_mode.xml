@@ -88,7 +88,7 @@
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="0dp"
-        android:layout_height="400dp"
+        android:layout_height="300dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/goalDistanceText" />
@@ -124,16 +124,30 @@
         app:layout_constraintEnd_toStartOf="@id/guidelineRight"
         app:layout_constraintTop_toBottomOf="@id/map" />
 
-    <TextView
+<!--    <TextView-->
+<!--        android:id="@+id/currentTimeText"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:paddingTop="2dp"-->
+<!--        android:paddingBottom="30dp"-->
+<!--        android:text="00:00:00"-->
+<!--        app:layout_constraintEnd_toStartOf="@id/guidelineRight"-->
+<!--        app:layout_constraintStart_toStartOf="@id/guidelineCenter"-->
+<!--        app:layout_constraintTop_toBottomOf="@id/currentTimeStaticText" />-->
+
+    <Chronometer
         android:id="@+id/currentTimeText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:format="H:mm:ss"
+        android:text="00:00:00"
         android:paddingTop="2dp"
         android:paddingBottom="30dp"
-        android:text="00:00:00"
         app:layout_constraintEnd_toStartOf="@id/guidelineRight"
         app:layout_constraintStart_toStartOf="@id/guidelineCenter"
-        app:layout_constraintTop_toBottomOf="@id/currentTimeStaticText" />
+        app:layout_constraintTop_toBottomOf="@id/currentTimeStaticText"
+        />
+
 
     <Button
         android:id="@+id/showMissionButton"
