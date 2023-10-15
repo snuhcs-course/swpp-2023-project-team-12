@@ -1,10 +1,20 @@
 package com.example.runusandroid;
 
+import android.Manifest;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 
+import com.example.runusandroid.ActivityRecognition.UserActivityBroadcastReceiver;
+import com.example.runusandroid.ActivityRecognition.UserActivityTransitionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
@@ -15,6 +25,7 @@ public class MainActivity2 extends AppCompatActivity {
 
     private ActivityMain2Binding binding;
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,7 +58,21 @@ public class MainActivity2 extends AppCompatActivity {
         );
         */
 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACTIVITY_RECOGNITION}, 1000);
+        }
 
-
+        UserActivityTransitionManager activityManager = new UserActivityTransitionManager(this);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                this,
+                UserActivityTransitionManager.CUSTOM_REQUEST_CODE_USER_ACTION,
+                new Intent(UserActivityTransitionManager.CUSTOM_INTENT_USER_ACTION),
+                PendingIntent.FLAG_MUTABLE
+        );
+        activityManager.registerActivityTransitions(pendingIntent);
+        UserActivityBroadcastReceiver activityReceiver = new UserActivityBroadcastReceiver();
+        IntentFilter filter = new IntentFilter(UserActivityTransitionManager.CUSTOM_INTENT_USER_ACTION);
+        this.registerReceiver(activityReceiver, filter, RECEIVER_EXPORTED);
     }
 }
