@@ -67,6 +67,8 @@ public class SingleModeFragment extends Fragment {
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         //TODO: only draw lines if running is started
+        //TODO: doesn't update location when app is in background -> straight lines are drawn from the last location when app is opened again
+        //TODO: lines are ugly and noisy -> need to filter out some points or smoothed
         LocationCallback locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
