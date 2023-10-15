@@ -1,10 +1,13 @@
 package com.example.runusandroid;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
@@ -27,25 +30,16 @@ public class MainActivity2 extends AppCompatActivity {
         // menu should be considered as top level destinations.
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main2);
         NavigationUI.setupWithNavController(binding.navView, navController);
-        /*
-        // 10.12: 없어도 되는것 같다.
-        navView.setOnNavigationItemSelectedListener(item -> {
-            int selected = item.getItemId();
-            if (selected == R.id.navigation_single_mode) {
-                navController.navigate(R.id.navigation_single_mode);
-            } else if (selected == R.id.navigation_multi_mode) {
-                navController.navigate(R.id.navigation_multi_mode);
-            } else if (selected == R.id.navigation_home) {
-                navController.navigate(R.id.navigation_home);
-            } else if (selected == R.id.navigation_history) {
-                navController.navigate(R.id.navigation_history);
-            } else if (selected == R.id.navigation_user_setting) {
-                navController.navigate(R.id.navigation_user_setting);
-            }
-            return true;
+
+        // Request location permission
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1000);
         }
-        );
-        */
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1000);
+        }
 
 
 
