@@ -12,8 +12,10 @@ jobs:
       with:
         java-version: '17'
         distribution: 'adopt'
+    - name: Change directory to where gradlew is
+      run: cd swpp-2023-project-team-12/android/RunUsAndroid/
     - name: Set execute permissions for gradlew
-      run: chmod +x ./gradlew
+      run: chmod +x gradlew
     - name: Run Android Linter
       run: ./gradlew lintDebug
     - name: Run Checkstyle
