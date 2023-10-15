@@ -67,12 +67,9 @@ public class MainActivity2 extends AppCompatActivity {
         fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
             // Handle location update here
             if (location != null) {
-                /** TODO
-                 * Update the locationTextView
-                 * with current latitude and longitude using setText() */
-                Log.d("test:location", "Location:" + location.getLatitude() + ", " + location.getLongitude());
+                Log.d("test:location:main", "Location:" + location.getLatitude() + ", " + location.getLongitude());
             } else {
-                Log.d("test:location", "Location failed");
+                Log.d("test:location:main", "Location failed");
             }
         });
     }
