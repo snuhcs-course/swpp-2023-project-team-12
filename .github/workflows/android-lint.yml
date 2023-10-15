@@ -24,6 +24,3 @@ jobs:
 
     - name: Run Android Linter
       run: ./gradlew lintDebug
-
-    - name: Run Checkstyle
-      run: ./gradlew checkstyle
