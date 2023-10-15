@@ -20,7 +20,7 @@
         android:id="@+id/mothlyHistory"
         android:layout_width="375dp"
         android:layout_height="80dp"
-        android:background="@drawable/round_shape"
+        android:background="@drawable/round_shape_green"
         app:layout_constraintBottom_toTopOf="@id/historyCalendar"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -73,7 +73,7 @@
         android:id="@+id/dailyHistory"
         android:layout_width="375dp"
         android:layout_height="80dp"
-        android:background="@drawable/round_shape"
+        android:background="@drawable/round_shape_gray"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/historyCalendar">
