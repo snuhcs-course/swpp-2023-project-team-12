@@ -25,6 +25,7 @@ public class HistoryFragment extends Fragment {
         binding = FragmentHistoryBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
+
         final CalendarView calendarView = binding.historyCalendar;
 
         final TextView totalDistance = binding.totalDistance;
@@ -58,4 +59,3 @@ public class HistoryFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
-}
