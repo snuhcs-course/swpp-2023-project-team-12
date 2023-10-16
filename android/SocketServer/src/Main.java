@@ -1,5 +1,5 @@
-import MultiRoom.MultiModeUser;
-import MultiRoom.Protocol;
+import MultiMode.MultiModeUser;
+import MultiMode.Protocol;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,5 +1,5 @@
-import MultiRoom.MultiModeUser;
-import MultiRoom.Packet;
+import MultiMode.MultiModeUser;
+import MultiMode.Packet;
 
 import java.io.*;
 import java.net.Socket;
@@ -16,7 +16,7 @@ public class Client {
             ObjectOutputStream oos = new ObjectOutputStream(os);
             ObjectInputStream ois = new ObjectInputStream(is);
 
-            int dataType = request; // 예를 들어, 1은 MultiRoom.MultiModeUser 객체를 나타낸다고 가정
+            int dataType = request; // 예를 들어, 1은 MultiModeUser 객체를 나타낸다고 가정
             Packet packet = new Packet(dataType, newUser);
             oos.writeObject(packet);
             oos.flush();
