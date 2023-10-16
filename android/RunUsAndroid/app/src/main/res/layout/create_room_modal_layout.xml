@@ -30,6 +30,13 @@
         android:hint="시간"
         android:inputType="text" />
 
+    <Button
+        android:id="@+id/timePickerButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="시간 선택"
+        android:onClick="showTimePickerDialog" />
+
     <EditText
         android:id="@+id/editTextMembers"
         android:layout_width="match_parent"
