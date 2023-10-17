@@ -114,9 +114,27 @@ public class MultiModeRoom implements Serializable {
         this.roomOwner = roomOwner;
     }
 
+    public int getRunningTimeHour() {
+        return roomCreateInfo.getRunningTimeHour();
+    }
+
+    public int getRunningTimeMinute() {
+        return roomCreateInfo.getRunningTimeMinute();
+    }
+
     @Override
     public int hashCode() {
         return id;
+    }
+
+    @Override
+    public String toString() {
+        return "MultiModeRoom{" +
+                "id=" + id +
+                ", userList=" + userList +
+                ", roomOwner=" + roomOwner +
+                ", roomCreateInfo=" + roomCreateInfo +
+                '}';
     }
 
 }

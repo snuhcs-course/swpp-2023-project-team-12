@@ -1,63 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/createRoomModal"
-    android:layout_width="300dp"
-    android:layout_height="500dp"
-    android:orientation="vertical"
-    android:padding="20dp">
-    <!-- 그룹명 -->
-    <EditText
-        android:id="@+id/editTextGroupName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:hint="그룹명"
-        android:inputType="text" />
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <!-- 거리 -->
-    <EditText
-        android:id="@+id/editTextDistance"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:id="@+id/createRoomModal"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:hint="거리 (Km)"
-        android:inputType="numberDecimal" />
-    <!-- 시간 -->
-    <EditText
-        android:id="@+id/editTextTime"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:hint="시간"
-        android:inputType="text" />
+        android:orientation="vertical"
+        android:padding="20dp">
+        <!-- 그룹명 -->
+        <EditText
+            android:id="@+id/editTextGroupName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:hint="그룹명"
+            android:inputType="text" />
 
-    <Button
-        android:id="@+id/timePickerButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="시간 선택"
-        android:onClick="showTimePickerDialog" />
+        <!-- 거리 -->
+        <EditText
+            android:id="@+id/editTextDistance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="거리 (Km)"
+            android:inputType="numberDecimal" />
 
-    <EditText
-        android:id="@+id/editTextMembers"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="인원 (명)"
-        android:inputType="number" />
-    <!-- 태그 -->
-    <EditText
-        android:id="@+id/editTextTag"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
-        android:hint="태그"
-        android:inputType="text" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="시작 시간"
+            android:layout_marginTop="10dp" />
 
-    <!-- 완료 버튼 -->
-    <Button
-        android:id="@+id/buttonComplete"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:backgroundTint="#4AA570"
-        android:text="완료" />
+        <TimePicker
+            android:id="@+id/timePicker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:timePickerMode="spinner"/>
 
-</LinearLayout>
+        <!-- 경기 시간 설정 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="경기 시간"
+            android:layout_marginTop="10dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- 시간 선택 -->
+            <NumberPicker
+                android:id="@+id/hourPicker"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:descendantFocusability="blocksDescendants" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="시간" />
+
+            <!-- 분 선택 -->
+            <NumberPicker
+                android:id="@+id/minutePicker"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:descendantFocusability="blocksDescendants" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="분" />
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/editTextMembers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="인원 (명)"
+            android:inputType="number" />
+
+        <!-- 태그 -->
+        <EditText
+            android:id="@+id/editTextTag"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:hint="태그"
+            android:inputType="text" />
+
+        <!-- 완료 버튼 -->
+        <Button
+            android:id="@+id/buttonComplete"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#4AA570"
+            android:text="완료" />
+
+    </LinearLayout>
+
+</ScrollView>

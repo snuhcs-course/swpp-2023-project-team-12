@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,17 +22,28 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
 import MultiMode.MultiModeRoom;
+import MultiMode.MultiModeUser;
+import MultiMode.Packet;
+import MultiMode.Protocol;
+import MultiMode.RoomCreateInfo;
+
 import com.example.runusandroid.R;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.List;
 import java.util.Random;
 
 public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.ViewHolder> {
 
     private List<MultiModeRoom> roomList;
+    MultiModeRoom selectedRoom;
 
     void setRoomList(List<MultiModeRoom> roomList) {
         this.roomList = roomList;
+        notifyDataSetChanged();
     }
     private int getRandomColor() {
         Random rnd = new Random();
@@ -59,28 +71,18 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
 
         button.setOnClickListener(v -> {
             // 클릭된 버튼의 MultiModeRoom 정보 가져오기
-            MultiModeRoom clickedRoom = roomList.get(position);
+            selectedRoom = roomList.get(position);
+
+            new EnterRoomTask().execute();
 
             // 방 정보를 전달하기 위해 Bundle을 생성
             Bundle bundle = new Bundle();
-            bundle.putSerializable("room", clickedRoom);
+            bundle.putSerializable("room", selectedRoom);
 
             // NavController를 사용하여 다음 fragment로 이동
             NavController navController = Navigation.findNavController(v);
             navController.navigate(R.id.navigation_multi_room_wait, bundle);
 
-
-//            // Fragment를 시작하고 Bundle을 전달
-//            MultiModeWaitFragment fragment = new MultiModeWaitFragment(); // 방 정보를 표시하는 Fragment로 변경
-//            fragment.setArguments(bundle);
-//
-//            // FragmentTransaction을 통해 원래의 Fragment를 완전히 대체
-//            AppCompatActivity activity = unwrap(v.getContext());
-//            FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
-//            transaction.replace(R.id.fragment_container, fragment);
-//            transaction.addToBackStack(null);
-//            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-//            transaction.commit();
         });
 
     }
@@ -104,4 +106,57 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
             textView = itemView.findViewById(R.id.textViewItem);
         }
     }
+    private class EnterRoomTask extends AsyncTask<Void, Void, Boolean> {
+        Packet packet;
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            Socket socket = null;
+            try {
+                socket = new Socket("10.0.2.2", 5001);
+
+                ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+                MultiModeUser user = new MultiModeUser(1, "chocochip"); // Update this as needed
+                Packet requestPacket = new Packet(Protocol.ENTER_ROOM, user, selectedRoom);
+                oos.writeObject(requestPacket);
+                oos.flush();
+
+
+                Object firstreceivedObject = ois.readObject(); //server의 broadcastNewClientInfo를
+                Object receivedObject = ois.readObject();
+                if (receivedObject instanceof Packet) {
+                    packet = (Packet) receivedObject;
+                }
+
+                return true;
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+                return false;
+            } finally {
+                try {
+                    if (socket != null) {
+                        socket.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (success) {
+                Log.d("SendPacket", "Packet sent successfully!");
+                setRoomList(packet.getRoomList());
+                selectedRoom = packet.getSelectedRoom();
+
+            } else {
+                Log.e("SendPacket", "Failed to send packet!");
+            }
+        }
+
+    }
+
 }

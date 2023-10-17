@@ -12,6 +12,8 @@ import android.view.Window;
 import android.widget.Button;
 
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -31,6 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.widget.EditText;
+import android.widget.NumberPicker;
+import android.widget.TimePicker;
 
 public class MultiModeFragment extends Fragment {
 
@@ -40,6 +44,9 @@ public class MultiModeFragment extends Fragment {
 
     private List<MultiModeRoom> roomList = new ArrayList<>();
     Dialog dialog;
+
+    //private SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
+
 
 
 
@@ -52,21 +59,48 @@ public class MultiModeFragment extends Fragment {
 
         EditText groupNameEditText = dialog.findViewById(R.id.editTextGroupName);
         EditText distanceEditText = dialog.findViewById(R.id.editTextDistance);
-        EditText timeEditText = dialog.findViewById(R.id.editTextTime);
+        //EditText timeEditText = dialog.findViewById(R.id.editTextTime);
+        TimePicker time_picker = dialog.findViewById(R.id.timePicker);
         EditText membersEditText = dialog.findViewById(R.id.editTextMembers);
         EditText tagEditText = dialog.findViewById(R.id.editTextTag);
+        NumberPicker numberPickerHour = dialog.findViewById(R.id.hourPicker);
+        NumberPicker numberPickerMinute = dialog.findViewById(R.id.minutePicker);
+
+        // 시간 설정: 0 ~ 23
+        numberPickerHour.setMinValue(0);
+        numberPickerHour.setMaxValue(23);
+
+// 분 설정: 0 ~ 59
+        numberPickerMinute.setMinValue(0);
+        numberPickerMinute.setMaxValue(59);
+
+// 초기값 설정
+        numberPickerHour.setValue(0);
+        numberPickerMinute.setValue(30);
 
         Button completeButton = dialog.findViewById(R.id.buttonComplete);
+        final String[] pickedTime = new String[1];
+        time_picker.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
+            @Override
+            public void onTimeChanged(TimePicker timePicker, int hour, int minute) {
+                pickedTime[0] = hour + ":" + minute;
+            }
+        });
         completeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String groupName = groupNameEditText.getText().toString();
                 double distance = Double.parseDouble(distanceEditText.getText().toString());
-                String time = timeEditText.getText().toString();
+                String time = pickedTime[0];
                 int members = Integer.parseInt(membersEditText.getText().toString());
+                int selectedHour = time_picker.getCurrentHour();
+                int selectedMinute = time_picker.getCurrentMinute();
 
+                // NumberPicker에서 시간과 분 추출
+                int pickedHour = numberPickerHour.getValue();
+                int pickedMinute = numberPickerMinute.getValue();
 
-                RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, distance, time, members);
+                RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, distance, time, members, pickedHour, pickedMinute);
                 new SendRoomInfoTask().execute(roomInfo);
 
             }
@@ -109,6 +143,12 @@ public class MultiModeFragment extends Fragment {
 
                 ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+                //socketManager.openSocket(); // 소켓 연결
+
+                //ObjectOutputStream oos = socketManager.getOOS();
+                //ObjectInputStream ois = socketManager.getOIS();
+
+
 
                 int dataType = Protocol.ROOM_LIST;
                 MultiModeUser user = new MultiModeUser(1, "chocochip");
@@ -135,9 +175,10 @@ public class MultiModeFragment extends Fragment {
                 e.printStackTrace();
             } finally {
                 try {
-                    if (socket != null) {
+
                         socket.close();
-                    }
+                        //socketManager.closeSocket();
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -155,6 +196,8 @@ public class MultiModeFragment extends Fragment {
     }
 
     private class SendRoomInfoTask extends AsyncTask<RoomCreateInfo, Void, Boolean> {
+
+        Packet packet;
         @Override
         protected Boolean doInBackground(RoomCreateInfo... roomInfo) {
             Socket socket = null;
@@ -164,21 +207,38 @@ public class MultiModeFragment extends Fragment {
 
                 ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-
+//                socketManager.openSocket(); // 소켓 연결
+//
+//                ObjectOutputStream oos = socketManager.getOOS();
+//                ObjectInputStream ois = socketManager.getOIS();
+                Log.d("response", "cliked complete button");
                 int dataType = Protocol.CREATE_ROOM;
                 MultiModeUser user = new MultiModeUser(1, "chocochip");
                 Packet requestPacket = new Packet(dataType, user, roomInfo[0]);
                 oos.writeObject(requestPacket);
                 oos.flush();
 
+                Object firstreceivedObject = ois.readObject(); //server의 broadcastNewClientInfo를
                 Object receivedObject = ois.readObject();
-                if (receivedObject instanceof String && "SUCCESS".equals(receivedObject)) {
+                if (receivedObject instanceof Packet) {
+                    packet = (Packet) receivedObject;
+                    Log.d("Response", "packet Protocol is " + packet.getProtocol());
+                    if(packet.getRoomList() != null){
+                        Log.d("Response", "roomList Size is " + Integer.toString(packet.getRoomList().size()));
+                    }
+                    if(packet.getSelectedRoom() == null){
+                        Log.d("response", "null selectedRoom");
 
+                    }else {
+                        Log.d("response", packet.getSelectedRoom().toString());
+                    }
                     success = true;
+                    Log.d("Response", "Received response: " + receivedObject);
                 }
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
-            } finally {
+            }
+            finally {
                 try {
                     if (socket != null) {
                         socket.close();
@@ -195,6 +255,23 @@ public class MultiModeFragment extends Fragment {
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             dialog.dismiss();
+            Log.d("response", Integer.toString(packet.getRoomList().size()));
+            adapter.setRoomList(packet.getRoomList());
+
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("room", packet.getSelectedRoom());
+            if(packet.getSelectedRoom() == null){
+                Log.d("response", "null selectedRoom");
+
+            }else {
+                Log.d("response", packet.getSelectedRoom().toString());
+            }
+            View rootView = MultiModeFragment.this.getView();
+
+            // NavController를 사용하여 다음 fragment로 이동
+            NavController navController = Navigation.findNavController(rootView);
+            navController.navigate(R.id.navigation_multi_room_wait, bundle);
+
         }
     }
 }
