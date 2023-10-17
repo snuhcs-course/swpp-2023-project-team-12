@@ -9,15 +9,15 @@ public class MultiModeUser implements Serializable {
     private int id;
     private MultiModeRoom room;
     private Socket socket;
-    private String nickName;
+    private String nickname;
 
     public MultiModeUser(String nickName){
-        this.nickName = nickName;
+        this.nickname = nickname;
     }
 
-    public MultiModeUser(int id, String nickName){
+    public MultiModeUser(int id, String nickname){
         this.id = id;
-        this.nickName = nickName;
+        this.nickname = nickname;
     }
 
     public void enterRoom(MultiModeRoom room){
@@ -33,6 +33,12 @@ public class MultiModeUser implements Serializable {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getNickname() {return this.nickname; }
+
+    public void setnickname(String nickname){
+        this.nickname = nickname;
     }
 
     public MultiModeRoom getRoom() {
@@ -52,7 +58,7 @@ public class MultiModeUser implements Serializable {
     }
 
     public String getNickName() {
-        return nickName;
+        return nickname;
     }
 
     @Override

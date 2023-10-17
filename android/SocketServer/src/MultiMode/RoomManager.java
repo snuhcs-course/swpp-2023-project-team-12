@@ -30,21 +30,14 @@ public class RoomManager implements Serializable {
     }
 
 
-    public static MultiModeRoom getRoom(MultiModeRoom room){
-        int idx = roomList.indexOf(room);
-        if(idx >= 0){
-            return roomList.get(idx);
-        }else {
-            return null;
-        }
-    }
 
-    public static MultiModeRoom getRoom(int idx){
-        if(idx >= 0){
-            return roomList.get(idx);
-        }else {
-            return null;
+    public static MultiModeRoom getRoom(int roomId) {
+        for (MultiModeRoom room : roomList) {
+            if (room.getId() == roomId) { // Assuming MultiModeRoom has a getId() method to get its id
+                return room;
+            }
         }
+        return null; // Return null if no matching room is found
     }
 
     public static void removeRoom(MultiModeRoom room){

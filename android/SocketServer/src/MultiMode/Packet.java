@@ -40,6 +40,12 @@ public class Packet implements Serializable {
         this.roomList = roomList;
     }
 
+    public Packet(int protocol, List<MultiModeRoom> roomList, MultiModeRoom selectedRoom ){
+        this.protocol = protocol;
+        this.roomList = roomList;
+        this.selectedRoom = selectedRoom;
+    }
+
 
 
     public int getProtocol() {
