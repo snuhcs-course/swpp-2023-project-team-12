@@ -27,6 +27,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -42,7 +44,6 @@ public class MultiModeWaitFragment extends Fragment {
     private TextView titleTextView;
     private TextView startTimeTextView;
     private TextView timeRemainingTextView;
-
     private ConstraintLayout waitingListBox;
     private TextView participantCountTextView;
 
@@ -52,12 +53,11 @@ public class MultiModeWaitFragment extends Fragment {
 
 
 
-    private final Handler handler = new Handler();
+    private final Handler handler = new Handler(); // 남은 시간 계산 위한 Handler
     private final int updateTimeInSeconds = 1; // 1초마다 업데이트
 
 
     public MultiModeWaitFragment() {
-        // 빈 생성자는 기본 생성자와 함께 필요합니다.
     }
 
 
@@ -73,7 +73,7 @@ public class MultiModeWaitFragment extends Fragment {
         waitingListBox = view.findViewById(R.id.waiting_list_box);
 
         selectedRoom = (MultiModeRoom) getArguments().getSerializable("room");
-        // 여기에서 MultiModeRoom 객체(multiModeRoom)를 사용하여 필요한 작업 수행
+        // 여기에서 MultiModeRoom 객체(multiModeRoom)를 사용하여 UI에 표현되어야 하는 text 설정
         if (selectedRoom != null) {
             // MultiModeRoom 객체에 저장된 정보를 화면에 표시
             TextView titleTextView = view.findViewById(R.id.multi_room_wait_title);
@@ -81,7 +81,7 @@ public class MultiModeWaitFragment extends Fragment {
             participantCountTextView = view.findViewById(R.id.participant_count);
 
             titleTextView.setText(selectedRoom.getTitle());
-            startTimeTextView.setText(selectedRoom.getStartTime());
+            startTimeTextView.setText(selectedRoom.getStartTime().getHour() + ":" + selectedRoom.getStartTime().getMinute());
             List<MultiModeUser> userList = selectedRoom.getUserList();
 
             updateParticipantCount(userList.size(), selectedRoom.getNumRunners());
@@ -97,7 +97,7 @@ public class MultiModeWaitFragment extends Fragment {
             Log.d("Response", "no multiroom object");
 
         }
-        Button leaveButton = view.findViewById(R.id.leaveButton);
+        Button leaveButton = view.findViewById(R.id.leaveButton); //떠나기 버튼
         leaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -107,14 +107,15 @@ public class MultiModeWaitFragment extends Fragment {
                 navController.navigate(R.id.navigation_multi_mode);
             }
         });
-        // 필요한 초기화 및 작업 수행
 
         return view;
     }
+    //현재 유저 / 총 유저 보여주는 부분 업데이트 함수
     private void updateParticipantCount(int size, int total) {
         String text = size + "/" + total;
         participantCountTextView.setText(text);
     }
+    // 입장한 유저 이름 보여주는 waiting list
     private void addUserNameToWaitingList(String userName) {
         TextView userNameTextView = new TextView(getContext());
         userNameTextView.setId(View.generateViewId());
@@ -164,7 +165,7 @@ public class MultiModeWaitFragment extends Fragment {
             set.applyTo(waitingListBox);
         }
     }
-
+    //유저가 나갔을 때 패킷을 받아 방 인원 업데이트
     private final Handler updateHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
@@ -188,18 +189,13 @@ public class MultiModeWaitFragment extends Fragment {
         }
     };
 
-
+    //방에서 나갈 때 소켓과 연결하여 패킷 송수신
     private class ExitRoomTask extends AsyncTask<Void, Void, Boolean> {
         Packet packet;
 
         @Override
         protected Boolean doInBackground(Void... voids) {
-//            Socket socket = null;
             try {
-//                socket = new Socket("10.0.2.2", 5001);
-//
-//                ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-//                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
                 Log.d("response socketManager", socketManager.toString());
                 ObjectOutputStream oos = socketManager.getOOS();
                 ObjectInputStream ois = socketManager.getOIS();
@@ -208,25 +204,10 @@ public class MultiModeWaitFragment extends Fragment {
                 oos.writeObject(requestPacket);
                 oos.flush();
 
-//                //Object firstreceivedObject = ois.readObject(); //server의 broadcastNewClientInfo를
-//                Object receivedObject = ois.readObject();
-//                Log.d("response debug", "ok");
-//                if (receivedObject instanceof Packet) {
-//                    packet = (Packet) receivedObject;
-//                }
-
             } catch (IOException e) {
                 e.printStackTrace();
                 return false;
             } finally {
-//                try {
-//                    if (socket != null) {
-//                        socket.close();
-//                    }
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-
                 try {
                     socketManager.closeSocket();
                     Log.d("response", "socket closed");
@@ -239,7 +220,7 @@ public class MultiModeWaitFragment extends Fragment {
 
             }
         }
-
+        //ExitRoomTask 실행 결과에 따라 수행
         @Override
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
@@ -252,53 +233,45 @@ public class MultiModeWaitFragment extends Fragment {
         }
 
     }
-
+    //남은 시간 계산 로직
     private final Runnable updateTimeRunnable = new Runnable() {
         @Override
         public void run() {
             // 현재 시간 가져오기
-            SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
-            String currentTime = dateFormat.format(new Date());
+            LocalDateTime currentDateTime = LocalDateTime.now();
 
-            // startTimeTextView에서 시작 시간 가져오기
-            String startTime = startTimeTextView.getText().toString() + ":00";
+            // startTime 가져오기
+            LocalDateTime startTimeDateTime = selectedRoom.getStartTime();  // startTime을 LocalDateTime 객체로 가정합니다.
 
-            // 시간 형식을 파싱하고 남은 시간 계산
-            try {
-                Date currentDateTime = dateFormat.parse(currentTime);
-                Date startTimeDateTime = dateFormat.parse(startTime);
+            // 남은 시간 계산
+            Duration duration = Duration.between(currentDateTime, startTimeDateTime);
 
-                long timeDifferenceMillis = startTimeDateTime.getTime() - currentDateTime.getTime();
-
-                // startTime이 현재 시간보다 앞선 경우
-                if (timeDifferenceMillis <= 0) {
-                    timeRemainingTextView.setText("시작까지 0분 0초 남음");
-                    return;  // Runnable 종료
-                }
-
-                long secondsRemaining = timeDifferenceMillis / 1000;
-
-                // 시간, 분으로 변환
-                long hours = secondsRemaining / 3600;
-                long minutes = (secondsRemaining % 3600) / 60;
-                long seconds = secondsRemaining % 60;
-
-                // "x시간 x분 남음" 형식으로 문자열 구성
-                String remainingTime;
-                if (hours > 0) {
-                    remainingTime = String.format(Locale.getDefault(), "시작까지 %d시간 %d분 남음", hours, minutes);
-                } else {
-                    remainingTime = String.format(Locale.getDefault(), "시작까지 %d분 %d초 남음", minutes, seconds);
-                }
-
-                // 업데이트된 시간을 텍스트 뷰에 설정
-                timeRemainingTextView.setText(remainingTime);
-            } catch (Exception e) {
-                e.printStackTrace();
+            // startTime이 현재 시간보다 앞선 경우
+            if (duration.isNegative() || duration.isZero()) {
+                timeRemainingTextView.setText("시작까지 0분 0초 남음");
+                return;  // Runnable 종료
             }
 
+            long secondsRemaining = duration.getSeconds();
+
+            // 시간, 분으로 변환
+            long hours = secondsRemaining / 3600;
+            long minutes = (secondsRemaining % 3600) / 60;
+            long seconds = secondsRemaining % 60;
+
+            // "x시간 x분 남음" 형식으로 문자열 구성
+            String remainingTime;
+            if (hours > 0) {
+                remainingTime = String.format(Locale.getDefault(), "시작까지 %d시간 %d분 남음", hours, minutes);
+            } else {
+                remainingTime = String.format(Locale.getDefault(), "시작까지 %d분 %d초 남음", minutes, seconds);
+            }
+
+            // 업데이트된 시간을 텍스트 뷰에 설정
+            timeRemainingTextView.setText(remainingTime);
+
             // 1초마다 업데이트
-            handler.postDelayed(this, 1000); // 이 부분이 명확하지 않아, 일반적으로 1000ms (즉, 1초) 간격으로 설정합니다.
+            handler.postDelayed(this, 1000);
         }
     };
 

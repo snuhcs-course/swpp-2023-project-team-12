@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class RoomManager implements Serializable {
     private static List<MultiModeRoom> roomList; // 방의 리스트
-    private static AtomicInteger atomicInteger;
+    private static AtomicInteger atomicInteger; //방 ID 만들기 위한 AtomicInteger
 
     static {
         roomList = new ArrayList();
@@ -30,15 +30,24 @@ public class RoomManager implements Serializable {
     }
 
 
-
-    public static MultiModeRoom getRoom(int roomId) {
-        for (MultiModeRoom room : roomList) {
-            if (room.getId() == roomId) { // Assuming MultiModeRoom has a getId() method to get its id
-                return room;
+    public static MultiModeRoom getRoom(MultiModeRoom room) {
+        for (MultiModeRoom r : roomList) {
+            if (r.getId() == room.getId()) {
+                return r;
             }
         }
-        return null; // Return null if no matching room is found
+        return null;
     }
+
+    public static MultiModeRoom getRoom(int id) {
+        for (MultiModeRoom r : roomList) {
+            if (r.getId() == id) {
+                return r;
+            }
+        }
+        return null;
+    }
+
 
     public static void removeRoom(MultiModeRoom room){
         room.close();

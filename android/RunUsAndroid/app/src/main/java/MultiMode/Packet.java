@@ -3,7 +3,7 @@ package MultiMode;
 import java.io.Serializable;
 import java.util.List;
 
-public class Packet implements Serializable {
+public class Packet implements Serializable { //서버와 통신하기 위해 사용하는 클래스. Protocol + 필요한 정보 넣어서 전송 및 수신
     private static final long serialVersionUID = 1L;
 
     // 데이터 유형을 나타내는 필드

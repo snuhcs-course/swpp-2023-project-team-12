@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Random;
 
 public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.ViewHolder> {
-
+//MultiMode List 화면에서 각 Room Button과 관련된 Adapter
     private List<MultiModeRoom> roomList;
     MultiModeRoom selectedRoom;
 
@@ -111,9 +111,11 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
             textView = itemView.findViewById(R.id.textViewItem);
         }
     }
+
+    //방 입장시 socket을 통해 서버와 연결
     private class EnterRoomTask extends AsyncTask<Void, Void, Boolean> {
         Packet packet;
-        private Context mContext; // Add this line
+        private Context mContext;
 
         public EnterRoomTask(Context context) {
             this.mContext = context;
@@ -123,24 +125,19 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
         protected Boolean doInBackground(Void... voids) {
             Socket socket = null;
             try {
-//                socket = new Socket("10.0.2.2", 5001);
-//
-//                ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-//                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
                 socketManager.openSocket(); // 소켓 연결
 
-                ObjectOutputStream oos = socketManager.getOOS();
-                ObjectInputStream ois = socketManager.getOIS();
-                MultiModeUser user = new MultiModeUser(1, "chocochip"); // Update this as needed
+                ObjectOutputStream oos = socketManager.getOOS(); //서버로 바이트스트림을 직렬화하기 위해 필요.
+                ObjectInputStream ois = socketManager.getOIS(); //서버로부터 받는 바이트스트림을 역직렬화하기 위해 필요.
+                MultiModeUser user = new MultiModeUser(1, "chocochip"); // 유저 정보 임시로 더미데이터 활용
 
 
                 if (selectedRoom.getUserList().size() < selectedRoom.getNumRunners()) {
                     Packet requestPacket = new Packet(Protocol.ENTER_ROOM, user, selectedRoom);
-                    oos.writeObject(requestPacket);
+                    oos.writeObject(requestPacket); //서버로 패킷 전송
                     oos.flush();
 
-                    //Object firstreceivedObject = ois.readObject(); //server의 broadcastNewClientInfo를
-                    Object receivedObject = ois.readObject();
+                    Object receivedObject = ois.readObject(); //서버로부터 패킷 수신
                     if (receivedObject instanceof Packet) {
                         packet = (Packet) receivedObject;
                     }
@@ -155,7 +152,7 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
         }
 
         @Override
-        protected void onPostExecute(Boolean success) {
+        protected void onPostExecute(Boolean success) { //doInBackground()의 return값에 따라 작업 수행. 룸 리스트 업데이트, 입장하는 방 정보 업데이트
             super.onPostExecute(success);
             if (success) {
                 Log.d("SendPacket", "Packet sent successfully!");
@@ -163,7 +160,7 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
                 selectedRoom = packet.getSelectedRoom();
 
             } else {
-                showFullRoomToast(mContext); // unwrap 함수를 여전히 사용하실 수 있습니다.
+                showFullRoomToast(mContext); // 방이 이미 꽉 찼다는 Toast 띄우기
                 Log.e("SendPacket", "Failed to send packet!");
             }
         }

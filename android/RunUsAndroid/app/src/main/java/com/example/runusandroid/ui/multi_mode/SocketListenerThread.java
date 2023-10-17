@@ -8,7 +8,7 @@ import java.io.ObjectInputStream;
 
 import MultiMode.Packet;
 
-public class SocketListenerThread extends Thread {
+public class SocketListenerThread extends Thread { // 소켓이 연결되어 있을 때 서버로부터 오는 이벤트를 캐치하기 위해 사용
     private final Handler handler;
     private final SocketManager socketManager;
 

@@ -7,7 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-public class SocketManager {
+public class SocketManager { // 모든 fragment에서 공통의 소켓을 활용하기 위해 필요한 class
     private static SocketManager instance;
 
     private Socket socket;
@@ -25,11 +25,11 @@ public class SocketManager {
         return instance;
     }
 
-    public void openSocket() throws IOException {
+    public void openSocket() throws IOException { //소켓 열기
         if (socket == null || socket.isClosed()) {
             socket = new Socket("10.0.2.2", 5001);
-            oos = new ObjectOutputStream(socket.getOutputStream());
-            ois = new ObjectInputStream(socket.getInputStream());
+            oos = new ObjectOutputStream(socket.getOutputStream()); //서버로 보내는 바이트스트림을 직렬화 하기 위해 사용
+            ois = new ObjectInputStream(socket.getInputStream()); //서버로부터 받는 바이트스트림을 역직렬화 하기 위해 사용
         }
     }
 
@@ -45,7 +45,7 @@ public class SocketManager {
         return ois;
     }
 
-    public void closeSocket() throws IOException {
+    public void closeSocket() throws IOException { //소켓 닫기
         Log.d("response closeSocket", "close start");
         if (socket != null && !socket.isClosed()) {
             Log.d("response closeSocket", "close success");

@@ -1,6 +1,8 @@
 package MultiMode;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,21 +11,18 @@ public class MultiModeRoom implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private int id; // 룸 ID
-    private List<MultiModeUser> userList;
+    private List<MultiModeUser> userList; //유저 정보
     private MultiModeUser roomOwner; // 방장
 
     private RoomCreateInfo roomCreateInfo; //방 정보
 
-    private String title;
-    private double distance;
-    private String startTime;
-    private int numRunners;
+    private String title; //방 제목
+    private double distance; //목표 거리
+    private int numRunners; //제한 인원
 
+    private LocalDateTime startTime; //시작 시각
 
-
-    private int runningTimeHour;
-
-    private int runningTimeMinute;
+    private LocalTime duration; //목표 시간(달리는 시간)
 
     public MultiModeRoom(int roomId, RoomCreateInfo roomCreateInfo) { // 유저가 방을 만들때
         userList = new ArrayList();
@@ -32,6 +31,7 @@ public class MultiModeRoom implements Serializable {
         this.title = roomCreateInfo.getTitle();
         this.distance = roomCreateInfo.getDistance();
         this.startTime = roomCreateInfo.getStartTime();
+        this.duration = roomCreateInfo.getDuration();
         this.numRunners = roomCreateInfo.getNumRunners();
     }
     public MultiModeRoom(MultiModeUser user ) { // 유저가 방을 만들때
@@ -95,7 +95,7 @@ public class MultiModeRoom implements Serializable {
 
     public double getDistance() { return distance;}
 
-    public String getStartTime() {return startTime;}
+    public LocalDateTime getStartTime() {return startTime;}
 
     public int getNumRunners() {return numRunners;}
 
@@ -131,12 +131,8 @@ public class MultiModeRoom implements Serializable {
         this.roomOwner = roomOwner;
     }
 
-    public int getRunningTimeHour() {
-        return runningTimeHour;
-    }
-
-    public int getRunningTimeMinute() {
-        return runningTimeMinute;
+    public LocalTime getDuration(){
+        return duration;
     }
 
     @Override

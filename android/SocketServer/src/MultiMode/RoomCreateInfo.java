@@ -2,28 +2,30 @@ package MultiMode;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 public class RoomCreateInfo implements Serializable {
+    //방을 새로 생성할 때 담기는 정보.
     private String title;
     private double distance;
-    private String startTime;
+    //private String startTime;
+
+    private LocalDateTime startTime;
     private int numRunners;
 
 
 
-    private int runningTimeHour;
 
-    private int runningTimeMinute;
+    private LocalTime duration;
 
 
     // 생성자
-    public RoomCreateInfo(String title, double distance, String startTime, int numRunners, int runningTimeHour, int runningTimeMinute) {
+    public RoomCreateInfo(String title, double distance, LocalDateTime startTime, int numRunners, LocalTime duration) {
         this.title = title;
         this.distance = distance;
         this.startTime = startTime;
         this.numRunners = numRunners;
-        this.runningTimeHour = runningTimeHour;
-        this.runningTimeMinute = runningTimeMinute;
+        this.duration = duration;
     }
 
     // Getter 및 Setter 메서드
@@ -43,11 +45,17 @@ public class RoomCreateInfo implements Serializable {
         this.distance = distance;
     }
 
-    public String getStartTime() {
+    public LocalDateTime getStartTime() {
         return startTime;
     }
+    public LocalTime getDuration() {
+        return duration;
+    }
 
-    public void setStartTime(String startTime) {
+    public void setDuration(LocalTime duration) {
+        this.duration = duration;
+    }
+    public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
     }
 
@@ -59,21 +67,7 @@ public class RoomCreateInfo implements Serializable {
         this.numRunners = numRunners;
     }
 
-    public int getRunningTimeHour() {
-        return runningTimeHour;
-    }
 
-    public void setRunningTimeHour(int runningTimeHour) {
-        this.runningTimeHour = runningTimeHour;
-    }
-
-    public int getRunningTimeMinute() {
-        return runningTimeMinute;
-    }
-
-    public void setRunningTimeMinute(int runningTimeMinute) {
-        this.runningTimeMinute = runningTimeMinute;
-    }
 
 
 }
