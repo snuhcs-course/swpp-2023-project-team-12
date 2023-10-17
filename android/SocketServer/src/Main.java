@@ -69,26 +69,3 @@ public class Main {
         clientThread5.start();
     }
 }
-//
-//public class Main {
-//    public static void main(String[] args) {
-//        // 서버와 클라이언트를 별도의 스레드에서 실행
-//        Thread serverThread = new Thread(() -> {
-//            Server server = new Server();
-//        });
-//
-//        Thread clientThread1 = new Thread(() -> {
-//            Client client = new Client("Jack", "1234");
-//        });
-//
-//        Thread clientThread2 = new Thread(() -> {
-//            Client client = new Client("John", "5678");
-//        });
-//
-//
-//        serverThread.start();
-//        clientThread1.start();
-//        clientThread2.start();
-//
-//    }
-//}

@@ -16,7 +16,6 @@
         android:theme="@style/Theme.RunUsAndroid"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
-        <service android:name=".SocketService" />
         <activity
             android:name=".MainActivity2"
             android:exported="true"
