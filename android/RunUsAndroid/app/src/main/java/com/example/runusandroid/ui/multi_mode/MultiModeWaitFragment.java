@@ -3,6 +3,8 @@ package com.example.runusandroid.ui.multi_mode;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -42,8 +44,12 @@ public class MultiModeWaitFragment extends Fragment {
     private TextView timeRemainingTextView;
 
     private ConstraintLayout waitingListBox;
+    private TextView participantCountTextView;
 
-    //SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
+
+    SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
+    private SocketListenerThread socketListenerThread;
+
 
 
     private final Handler handler = new Handler();
@@ -63,6 +69,7 @@ public class MultiModeWaitFragment extends Fragment {
         titleTextView = view.findViewById(R.id.multi_room_wait_title);
         startTimeTextView = view.findViewById(R.id.multi_room_wait_start_time);
         timeRemainingTextView = view.findViewById(R.id.time_remaining);
+
         waitingListBox = view.findViewById(R.id.waiting_list_box);
 
         selectedRoom = (MultiModeRoom) getArguments().getSerializable("room");
@@ -71,10 +78,14 @@ public class MultiModeWaitFragment extends Fragment {
             // MultiModeRoom 객체에 저장된 정보를 화면에 표시
             TextView titleTextView = view.findViewById(R.id.multi_room_wait_title);
             TextView startTimeTextView = view.findViewById(R.id.multi_room_wait_start_time);
+            participantCountTextView = view.findViewById(R.id.participant_count);
 
             titleTextView.setText(selectedRoom.getTitle());
             startTimeTextView.setText(selectedRoom.getStartTime());
             List<MultiModeUser> userList = selectedRoom.getUserList();
+
+            updateParticipantCount(userList.size(), selectedRoom.getNumRunners());
+
             if (userList != null && !userList.isEmpty()) {
                 for (MultiModeUser user : userList) {
                     addUserNameToWaitingList(user.getNickname());
@@ -100,7 +111,10 @@ public class MultiModeWaitFragment extends Fragment {
 
         return view;
     }
-
+    private void updateParticipantCount(int size, int total) {
+        String text = size + "/" + total;
+        participantCountTextView.setText(text);
+    }
     private void addUserNameToWaitingList(String userName) {
         TextView userNameTextView = new TextView(getContext());
         userNameTextView.setId(View.generateViewId());
@@ -151,49 +165,77 @@ public class MultiModeWaitFragment extends Fragment {
         }
     }
 
+    private final Handler updateHandler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+
+            if (msg.obj instanceof Packet) {
+                Packet receivedPacket = (Packet) msg.obj;
+                if(receivedPacket.getProtocol() == Protocol.UPDATE_ROOM){
+                    selectedRoom.setUserList(receivedPacket.getSelectedRoom().getUserList());
+
+                    waitingListBox.removeAllViews();
+
+                    List<MultiModeUser> updatedUserList = selectedRoom.getUserList();
+                    if (updatedUserList != null && !updatedUserList.isEmpty()) {
+                        for (MultiModeUser user : updatedUserList) {
+                            addUserNameToWaitingList(user.getNickname());
+                        }
+                    }
+                }
+            }
+        }
+    };
+
 
     private class ExitRoomTask extends AsyncTask<Void, Void, Boolean> {
         Packet packet;
 
         @Override
         protected Boolean doInBackground(Void... voids) {
-            Socket socket = null;
+//            Socket socket = null;
             try {
-                socket = new Socket("10.0.2.2", 5001);
-
-                ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-//                ObjectOutputStream oos = socketManager.getOOS();
-//                ObjectInputStream ois = socketManager.getOIS();
+//                socket = new Socket("10.0.2.2", 5001);
+//
+//                ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+//                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+                Log.d("response socketManager", socketManager.toString());
+                ObjectOutputStream oos = socketManager.getOOS();
+                ObjectInputStream ois = socketManager.getOIS();
                 MultiModeUser user = new MultiModeUser(1, "chocochip"); // Update this as needed
                 Packet requestPacket = new Packet(Protocol.EXIT_ROOM, user, selectedRoom);
                 oos.writeObject(requestPacket);
                 oos.flush();
 
+//                //Object firstreceivedObject = ois.readObject(); //server의 broadcastNewClientInfo를
+//                Object receivedObject = ois.readObject();
+//                Log.d("response debug", "ok");
+//                if (receivedObject instanceof Packet) {
+//                    packet = (Packet) receivedObject;
+//                }
 
-                Object firstreceivedObject = ois.readObject(); //server의 broadcastNewClientInfo를
-                Object receivedObject = ois.readObject();
-                if (receivedObject instanceof Packet) {
-                    packet = (Packet) receivedObject;
-                }
-
-                return true;
-            } catch (IOException | ClassNotFoundException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
                 return false;
             } finally {
-                try {
-                    if (socket != null) {
-                        socket.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
 //                try {
-//                    socketManager.closeSocket();  // 소켓 닫기
+//                    if (socket != null) {
+//                        socket.close();
+//                    }
 //                } catch (IOException e) {
-//                    throw new RuntimeException(e);
+//                    e.printStackTrace();
 //                }
+
+                try {
+                    socketManager.closeSocket();
+                    Log.d("response", "socket closed");
+                    return true;
+
+                } catch (IOException e) {
+                    Log.d("response", "socket close error");
+                    throw new RuntimeException(e);
+                }
 
             }
         }
@@ -259,6 +301,21 @@ public class MultiModeWaitFragment extends Fragment {
             handler.postDelayed(this, 1000); // 이 부분이 명확하지 않아, 일반적으로 1000ms (즉, 1초) 간격으로 설정합니다.
         }
     };
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        socketListenerThread = new SocketListenerThread(handler);
+        socketListenerThread.start();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (socketListenerThread != null) {
+            socketListenerThread.interrupt();
+        }
+    }
 
     @Override
     public void onDestroyView() {

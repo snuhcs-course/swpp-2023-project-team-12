@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public class RoomCreateInfo implements Serializable {
+    //방을 새로 생성할 때 담기는 정보.
     private String title;
     private double distance;
     private String startTime;

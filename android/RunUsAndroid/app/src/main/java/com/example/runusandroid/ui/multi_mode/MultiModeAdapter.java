@@ -1,6 +1,7 @@
 package com.example.runusandroid.ui.multi_mode;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.res.ColorStateList;
@@ -13,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -40,6 +42,9 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
 
     private List<MultiModeRoom> roomList;
     MultiModeRoom selectedRoom;
+
+    private SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
+
 
     void setRoomList(List<MultiModeRoom> roomList) {
         this.roomList = roomList;
@@ -73,7 +78,7 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
             // 클릭된 버튼의 MultiModeRoom 정보 가져오기
             selectedRoom = roomList.get(position);
 
-            new EnterRoomTask().execute();
+            new EnterRoomTask(v.getContext()).execute();
 
             // 방 정보를 전달하기 위해 Bundle을 생성
             Bundle bundle = new Bundle();
@@ -108,39 +113,44 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
     }
     private class EnterRoomTask extends AsyncTask<Void, Void, Boolean> {
         Packet packet;
+        private Context mContext; // Add this line
+
+        public EnterRoomTask(Context context) {
+            this.mContext = context;
+        }
 
         @Override
         protected Boolean doInBackground(Void... voids) {
             Socket socket = null;
             try {
-                socket = new Socket("10.0.2.2", 5001);
+//                socket = new Socket("10.0.2.2", 5001);
+//
+//                ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+//                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+                socketManager.openSocket(); // 소켓 연결
 
-                ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+                ObjectOutputStream oos = socketManager.getOOS();
+                ObjectInputStream ois = socketManager.getOIS();
                 MultiModeUser user = new MultiModeUser(1, "chocochip"); // Update this as needed
-                Packet requestPacket = new Packet(Protocol.ENTER_ROOM, user, selectedRoom);
-                oos.writeObject(requestPacket);
-                oos.flush();
 
 
-                Object firstreceivedObject = ois.readObject(); //server의 broadcastNewClientInfo를
-                Object receivedObject = ois.readObject();
-                if (receivedObject instanceof Packet) {
-                    packet = (Packet) receivedObject;
+                if (selectedRoom.getUserList().size() < selectedRoom.getNumRunners()) {
+                    Packet requestPacket = new Packet(Protocol.ENTER_ROOM, user, selectedRoom);
+                    oos.writeObject(requestPacket);
+                    oos.flush();
+
+                    //Object firstreceivedObject = ois.readObject(); //server의 broadcastNewClientInfo를
+                    Object receivedObject = ois.readObject();
+                    if (receivedObject instanceof Packet) {
+                        packet = (Packet) receivedObject;
+                    }
+                    return true;
                 }
-
-                return true;
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
                 return false;
-            } finally {
-                try {
-                    if (socket != null) {
-                        socket.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            }finally {
+                return false;
             }
         }
 
@@ -153,10 +163,15 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
                 selectedRoom = packet.getSelectedRoom();
 
             } else {
+                showFullRoomToast(mContext); // unwrap 함수를 여전히 사용하실 수 있습니다.
                 Log.e("SendPacket", "Failed to send packet!");
             }
         }
 
+    }
+
+    private void showFullRoomToast(Context context) {
+        Toast.makeText(context, "인원이 초과되었습니다.", Toast.LENGTH_SHORT).show();
     }
 
 }

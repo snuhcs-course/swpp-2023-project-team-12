@@ -86,20 +86,33 @@
         android:layout_marginLeft="32dp"
         app:layout_constraintLeft_toLeftOf="parent"
         />
+    <TextView
+        android:id="@+id/participant_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="##/##"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="32dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        app:layout_constraintTop_toBottomOf="@id/time_remaining"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/waiting_list_box"
         android:layout_width="326dp"
         android:layout_height="350dp"
-        android:layout_marginTop="20dp"
         android:background="@drawable/multi_room_waiting_list_background"
-        app:layout_constraintTop_toBottomOf="@id/time_remaining"
+        app:layout_constraintTop_toBottomOf="@id/participant_count"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        tools:layout_editor_absoluteX="42dp" />
+        tools:layout_editor_absoluteX="42dp" >
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
 
 
 
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>

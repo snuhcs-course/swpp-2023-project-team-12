@@ -23,6 +23,11 @@ public class Packet implements Serializable {
         this.user = user;
     }
 
+    public Packet(int protocol, MultiModeRoom selectedRoom) {
+        this.protocol = protocol;
+        this.selectedRoom = selectedRoom;
+    }
+
     public Packet(int protocol, MultiModeUser user, RoomCreateInfo roomCreateInfo ){
         this.protocol = protocol;
         this.user = user;

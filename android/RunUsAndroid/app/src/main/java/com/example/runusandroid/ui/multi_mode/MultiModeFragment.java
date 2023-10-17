@@ -45,7 +45,7 @@ public class MultiModeFragment extends Fragment {
     private List<MultiModeRoom> roomList = new ArrayList<>();
     Dialog dialog;
 
-    //private SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
+    private SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
 
 
 
@@ -92,7 +92,7 @@ public class MultiModeFragment extends Fragment {
                 String groupName = groupNameEditText.getText().toString();
                 double distance = Double.parseDouble(distanceEditText.getText().toString());
                 String time = pickedTime[0];
-                int members = Integer.parseInt(membersEditText.getText().toString());
+                int numRunners = Integer.parseInt(membersEditText.getText().toString());
                 int selectedHour = time_picker.getCurrentHour();
                 int selectedMinute = time_picker.getCurrentMinute();
 
@@ -100,7 +100,8 @@ public class MultiModeFragment extends Fragment {
                 int pickedHour = numberPickerHour.getValue();
                 int pickedMinute = numberPickerMinute.getValue();
 
-                RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, distance, time, members, pickedHour, pickedMinute);
+                RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, distance, time, numRunners, pickedHour, pickedMinute);
+                Log.d("response roomcreate", Integer.toString(numRunners));
                 new SendRoomInfoTask().execute(roomInfo);
 
             }
@@ -139,14 +140,14 @@ public class MultiModeFragment extends Fragment {
         protected List<MultiModeRoom> doInBackground(Void... voids) {
             Socket socket = null;
             try {
-                socket = new Socket("10.0.2.2", 5001); // 서버 IP와 포트를 서버와 일치시켜야 합니다
+//                socket = new Socket("10.0.2.2", 5001); // 서버 IP와 포트를 서버와 일치시켜야 합니다
+//
+//                ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+//                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+                socketManager.openSocket(); // 소켓 연결
 
-                ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-                //socketManager.openSocket(); // 소켓 연결
-
-                //ObjectOutputStream oos = socketManager.getOOS();
-                //ObjectInputStream ois = socketManager.getOIS();
+                ObjectOutputStream oos = socketManager.getOOS();
+                ObjectInputStream ois = socketManager.getOIS();
 
 
 
@@ -176,8 +177,8 @@ public class MultiModeFragment extends Fragment {
             } finally {
                 try {
 
-                        socket.close();
-                        //socketManager.closeSocket();
+                        //socket.close();
+                        socketManager.closeSocket();
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -203,14 +204,15 @@ public class MultiModeFragment extends Fragment {
             Socket socket = null;
             boolean success = false;
             try {
-                socket = new Socket("10.0.2.2", 5001);
-
-                ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-//                socketManager.openSocket(); // 소켓 연결
+//                socket = new Socket("10.0.2.2", 5001);
 //
-//                ObjectOutputStream oos = socketManager.getOOS();
-//                ObjectInputStream ois = socketManager.getOIS();
+//                ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+//                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+                Log.d("response socketManager", socketManager.toString());
+                socketManager.openSocket(); // 소켓 연결
+
+                ObjectOutputStream oos = socketManager.getOOS();
+                ObjectInputStream ois = socketManager.getOIS();
                 Log.d("response", "cliked complete button");
                 int dataType = Protocol.CREATE_ROOM;
                 MultiModeUser user = new MultiModeUser(1, "chocochip");
@@ -218,7 +220,7 @@ public class MultiModeFragment extends Fragment {
                 oos.writeObject(requestPacket);
                 oos.flush();
 
-                Object firstreceivedObject = ois.readObject(); //server의 broadcastNewClientInfo를
+                //Object firstreceivedObject = ois.readObject(); //server의 broadcastNewClientInfo를
                 Object receivedObject = ois.readObject();
                 if (receivedObject instanceof Packet) {
                     packet = (Packet) receivedObject;
@@ -238,15 +240,15 @@ public class MultiModeFragment extends Fragment {
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
-            finally {
-                try {
-                    if (socket != null) {
-                        socket.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+//            finally {
+//                try {
+//                    if (socket != null) {
+//                        socket.close();
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
 
             return success;
         }

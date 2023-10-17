@@ -1,5 +1,7 @@
 package com.example.runusandroid.ui.multi_mode;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -44,10 +46,17 @@ public class SocketManager {
     }
 
     public void closeSocket() throws IOException {
+        Log.d("response closeSocket", "close start");
         if (socket != null && !socket.isClosed()) {
+            Log.d("response closeSocket", "close success");
+
             socket.close();
             oos = null;
             ois = null;
+            socket = null;
+        }else{
+            Log.d("response closeSocket", "close failed");
+
         }
     }
 }

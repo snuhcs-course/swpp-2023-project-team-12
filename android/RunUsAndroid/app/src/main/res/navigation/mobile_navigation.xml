@@ -32,7 +32,7 @@
     <fragment
         android:id="@+id/navigation_multi_room_wait"
         android:name="com.example.runusandroid.ui.multi_mode.MultiModeWaitFragment"
-        android:label="@string/title_multi_mode_wait"
+        android:label="@string/title_multi_mode"
         tools:layout="@layout/fragment_multi_room_wait" />
 
     <fragment

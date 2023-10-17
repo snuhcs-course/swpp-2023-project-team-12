@@ -28,7 +28,6 @@ public class Server {
 
                     ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
                     clientOutputStreams.add(oos);
-                    broadcastNewClientInfo();
 
                     Thread clientThread = new Thread(() -> handleClient(socket, oos));
                     clientThread.start();
@@ -49,6 +48,8 @@ public class Server {
     }
 
     private void handleClient(Socket socket, ObjectOutputStream oos) {
+        MultiModeUser connectedUser = null;
+        MultiModeUser user = null;
         try {
             InputStream is = socket.getInputStream();
             ObjectInputStream ois = new ObjectInputStream(is);
@@ -58,22 +59,20 @@ public class Server {
                     Object data = ois.readObject();
 
                     if (data instanceof Packet) {
-                        MultiModeUser user = ((Packet) data).getUser();
+                        connectedUser = ((Packet) data).getUser();
+                        user = connectedUser;
+                        for(MultiModeUser multiModeUseruser : userList){
+                            if(multiModeUseruser.getId() == connectedUser.getId()){
+                                user = multiModeUseruser;
+                                break;
+                            }
+                        }
                         System.out.println(user.getNickName() +  ((Packet) data).getProtocol());
                         userList.add(user);
                         if (((Packet) data).getProtocol() == Protocol.ROOM_LIST) {
                             Packet roomListPacket = new Packet(Protocol.ROOM_LIST, RoomManager.getRoomList());
                             System.out.println("RoomList size is "  + RoomManager.getRoomList().size());
-                            for (ObjectOutputStream clientOOS : clientOutputStreams) {
-                                if (clientOOS != oos) {
-                                    try {
-                                        clientOOS.writeObject(roomListPacket);
-                                        clientOOS.flush();
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            }
+                            broadcastPacketToAllUsers(roomListPacket);  // 모든 사용자에게 패킷을 보내는 부분
                         } else if (((Packet) data).getProtocol() == Protocol.CREATE_ROOM) {
                             System.out.println("create_room request came");
                             RoomCreateInfo roomCreateInfo = ((Packet) data).getRoomCreateInfo();
@@ -85,11 +84,17 @@ public class Server {
                             oos.flush();
                             //broadcastNewClientInfo(socket, clientOutputStreams);
                         } else if (((Packet) data).getProtocol() == Protocol.ENTER_ROOM) {
-                            RoomManager.getRoom(((Packet) data).getSelectedRoom().getId()).enterUser(user);
+                            MultiModeRoom enteredRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
+                            enteredRoom.enterUser(user);
                             Packet enterRoomPacket = new Packet(Protocol.ENTER_ROOM, RoomManager.getRoomList(), RoomManager.getRoom(((Packet) data).getSelectedRoom().getId()));
                             oos.writeObject(enterRoomPacket);
                             oos.flush();
+                            broadcastToRoomUsers(enteredRoom, new Packet(Protocol.UPDATE_ROOM, enteredRoom));
                         } else if (((Packet) data).getProtocol() == Protocol.EXIT_ROOM) {
+                            if(userList.get(user.getId())== null){
+                                System.out.println("user null");
+                            }
+                            System.out.println(Integer.toString(userList.get(user.getId()).getRoom().getId()));
                             RoomManager.getRoom(userList.get(user.getId()).getRoom().getId()).exitUser(user);
                             Packet exitRoomPacket = new Packet(Protocol.EXIT_ROOM, RoomManager.getRoomList());
                             oos.writeObject(exitRoomPacket);
@@ -108,14 +113,19 @@ public class Server {
             e.printStackTrace();
             cleanupClientResources(oos, socket);  // Cleanup resources if there's an error
 
+        }finally {
+            if (connectedUser != null) {
+                if(RoomManager.roomCount() != 0 ){
+                    RoomManager.getRoom(userList.get(user.getId()).getRoom().getId()).exitUser(user);
+                }
+
+            }
         }
     }
-
-    private void broadcastNewClientInfo() {
-        MultiModeRoom room = new MultiModeRoom();
-        room.setId(100);
-        Packet packet = new Packet(Protocol.ROOM_LIST, RoomManager.getRoomList(), room);
-
+    private void addNewUserToList(MultiModeUser newUser) {
+        userList.add(newUser);
+    }
+    private void broadcastPacketToAllUsers(Packet packet) {
         synchronized (clientOutputStreams) {
             for (ObjectOutputStream oos : clientOutputStreams) {
                 try {
@@ -127,6 +137,33 @@ public class Server {
         }
     }
 
+    private void broadcastToRoomUsers(MultiModeRoom room, Packet packet) {
+        for (MultiModeUser roomUser : (List<MultiModeUser>) room.getUserList()) {
+            ObjectOutputStream roomUserOOS = findOutputStreamByUser(roomUser);
+            if (roomUserOOS != null) {
+                try {
+                    roomUserOOS.writeObject(packet);
+                    roomUserOOS.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private ObjectOutputStream findOutputStreamByUser(MultiModeUser user) {
+        // 여기서 사용자와 연결된 ObjectOutputStream을 찾아 반환하세요.
+        // 예를 들어, userList와 clientOutputStreams가 동일한 순서로 동기화되어 있으면 아래와 같은 로직을 사용할 수 있습니다:
+        int index = userList.indexOf(user);
+        if (index != -1 && index < clientOutputStreams.size()) {
+            return clientOutputStreams.get(index);
+        }
+        return null;
+    }
+
+
+
+
     private void cleanupClientResources(ObjectOutputStream oos, Socket socket) {
         try {
             clientOutputStreams.remove(oos);
@@ -136,6 +173,8 @@ public class Server {
             e.printStackTrace();
         }
     }
+
+
 
     public static void main(String[] args) {
         new Server();

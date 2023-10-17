@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MultiModeRoom implements Serializable {
+
+
     private static final long serialVersionUID = 1L;
     private int id; // 룸 ID
     private List<MultiModeUser> userList;
@@ -12,10 +14,25 @@ public class MultiModeRoom implements Serializable {
 
     private RoomCreateInfo roomCreateInfo; //방 정보
 
+    private String title;
+    private double distance;
+    private String startTime;
+    private int numRunners;
+
+
+
+    private int runningTimeHour;
+
+    private int runningTimeMinute;
+
     public MultiModeRoom(int roomId, RoomCreateInfo roomCreateInfo) { // 유저가 방을 만들때
         userList = new ArrayList();
         this.id = roomId;
         this.roomCreateInfo = roomCreateInfo;
+        this.title = roomCreateInfo.getTitle();
+        this.distance = roomCreateInfo.getDistance();
+        this.startTime = roomCreateInfo.getStartTime();
+        this.numRunners = roomCreateInfo.getNumRunners();
     }
     public MultiModeRoom(MultiModeUser user ) { // 유저가 방을 만들때
         userList = new ArrayList();
@@ -73,14 +90,14 @@ public class MultiModeRoom implements Serializable {
 
 
     public String getTitle() { // 방 이름을 가져옴
-        return roomCreateInfo.getTitle();
+        return title;
     }
 
-    public double getDistance() { return roomCreateInfo.getDistance();}
+    public double getDistance() { return distance;}
 
-    public String getStartTime() {return roomCreateInfo.getStartTime();}
+    public String getStartTime() {return startTime;}
 
-    public int getNumRunners() {return roomCreateInfo.getNumRunners();}
+    public int getNumRunners() {return numRunners;}
 
     public int getUserSize() { // 유저의 수를 리턴
         return userList.size();
@@ -115,11 +132,11 @@ public class MultiModeRoom implements Serializable {
     }
 
     public int getRunningTimeHour() {
-        return roomCreateInfo.getRunningTimeHour();
+        return runningTimeHour;
     }
 
     public int getRunningTimeMinute() {
-        return roomCreateInfo.getRunningTimeMinute();
+        return runningTimeMinute;
     }
 
     @Override
