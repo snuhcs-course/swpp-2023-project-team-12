@@ -3,6 +3,8 @@ package com.example.runusandroid.ui.single_mode;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.icu.text.SimpleDateFormat;
+import android.icu.util.TimeZone;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
@@ -37,6 +39,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class SingleModeFragment extends Fragment {
 
@@ -44,6 +47,7 @@ public class SingleModeFragment extends Fragment {
     private GoogleMap mMap;
     private List<LatLng> pathPoints = new ArrayList<>();
     Chronometer currentTimeText;
+    SimpleDateFormat dateFormat;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -68,19 +72,17 @@ public class SingleModeFragment extends Fragment {
             }
         });
 
+        dateFormat = new SimpleDateFormat("HH:mm:ss");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
         // time ticking begins right away
         currentTimeText.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
             public void onChronometerTick(Chronometer chronometer) {
                 long time = SystemClock.elapsedRealtime() - chronometer.getBase();
-                // TODO: hardcoded time zone
-                chronometer.setText(DateFormat.format("HH:mm:ss", time - 3600 * 9 * 1000));
+                chronometer.setText(dateFormat.format(time));
             }
         });
         currentTimeText.start();
-
-
-
-
 
         LocationRequest locationRequest = LocationRequest.create();
         locationRequest.setInterval(5000); // Update interval in milliseconds
