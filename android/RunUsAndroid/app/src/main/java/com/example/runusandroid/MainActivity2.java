@@ -27,7 +27,8 @@ public class MainActivity2 extends AppCompatActivity {
 
     private ActivityMain2Binding binding;
     private FusedLocationProviderClient fusedLocationClient;
-
+    UserActivityTransitionManager activityManager;
+    PendingIntent pendingIntent;
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,8 +59,8 @@ public class MainActivity2 extends AppCompatActivity {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        UserActivityTransitionManager activityManager = new UserActivityTransitionManager(this);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+        activityManager = new UserActivityTransitionManager(this);
+        pendingIntent = PendingIntent.getBroadcast(
                 this,
                 UserActivityTransitionManager.CUSTOM_REQUEST_CODE_USER_ACTION,
                 new Intent(UserActivityTransitionManager.CUSTOM_INTENT_USER_ACTION),
@@ -93,5 +94,11 @@ public class MainActivity2 extends AppCompatActivity {
                 Log.d("test:location:main", "Location failed");
             }
         });
+    }
+
+    @Override
+    protected void onStop(){
+        activityManager.removeActivityTransitions(pendingIntent);
+        super.onStop();
     }
 }
