@@ -29,7 +29,7 @@ public class MainActivity2 extends AppCompatActivity {
     private FusedLocationProviderClient fusedLocationClient;
     UserActivityTransitionManager activityManager;
     PendingIntent pendingIntent;
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
+    UserActivityBroadcastReceiver activityReceiver;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,10 +42,11 @@ public class MainActivity2 extends AppCompatActivity {
         // menu should be considered as top level destinations.
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main2);
         NavigationUI.setupWithNavController(binding.navView, navController);
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACTIVITY_RECOGNITION}, 1000);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACTIVITY_RECOGNITION}, 1000);
+            }
         }
         // Request location permission
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -67,9 +68,26 @@ public class MainActivity2 extends AppCompatActivity {
                 PendingIntent.FLAG_MUTABLE
         );
         activityManager.registerActivityTransitions(pendingIntent);
-        UserActivityBroadcastReceiver activityReceiver = new UserActivityBroadcastReceiver();
+        activityReceiver = new UserActivityBroadcastReceiver();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
+    @Override
+    protected void onStart() {
+        super.onStart();
         IntentFilter filter = new IntentFilter(UserActivityTransitionManager.CUSTOM_INTENT_USER_ACTION);
         this.registerReceiver(activityReceiver, filter, RECEIVER_EXPORTED);
+    }
+
+    @Override
+    protected void onPause() {
+        activityManager.removeActivityTransitions(pendingIntent);
+        super.onPause();
+    }
+    @Override
+    protected void onStop(){
+        unregisterReceiver(activityReceiver);
+        super.onStop();
     }
 
     public FusedLocationProviderClient getFusedLocationClient() {
@@ -94,11 +112,5 @@ public class MainActivity2 extends AppCompatActivity {
                 Log.d("test:location:main", "Location failed");
             }
         });
-    }
-
-    @Override
-    protected void onStop(){
-        activityManager.removeActivityTransitions(pendingIntent);
-        super.onStop();
     }
 }

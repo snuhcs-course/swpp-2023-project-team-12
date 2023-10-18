@@ -3,6 +3,7 @@ package com.example.runusandroid.ActivityRecognition;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -62,13 +63,12 @@ public class UserActivityTransitionManager {
 
     public void registerActivityTransitions(PendingIntent pendingIntent) {
         ActivityTransitionRequest request = buildTransitionRequest();
-        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACTIVITY_RECOGNITION)
-                != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(context, "permission not granted", Toast.LENGTH_LONG).show();
-            return;
-        }
-        else{
-            Toast.makeText(context, "permission granted", Toast.LENGTH_LONG).show();
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACTIVITY_RECOGNITION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(context, "permission not granted", Toast.LENGTH_LONG).show();
+                return;
+            }
         }
         Task<Void> task = activityClient.requestActivityTransitionUpdates(request, pendingIntent);
         task.addOnSuccessListener(
@@ -80,13 +80,12 @@ public class UserActivityTransitionManager {
     }
 
     public void removeActivityTransitions(PendingIntent pendingIntent) {
-        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACTIVITY_RECOGNITION)
-                != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(context, "permission not granted", Toast.LENGTH_LONG).show();
-            return;
-        }
-        else{
-            Toast.makeText(context, "permission granted", Toast.LENGTH_LONG).show();
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACTIVITY_RECOGNITION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(context, "permission not granted", Toast.LENGTH_LONG).show();
+                return;
+            }
         }
         Task<Void> task = activityClient.removeActivityTransitionUpdates(pendingIntent);
         task.addOnSuccessListener(
