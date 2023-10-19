@@ -161,7 +161,7 @@ public class MultiModeFragment extends Fragment {
 
 
                 int dataType = Protocol.ROOM_LIST;
-                MultiModeUser user = new MultiModeUser(1, "chocochip");
+                MultiModeUser user = new MultiModeUser(2, "berrychip");
                 Packet requestPacket = new Packet(dataType, user);
                 oos.writeObject(requestPacket);
                 oos.flush();
@@ -218,7 +218,7 @@ public class MultiModeFragment extends Fragment {
                 ObjectOutputStream oos = socketManager.getOOS();
                 ObjectInputStream ois = socketManager.getOIS();
                 int dataType = Protocol.CREATE_ROOM;
-                MultiModeUser user = new MultiModeUser(1, "chocochip"); //유저 정보 임시로 더미데이터 사용
+                MultiModeUser user = new MultiModeUser(2, "berrychip"); //유저 정보 임시로 더미데이터 사용
                 Packet requestPacket = new Packet(dataType, user, roomInfo[0]); // 서버에 보내는 패킷
                 oos.writeObject(requestPacket); //서버로 패킷 전송
                 oos.flush();

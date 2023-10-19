@@ -134,12 +134,14 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
 
                 if (selectedRoom.getUserList().size() < selectedRoom.getNumRunners()) {
                     Packet requestPacket = new Packet(Protocol.ENTER_ROOM, user, selectedRoom);
+                    Log.d("response enterroom", "protocol : " + requestPacket.getProtocol() + " user is " + user.getNickname());
                     oos.writeObject(requestPacket); //서버로 패킷 전송
                     oos.flush();
 
                     Object receivedObject = ois.readObject(); //서버로부터 패킷 수신
                     if (receivedObject instanceof Packet) {
                         packet = (Packet) receivedObject;
+                        Log.d("response", "userlist size is " + packet.getSelectedRoom().getUserList().size());
                     }
                     return true;
                 }

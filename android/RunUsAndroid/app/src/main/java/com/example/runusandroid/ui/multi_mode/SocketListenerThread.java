@@ -19,21 +19,21 @@ public class SocketListenerThread extends Thread { // 소켓이 연결되어 있
 
     @Override
     public void run() {
-        try {
-            while (!Thread.currentThread().isInterrupted()) {
-                ObjectInputStream ois = socketManager.getOIS();
-                Object receivedObject = ois.readObject();
-
-                if (receivedObject instanceof Packet) {
-                    Packet packet = (Packet) receivedObject;
-                    Message msg = handler.obtainMessage();
-                    msg.obj = packet;
-                    handler.sendMessage(msg);
-                }
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            while (!Thread.currentThread().isInterrupted()) {
+//                ObjectInputStream ois = socketManager.getOIS();
+//                Object receivedObject = ois.readObject();
+//
+//                if (receivedObject instanceof Packet) {
+//                    Packet packet = (Packet) receivedObject;
+//                    Message msg = handler.obtainMessage();
+//                    msg.obj = packet;
+//                    handler.sendMessage(msg);
+//                }
+//            }
+//        } catch (IOException | ClassNotFoundException e) {
+//            e.printStackTrace();
+//        }
     }
 }
 

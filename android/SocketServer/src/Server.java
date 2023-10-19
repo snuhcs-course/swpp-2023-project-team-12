@@ -84,18 +84,38 @@ public class Server {
                             oos.flush();
                             //broadcastNewClientInfo(socket, clientOutputStreams);
                         } else if (((Packet) data).getProtocol() == Protocol.ENTER_ROOM) {
+                            System.out.println("enter gg");
                             MultiModeRoom enteredRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
                             enteredRoom.enterUser(user);
-                            Packet enterRoomPacket = new Packet(Protocol.ENTER_ROOM, RoomManager.getRoomList(), RoomManager.getRoom(((Packet) data).getSelectedRoom().getId()));
+                            System.out.println(enteredRoom);
+                            for(MultiModeRoom mroom : RoomManager.getRoomList()){
+                                if(mroom.getId() == enteredRoom.getId()){
+                                    System.out.println(mroom);
+                                }
+                            }
+                            Packet enterRoomPacket = new Packet(Protocol.ENTER_ROOM, RoomManager.getRoomList(), enteredRoom);
+                            List<MultiModeUser> ulist = enteredRoom.getUserList();
+                            for(MultiModeUser u : ulist){
+                                System.out.println(u.getNickName());
+                            }
                             oos.writeObject(enterRoomPacket);
                             oos.flush();
-                            broadcastToRoomUsers(enteredRoom, new Packet(Protocol.UPDATE_ROOM, enteredRoom));
+                            //
+                            // (enteredRoom, new Packet(Protocol.UPDATE_ROOM, enteredRoom));
                         } else if (((Packet) data).getProtocol() == Protocol.EXIT_ROOM) {
-                            if(userList.get(user.getId())== null){
+                            MultiModeUser exitUser = null;
+                            for(MultiModeUser muser : userList){
+                                if(muser.getId() == user.getId()){
+                                    exitUser = muser;
+                                    break;
+                                }
+                            }
+                            if(exitUser== null){
                                 System.out.println("user null");
                             }
                             System.out.println(Integer.toString(userList.get(user.getId()).getRoom().getId()));
-                            RoomManager.getRoom(userList.get(user.getId()).getRoom().getId()).exitUser(user);
+
+                            RoomManager.getRoom(exitUser.getRoom().getId()).exitUser(exitUser);
                             Packet exitRoomPacket = new Packet(Protocol.EXIT_ROOM, RoomManager.getRoomList());
                             oos.writeObject(exitRoomPacket);
                             oos.flush();
@@ -113,14 +133,14 @@ public class Server {
             e.printStackTrace();
             cleanupClientResources(oos, socket);  // Cleanup resources if there's an error
 
-        }finally {
-            if (connectedUser != null) {
-                if(RoomManager.roomCount() != 0 ){
-                    RoomManager.getRoom(userList.get(user.getId()).getRoom().getId()).exitUser(user);
-                }
-
-            }
-        }
+        }//finally {
+//            if (connectedUser != null) {
+//                if(RoomManager.roomCount() != 0 && RoomManager.getRoom(userList.get(user.getId()).getRoom().getId()) != null){
+//                    RoomManager.getRoom(userList.get(user.getId()).getRoom().getId()).exitUser(user);
+//                }
+//
+//            }
+//        }
     }
     private void addNewUserToList(MultiModeUser newUser) {
         userList.add(newUser);
