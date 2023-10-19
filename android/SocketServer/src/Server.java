@@ -110,8 +110,8 @@ public class Server {
                             int exitRoomID = exitUser.getRoom().getId();
                             RoomManager.getRoom(exitRoomID).exitUser(exitUser);
                             Packet exitRoomPacket = new Packet(Protocol.EXIT_ROOM, RoomManager.getRoomList());
-                            oos.writeObject(exitRoomPacket);
-                            oos.flush();
+                            //oos.writeObject(exitRoomPacket);
+                            //oos.flush();
                         }
                     }else if(data instanceof String){
                         System.out.println((String) data);
