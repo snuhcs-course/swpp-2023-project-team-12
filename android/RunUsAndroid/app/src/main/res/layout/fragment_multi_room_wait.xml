@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.multi_mode.MultiModeWaitFragment">
+
+
+    <TextView
+        android:id="@+id/multi_room_wait_distance"
+        android:layout_width="102dp"
+        android:layout_height="25dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:gravity="center_vertical"
+        android:lineSpacingExtra="-4sp"
+        android:text="10km"
+        android:textAppearance="@style/multi_room_wait_distance"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        tools:layout_editor_absoluteX="16dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginLeft="32dp"
+
+        />
+
+    <TextView
+        android:id="@+id/multi_room_wait_title"
+        android:layout_width="256dp"
+        android:layout_height="43dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:gravity="center_vertical"
+        android:lineSpacingExtra="-9sp"
+        android:text="우리 함께 달려요!"
+        android:textAppearance="@style/multi_room_wait_title"
+        app:layout_constraintTop_toBottomOf="@id/multi_room_wait_distance"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginLeft="32dp"
+        tools:layout_editor_absoluteX="16dp" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/leaveButton"
+        android:layout_width="112dp"
+        android:layout_height="39dp"
+        android:background="@drawable/leave_button"
+        android:gravity="center"
+        android:text="떠나기"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@id/waiting_list_box"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.897"
+        app:layout_constraintLeft_toRightOf="@id/time_remaining"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginBottom="20dp"
+        android:layout_marginRight="32dp"
+        />
+
+    <TextView
+        android:id="@+id/multi_room_wait_start_time"
+        android:layout_width="127dp"
+        android:layout_height="70dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:gravity="center_vertical"
+        android:lineSpacingExtra="-37sp"
+        android:text="21:30"
+        android:textAppearance="@style/multi_room_wait_start_time"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="188dp"
+        app:layout_constraintTop_toBottomOf="@id/multi_room_wait_title"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginLeft="32dp"
+        />
+
+    <TextView
+        android:id="@+id/time_remaining"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="시작까지 남은 시간: "
+        android:textAppearance="@style/multi_room_wait_remaining_time"
+        app:layout_constraintTop_toBottomOf="@id/multi_room_wait_start_time"
+        tools:layout_editor_absoluteX="16dp"
+        android:layout_marginLeft="32dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        />
+    <TextView
+        android:id="@+id/participant_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="##/##"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="32dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        app:layout_constraintTop_toBottomOf="@id/time_remaining"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/waiting_list_box"
+        android:layout_width="326dp"
+        android:layout_height="350dp"
+        android:background="@drawable/multi_room_waiting_list_background"
+        app:layout_constraintTop_toBottomOf="@id/participant_count"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        tools:layout_editor_absoluteX="42dp" >
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
