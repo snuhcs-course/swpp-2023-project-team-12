@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.NumberPicker;
 import android.widget.TimePicker;
 
@@ -59,7 +60,7 @@ public class MultiModeFragment extends Fragment {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.create_room_modal_layout);
         dialog.setCanceledOnTouchOutside(true);
-
+        ImageButton closeButton = dialog.findViewById(R.id.buttonClose);
         EditText groupNameEditText = dialog.findViewById(R.id.editTextGroupName);
         EditText distanceEditText = dialog.findViewById(R.id.editTextDistance);
         //EditText timeEditText = dialog.findViewById(R.id.editTextTime);
@@ -108,6 +109,14 @@ public class MultiModeFragment extends Fragment {
                 RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, distance, startTime, numRunners, duration);
                 new SendRoomInfoTask().execute(roomInfo); //소켓에 연결하여 패킷 전송
 
+            }
+        });
+
+        closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // ImageButton을 클릭하면 모달 레이아웃의 가시성을 변경
+                dialog.dismiss();
             }
         });
 
