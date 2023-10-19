@@ -51,7 +51,9 @@ public class MultiModeFragment extends Fragment {
 
     private SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
 
-    MultiModeUser user = new MultiModeUser(2, "berry");
+    MultiModeUser user = new MultiModeUser(1, "choco");
+    //MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
+
 
 
 
@@ -78,6 +80,11 @@ public class MultiModeFragment extends Fragment {
         numberPickerMinute.setMaxValue(59);
 
         // 초기값 설정
+        groupNameEditText.setText("Test");
+        distanceEditText.setText("5");
+        time_picker.setHour(0);
+        time_picker.setMinute(0);
+        membersEditText.setText("5");
         numberPickerHour.setValue(0);
         numberPickerMinute.setValue(30);
 

@@ -53,10 +53,19 @@ public class MultiModeRoom implements Serializable {
 
     public void exitUser(MultiModeUser user){
         user.exitRoom(this);
-        for(MultiModeUser muser : userList){
-            if(muser.getId() == user.getId()){
-                userList.remove(muser);
+        MultiModeUser userToRemove = null;
+
+        for (MultiModeUser muser : userList) {
+            if (muser.getId() == user.getId()) {
+                userToRemove = muser;
+                break;
             }
+        }
+
+        // 대상 사용자를 제거합니다.
+        if (userToRemove != null) {
+            System.out.println("remove user: " + userToRemove.getNickName());
+            userList.remove(userToRemove);
         }
 
         if(userList.size() < 1){

@@ -51,7 +51,13 @@ public class RoomManager implements Serializable {
 
     public static void removeRoom(MultiModeRoom room){
         room.close();
-        roomList.remove(room);
+        MultiModeRoom removeRoom = null;
+        for(MultiModeRoom mroom : roomList){
+            if(mroom.getId() == room.getId()){
+                removeRoom = mroom;
+            }
+        }
+        roomList.remove(removeRoom);
         System.out.println("Room Deleted");
     }
 

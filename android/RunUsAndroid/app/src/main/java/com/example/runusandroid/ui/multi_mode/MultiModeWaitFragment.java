@@ -47,6 +47,11 @@ public class MultiModeWaitFragment extends Fragment {
     private ConstraintLayout waitingListBox;
     private TextView participantCountTextView;
 
+    MultiModeUser user = new MultiModeUser(1, "choco"); // 유저 정보 임시로 더미데이터 활용
+    //MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
+
+
+
 
     SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
     private SocketListenerThread socketListenerThread;
@@ -199,7 +204,6 @@ public class MultiModeWaitFragment extends Fragment {
                 Log.d("response socketManager", socketManager.toString());
                 ObjectOutputStream oos = socketManager.getOOS();
                 ObjectInputStream ois = socketManager.getOIS();
-                MultiModeUser user = new MultiModeUser(2, "berrychip"); // Update this as needed
                 Packet requestPacket = new Packet(Protocol.EXIT_ROOM, user, selectedRoom);
                 oos.writeObject(requestPacket);
                 oos.flush();

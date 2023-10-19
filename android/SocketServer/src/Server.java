@@ -61,13 +61,14 @@ public class Server {
                     if (data instanceof Packet) {
                         connectedUser = ((Packet) data).getUser();
                         user = connectedUser;
-                        for(MultiModeUser multiModeUseruser : userList){
-                            if(multiModeUseruser.getId() == connectedUser.getId()){
-                                user = multiModeUseruser;
+                        for(MultiModeUser multiModeUser : userList){
+                            if(multiModeUser.getId() == connectedUser.getId()){
+                                user = multiModeUser;
                                 break;
                             }
                         }
-                        System.out.println(user.getNickName() +  ((Packet) data).getProtocol());
+                        System.out.println(user.getNickName() + " protocol is " + ((Packet) data).getProtocol());
+
                         userList.add(user);
                         if (((Packet) data).getProtocol() == Protocol.ROOM_LIST) {
                             Packet roomListPacket = new Packet(Protocol.ROOM_LIST, RoomManager.getRoomList());
@@ -88,16 +89,8 @@ public class Server {
                             MultiModeRoom enteredRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
                             enteredRoom.enterUser(user);
                             System.out.println(enteredRoom);
-                            for(MultiModeRoom mroom : RoomManager.getRoomList()){
-                                if(mroom.getId() == enteredRoom.getId()){
-                                    System.out.println(mroom);
-                                }
-                            }
                             Packet enterRoomPacket = new Packet(Protocol.ENTER_ROOM, RoomManager.getRoomList(), enteredRoom);
                             List<MultiModeUser> ulist = enteredRoom.getUserList();
-                            for(MultiModeUser u : ulist){
-                                System.out.println(u.getNickName());
-                            }
                             oos.writeObject(enterRoomPacket);
                             oos.flush();
                             //
@@ -114,8 +107,8 @@ public class Server {
                                 System.out.println("user null");
                             }
                             //System.out.println(Integer.toString(userList.get(user.getId()).getRoom().getId()));
-
-                            RoomManager.getRoom(exitUser.getRoom().getId()).exitUser(exitUser);
+                            int exitRoomID = exitUser.getRoom().getId();
+                            RoomManager.getRoom(exitRoomID).exitUser(exitUser);
                             Packet exitRoomPacket = new Packet(Protocol.EXIT_ROOM, RoomManager.getRoomList());
                             oos.writeObject(exitRoomPacket);
                             oos.flush();
@@ -123,6 +116,9 @@ public class Server {
                     }else if(data instanceof String){
                         System.out.println((String) data);
                     }
+
+                    printRoomListInfo(RoomManager.getRoomList());
+
                 } catch (EOFException e) {
                     System.out.println("클라이언트 연결 종료: " + socket.getInetAddress());
                     clientOutputStreams.removeIf(clientOOS -> clientOOS == oos);
@@ -193,7 +189,25 @@ public class Server {
             e.printStackTrace();
         }
     }
+    private void printRoomListInfo(List<MultiModeRoom> roomList){
+        for(MultiModeRoom room : roomList){
+            printRoomInfo(room);
+        }
+    }
 
+    private void printRoomInfo(MultiModeRoom room){
+        if(room == null){
+            System.out.println("room is null");
+            return;
+        }else{
+            List<MultiModeUser> userList = room.getUserList();
+            System.out.println(room.getTitle());
+            for(MultiModeUser user : userList){
+                System.out.println("username : " + user.getNickname());
+            }
+            System.out.println();
+        }
+    }
 
 
     public static void main(String[] args) {
