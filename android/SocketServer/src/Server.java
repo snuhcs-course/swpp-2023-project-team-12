@@ -94,7 +94,8 @@ public class Server {
                             oos.writeObject(enterRoomPacket);
                             oos.flush();
                             //
-                            // (enteredRoom, new Packet(Protocol.UPDATE_ROOM, enteredRoom));
+                            broadcastToRoomUsers(enteredRoom, new Packet(Protocol.UPDATE_ROOM, enteredRoom));
+
                         } else if (((Packet) data).getProtocol() == Protocol.EXIT_ROOM) {
                             MultiModeUser exitUser = null;
                             for(MultiModeUser muser : userList){
@@ -112,6 +113,8 @@ public class Server {
                             Packet exitRoomPacket = new Packet(Protocol.EXIT_ROOM, RoomManager.getRoomList());
                             //oos.writeObject(exitRoomPacket);
                             //oos.flush();
+                            broadcastToRoomUsers(RoomManager.getRoom(exitRoomID), new Packet(Protocol.UPDATE_ROOM, RoomManager.getRoom(exitRoomID)));
+
                         }
                     }else if(data instanceof String){
                         System.out.println((String) data);
@@ -154,6 +157,8 @@ public class Server {
     }
 
     private void broadcastToRoomUsers(MultiModeRoom room, Packet packet) {
+        System.out.println(room.getUserList().size());
+        System.out.println(packet);
         for (MultiModeUser roomUser : (List<MultiModeUser>) room.getUserList()) {
             ObjectOutputStream roomUserOOS = findOutputStreamByUser(roomUser);
             if (roomUserOOS != null) {

@@ -185,7 +185,9 @@ public class MultiModeWaitFragment extends Fragment {
 
                     List<MultiModeUser> updatedUserList = selectedRoom.getUserList();
                     if (updatedUserList != null && !updatedUserList.isEmpty()) {
+                        Log.d("response", "new user list , num is " + updatedUserList.size());
                         for (MultiModeUser user : updatedUserList) {
+                            Log.d("response", user.getNickname());
                             addUserNameToWaitingList(user.getNickname());
                         }
                     }
@@ -207,6 +209,9 @@ public class MultiModeWaitFragment extends Fragment {
                 Packet requestPacket = new Packet(Protocol.EXIT_ROOM, user, selectedRoom);
                 oos.writeObject(requestPacket);
                 oos.flush();
+
+
+
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -282,7 +287,7 @@ public class MultiModeWaitFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        socketListenerThread = new SocketListenerThread(handler);
+        socketListenerThread = new SocketListenerThread(updateHandler);
         socketListenerThread.start();
     }
 
