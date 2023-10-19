@@ -58,7 +58,6 @@ public class MultiModeRoom implements Serializable {
                 userList.remove(muser);
             }
         }
-        userList.remove(user);
 
         if(userList.size() < 1){
             RoomManager.removeRoom(this);

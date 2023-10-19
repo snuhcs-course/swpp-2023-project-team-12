@@ -43,6 +43,9 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
     private List<MultiModeRoom> roomList;
     MultiModeRoom selectedRoom;
 
+    MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
+
+
     private SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
 
 
@@ -129,7 +132,6 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
 
                 ObjectOutputStream oos = socketManager.getOOS(); //서버로 바이트스트림을 직렬화하기 위해 필요.
                 ObjectInputStream ois = socketManager.getOIS(); //서버로부터 받는 바이트스트림을 역직렬화하기 위해 필요.
-                MultiModeUser user = new MultiModeUser(1, "chocochip"); // 유저 정보 임시로 더미데이터 활용
 
 
                 if (selectedRoom.getUserList().size() < selectedRoom.getNumRunners()) {
@@ -142,6 +144,7 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
                     if (receivedObject instanceof Packet) {
                         packet = (Packet) receivedObject;
                         Log.d("response", "userlist size is " + packet.getSelectedRoom().getUserList().size());
+                        printRoomInfo(packet.getSelectedRoom());
                     }
                     return true;
                 }
@@ -156,6 +159,8 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
         @Override
         protected void onPostExecute(Boolean success) { //doInBackground()의 return값에 따라 작업 수행. 룸 리스트 업데이트, 입장하는 방 정보 업데이트
             super.onPostExecute(success);
+            setRoomList(packet.getRoomList());
+            selectedRoom = packet.getSelectedRoom();
             if (success) {
                 Log.d("SendPacket", "Packet sent successfully!");
                 setRoomList(packet.getRoomList());
@@ -171,6 +176,18 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
 
     private void showFullRoomToast(Context context) {
         Toast.makeText(context, "인원이 초과되었습니다.", Toast.LENGTH_SHORT).show();
+    }
+
+    private void printRoomInfo(MultiModeRoom room){
+        if(room == null){
+            Log.d("response", "room is null");
+            return;
+        }else{
+            List<MultiModeUser> userList = room.getUserList();
+            for(MultiModeUser user : userList){
+                Log.d("response", "username : " + user.getNickname());
+            }
+        }
     }
 
 }

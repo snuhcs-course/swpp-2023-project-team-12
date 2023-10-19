@@ -105,7 +105,7 @@ public class Server {
                         } else if (((Packet) data).getProtocol() == Protocol.EXIT_ROOM) {
                             MultiModeUser exitUser = null;
                             for(MultiModeUser muser : userList){
-                                if(muser.getId() == user.getId()){
+                                if(muser.getNickName() == user.getNickName()){
                                     exitUser = muser;
                                     break;
                                 }
@@ -113,7 +113,7 @@ public class Server {
                             if(exitUser== null){
                                 System.out.println("user null");
                             }
-                            System.out.println(Integer.toString(userList.get(user.getId()).getRoom().getId()));
+                            //System.out.println(Integer.toString(userList.get(user.getId()).getRoom().getId()));
 
                             RoomManager.getRoom(exitUser.getRoom().getId()).exitUser(exitUser);
                             Packet exitRoomPacket = new Packet(Protocol.EXIT_ROOM, RoomManager.getRoomList());

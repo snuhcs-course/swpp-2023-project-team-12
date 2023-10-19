@@ -51,7 +51,7 @@ public class MultiModeFragment extends Fragment {
 
     private SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
 
-
+    MultiModeUser user = new MultiModeUser(2, "berry");
 
 
 
@@ -161,7 +161,6 @@ public class MultiModeFragment extends Fragment {
 
 
                 int dataType = Protocol.ROOM_LIST;
-                MultiModeUser user = new MultiModeUser(2, "berrychip");
                 Packet requestPacket = new Packet(dataType, user);
                 oos.writeObject(requestPacket);
                 oos.flush();
@@ -184,7 +183,7 @@ public class MultiModeFragment extends Fragment {
                 e.printStackTrace();
             } finally {
                 try {
-
+                        printRoomListInfo(roomList);
                         //socket.close();
                         socketManager.closeSocket();
 
@@ -218,7 +217,6 @@ public class MultiModeFragment extends Fragment {
                 ObjectOutputStream oos = socketManager.getOOS();
                 ObjectInputStream ois = socketManager.getOIS();
                 int dataType = Protocol.CREATE_ROOM;
-                MultiModeUser user = new MultiModeUser(2, "berrychip"); //유저 정보 임시로 더미데이터 사용
                 Packet requestPacket = new Packet(dataType, user, roomInfo[0]); // 서버에 보내는 패킷
                 oos.writeObject(requestPacket); //서버로 패킷 전송
                 oos.flush();
@@ -252,6 +250,25 @@ public class MultiModeFragment extends Fragment {
             NavController navController = Navigation.findNavController(rootView);
             navController.navigate(R.id.navigation_multi_room_wait, bundle);
 
+        }
+    }
+
+    private void printRoomListInfo(List<MultiModeRoom> roomList){
+        for(MultiModeRoom room : roomList){
+            printRoomInfo(room);
+        }
+    }
+
+    private void printRoomInfo(MultiModeRoom room){
+        if(room == null){
+            Log.d("response", "room is null");
+            return;
+        }else{
+            List<MultiModeUser> userList = room.getUserList();
+            Log.d("response", "room name is " + room.getTitle());
+            for(MultiModeUser user : userList){
+                Log.d("response", "username : " + user.getNickname());
+            }
         }
     }
 }
