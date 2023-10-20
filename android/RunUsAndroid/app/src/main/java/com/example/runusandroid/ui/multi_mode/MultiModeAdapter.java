@@ -175,7 +175,7 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
                 // NavController를 사용하여 다음 fragment로 이동
                 navcon.navigate(R.id.navigation_multi_room_wait, bundle);
             } else {
-                showFullRoomToast(mContext); // 방이 이미 꽉 찼다는 Toast 띄우기
+                showFullRoomToast(mContext); // 방이 이미 꽉 찼다는 Toast 보내기
                 Log.e("SendPacket", "Failed to send packet!");
             }
         }
