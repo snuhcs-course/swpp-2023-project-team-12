@@ -88,6 +88,7 @@ public class Server {
                             System.out.println("enter gg");
                             MultiModeRoom enteredRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
                             enteredRoom.enterUser(user);
+                            RoomManager.updateRoom(enteredRoom);
                             System.out.println(enteredRoom);
                             Packet enterRoomPacket = new Packet(Protocol.ENTER_ROOM, RoomManager.getRoomList(), enteredRoom);
                             List<MultiModeUser> ulist = enteredRoom.getUserList();
@@ -157,13 +158,19 @@ public class Server {
     }
 
     private void broadcastToRoomUsers(MultiModeRoom room, Packet packet) {
-        System.out.println(room.getUserList().size());
-        System.out.println(packet);
         for (MultiModeUser roomUser : (List<MultiModeUser>) room.getUserList()) {
             ObjectOutputStream roomUserOOS = findOutputStreamByUser(roomUser);
+            MultiModeRoom newRoom = new MultiModeRoom(packet.getSelectedRoom().getId(), packet.getSelectedRoom().getRoomCreateInfo());
+            newRoom.setUserList(packet.getSelectedRoom().getUserList());
+            newRoom.setRoomOwner(packet.getSelectedRoom().getRoomOwner());
             if (roomUserOOS != null) {
                 try {
-                    roomUserOOS.writeObject(packet);
+                    System.out.println("broadcastToRoomUsers : " + packet.getSelectedRoom().getUserList().size());
+                    List<MultiModeUser> userList = packet.getSelectedRoom().getUserList();
+                    for(MultiModeUser user : userList){
+                        System.out.println("broadcastToRoomUser " + user.getNickName());
+                    }
+                    roomUserOOS.writeObject(new Packet(Protocol.UPDATE_ROOM, newRoom));
                     roomUserOOS.flush();
                 } catch (IOException e) {
                     e.printStackTrace();

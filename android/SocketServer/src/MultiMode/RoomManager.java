@@ -47,6 +47,15 @@ public class RoomManager implements Serializable {
         }
         return null;
     }
+    public static void updateRoom(MultiModeRoom room){
+        for(MultiModeRoom mroom : roomList){
+            if(mroom.getId() == room.getId()){
+                mroom.setUserList(room.getUserList());
+                mroom.setRoomOwner(room.getRoomOwner());
+                break;
+            }
+        }
+    }
 
 
     public static void removeRoom(MultiModeRoom room){

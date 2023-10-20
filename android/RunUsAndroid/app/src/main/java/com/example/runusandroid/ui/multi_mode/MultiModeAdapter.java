@@ -82,15 +82,7 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
             // 클릭된 버튼의 MultiModeRoom 정보 가져오기
             selectedRoom = roomList.get(position);
 
-            new EnterRoomTask(v.getContext()).execute();
-
-            // 방 정보를 전달하기 위해 Bundle을 생성
-            Bundle bundle = new Bundle();
-            bundle.putSerializable("room", selectedRoom);
-
-            // NavController를 사용하여 다음 fragment로 이동
-            NavController navController = Navigation.findNavController(v);
-            navController.navigate(R.id.navigation_multi_room_wait, bundle);
+            new EnterRoomTask(v.getContext(), v).execute();
 
         });
 
@@ -120,14 +112,18 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
     private class EnterRoomTask extends AsyncTask<Void, Void, Boolean> {
         Packet packet;
         private Context mContext;
+        private View v; // 'v'를 저장할 멤버 변수 추가
 
-        public EnterRoomTask(Context context) {
+
+        public EnterRoomTask(Context context, View view) {
             this.mContext = context;
+            this.v = view;
         }
 
         @Override
         protected Boolean doInBackground(Void... voids) {
             Socket socket = null;
+            boolean success = false;
             try {
                 socketManager.openSocket(); // 소켓 연결
 
@@ -149,11 +145,12 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
                     }
                     return true;
                 }
+                success = true;
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
                 return false;
             }finally {
-                return false;
+                return true;
             }
         }
 
@@ -166,6 +163,14 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
                 Log.d("SendPacket", "Packet sent successfully!");
                 setRoomList(packet.getRoomList());
                 selectedRoom = packet.getSelectedRoom();
+
+                // 방 정보를 전달하기 위해 Bundle을 생성
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("room", selectedRoom);
+
+                // NavController를 사용하여 다음 fragment로 이동
+                NavController navController = Navigation.findNavController(v);
+                navController.navigate(R.id.navigation_multi_room_wait, bundle);
 
             } else {
                 showFullRoomToast(mContext); // 방이 이미 꽉 찼다는 Toast 띄우기

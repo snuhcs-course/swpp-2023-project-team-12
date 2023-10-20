@@ -149,6 +149,8 @@ public class MultiModeRoom implements Serializable {
         return duration;
     }
 
+    public RoomCreateInfo getRoomCreateInfo(){return roomCreateInfo;}
+
     @Override
     public int hashCode() {
         return id;

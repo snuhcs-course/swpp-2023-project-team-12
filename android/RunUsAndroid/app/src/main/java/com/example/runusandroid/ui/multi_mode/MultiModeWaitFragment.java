@@ -88,6 +88,7 @@ public class MultiModeWaitFragment extends Fragment {
             titleTextView.setText(selectedRoom.getTitle());
             startTimeTextView.setText(selectedRoom.getStartTime().getHour() + ":" + selectedRoom.getStartTime().getMinute());
             List<MultiModeUser> userList = selectedRoom.getUserList();
+            Log.d("response", "room users count is " + userList.size());
 
             updateParticipantCount(userList.size(), selectedRoom.getNumRunners());
 
@@ -177,15 +178,15 @@ public class MultiModeWaitFragment extends Fragment {
             super.handleMessage(msg);
 
             if (msg.obj instanceof Packet) {
-                Packet receivedPacket = (Packet) msg.obj;
-                if(receivedPacket.getProtocol() == Protocol.UPDATE_ROOM){
-                    selectedRoom.setUserList(receivedPacket.getSelectedRoom().getUserList());
+                Packet receivedUpdatePacket = (Packet) msg.obj;
+                if(receivedUpdatePacket.getProtocol() == Protocol.UPDATE_ROOM){
+                    selectedRoom.setUserList(receivedUpdatePacket.getSelectedRoom().getUserList());
 
                     waitingListBox.removeAllViews();
 
                     List<MultiModeUser> updatedUserList = selectedRoom.getUserList();
                     if (updatedUserList != null && !updatedUserList.isEmpty()) {
-                        Log.d("response", "new user list , num is " + updatedUserList.size());
+                        Log.d("response", "new user list , num is " + receivedUpdatePacket.getSelectedRoom().getUserList().size());
                         for (MultiModeUser user : updatedUserList) {
                             Log.d("response", user.getNickname());
                             addUserNameToWaitingList(user.getNickname());

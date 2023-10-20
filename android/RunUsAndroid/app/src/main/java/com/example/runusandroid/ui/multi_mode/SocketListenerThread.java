@@ -6,7 +6,9 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.List;
 
+import MultiMode.MultiModeUser;
 import MultiMode.Packet;
 
 public class SocketListenerThread extends Thread { // 소켓이 연결되어 있을 때 서버로부터 오는 이벤트를 캐치하기 위해 사용
@@ -30,6 +32,11 @@ public class SocketListenerThread extends Thread { // 소켓이 연결되어 있
                     Log.d("response", "got new packet from server" );
                     Log.d("response", "protocol is " + packet.getProtocol());
                     if(packet.getProtocol() == 5){
+                        Log.d("response", "broadcastToRoomUsers : " + packet.getSelectedRoom().getUserList().size());
+                        List<MultiModeUser> userList = packet.getSelectedRoom().getUserList();
+                        for(MultiModeUser user : userList){
+                            Log.d("response", "broadcastToRoomUser " + user.getNickName());
+                        }
                         Message msg = handler.obtainMessage();
                         msg.obj = packet;
                         handler.sendMessage(msg);
