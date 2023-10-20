@@ -1,6 +1,7 @@
 package MultiMode;
 
-import java.io.Serializable;
+import java.io.*;
+import java.net.*;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ public class MultiModeRoom implements Serializable {
     private MultiModeUser roomOwner; // 방장
 
     private RoomCreateInfo roomCreateInfo; //방 정보
+    private transient List<ObjectOutputStream> clientOutputStreams = new ArrayList<>();
 
     private String title; //방 제목
     private double distance; //목표 거리
@@ -25,7 +27,7 @@ public class MultiModeRoom implements Serializable {
     private LocalTime duration; //목표 시간(달리는 시간)
 
     public MultiModeRoom(int roomId, RoomCreateInfo roomCreateInfo) { // 유저가 방을 만들때
-        userList = new ArrayList();
+        userList = new ArrayList<MultiModeUser>();
         this.id = roomId;
         this.roomCreateInfo = roomCreateInfo;
         this.title = roomCreateInfo.getTitle();
@@ -35,7 +37,7 @@ public class MultiModeRoom implements Serializable {
         this.numRunners = roomCreateInfo.getNumRunners();
     }
     public MultiModeRoom(MultiModeUser user ) { // 유저가 방을 만들때
-        userList = new ArrayList();
+        userList = new ArrayList<MultiModeUser>();
         user.enterRoom(this);
         userList.add(user); // 유저를 추가시킨 후
         this.roomOwner = user; // 방장을 유저로 만든다.
@@ -51,13 +53,16 @@ public class MultiModeRoom implements Serializable {
         userList.add(user);
     }
 
-    public void exitUser(MultiModeUser user){
+
+    public int exitUser(MultiModeUser user){
         user.exitRoom(this);
         MultiModeUser userToRemove = null;
-
-        for (MultiModeUser muser : userList) {
+        int index = -1;
+        for(int i=0; i<userList.size(); i++){
+            MultiModeUser muser = userList.get(i);
             if (muser.getId() == user.getId()) {
                 userToRemove = muser;
+                index = i;
                 break;
             }
         }
@@ -70,14 +75,14 @@ public class MultiModeRoom implements Serializable {
 
         if(userList.size() < 1){
             RoomManager.removeRoom(this);
-            return;
+            return index;
         }
 
 
         if(this.roomOwner.equals(user)){
             this.roomOwner = userList.get(0);
-            return;
         }
+        return index;
     }
 
     public void close(){
@@ -129,11 +134,11 @@ public class MultiModeRoom implements Serializable {
         this.id = id;
     }
 
-    public List getUserList() {
+    public List<MultiModeUser> getUserList() {
         return userList;
     }
 
-    public void setUserList(List userList) {
+    public void setUserList(List<MultiModeUser> userList) {
         this.userList = userList;
     }
 
@@ -147,6 +152,24 @@ public class MultiModeRoom implements Serializable {
 
     public LocalTime getDuration(){
         return duration;
+    }
+
+    public RoomCreateInfo getRoomCreateInfo(){return roomCreateInfo;}
+    public List<ObjectOutputStream> getOutputStream(){
+        return clientOutputStreams;
+    }
+
+    public void addOutputStream(ObjectOutputStream o){
+        clientOutputStreams.add(o);
+    }
+
+    public void removeOutputStream(int index){
+        clientOutputStreams.remove(index);
+    }
+
+
+    public void addUser(MultiModeUser user){
+        userList.add(user);
     }
 
     @Override

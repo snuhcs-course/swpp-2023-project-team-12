@@ -6,18 +6,22 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.List;
 
+import MultiMode.MultiModeRoom;
 import MultiMode.MultiModeUser;
 import MultiMode.Packet;
 
 public class SocketListenerThread extends Thread { // 소켓이 연결되어 있을 때 서버로부터 오는 이벤트를 캐치하기 위해 사용
     private final Handler handler;
     private final SocketManager socketManager;
+    private final MultiModeWaitFragment waitFragment;
+    private MultiModeRoom selectedRoom;
 
-    public SocketListenerThread(Handler handler) {
+    public SocketListenerThread(MultiModeWaitFragment waitFragment, Handler handler, MultiModeRoom selectedRoom) {
         this.handler = handler;
         this.socketManager = SocketManager.getInstance();
+        this.waitFragment = waitFragment;
+        this.selectedRoom = selectedRoom;
     }
 
     @Override
@@ -29,18 +33,44 @@ public class SocketListenerThread extends Thread { // 소켓이 연결되어 있
 
                 if (receivedObject instanceof Packet) {
                     Packet packet = (Packet) receivedObject;
-                    Log.d("response", "got new packet from server" );
-                    Log.d("response", "protocol is " + packet.getProtocol());
-                    if(packet.getProtocol() == 5){
-                        Log.d("response", "broadcastToRoomUsers : " + packet.getSelectedRoom().getUserList().size());
-                        List<MultiModeUser> userList = packet.getSelectedRoom().getUserList();
-                        for(MultiModeUser user : userList){
-                            Log.d("response", "broadcastToRoomUser " + user.getNickName());
-                        }
-                        Message msg = handler.obtainMessage();
-                        msg.obj = packet;
-                        handler.sendMessage(msg);
+
+                    if(packet.getProtocol() == 5 || packet.getProtocol() == 4){
+                        handler.post(new Runnable(){
+                            @Override
+                            public void run(){
+                                MultiModeRoom room = packet.getSelectedRoom();
+                                MultiModeUser user = packet.getUser();
+                                if(packet.getProtocol() == 5) {
+                                    selectedRoom.enterUser(user);
+                                    waitFragment.addUserNameToWaitingList(user.getNickName());
+                                }
+                                else{
+                                    selectedRoom.exitUser(user);
+                                    waitFragment.removeUserNameFromWaitingList(user.getNickName());
+                                }
+                                Log.d("event", "user list: " +room.getUserList());
+                                Log.d("event", "user num: " +room.getUserSize());
+                                waitFragment.updateParticipantCount(room.getUserSize(), room.getNumRunners());
+
+                            }
+                        });
                     }
+
+                     /*
+                    if(packet.getProtocol() == 5){
+                        handler.post(new Runnable(){
+                            @Override
+                            public void run(){
+                                MultiModeRoom room = packet.getSelectedRoom();
+                                MultiModeUser user = packet.getUser();
+                                selectedRoom.enterUser(user);
+                                waitFragment.addUserNameToWaitingList(user.getNickName());
+                                waitFragment.updateParticipantCount(room.getUserSize(), room.getNumRunners());
+                            }
+                        });
+                    }
+
+                      */
 
                 }
             }
@@ -49,4 +79,3 @@ public class SocketListenerThread extends Thread { // 소켓이 연결되어 있
         }
     }
 }
-

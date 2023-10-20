@@ -47,8 +47,8 @@ public class MultiModeWaitFragment extends Fragment {
     private ConstraintLayout waitingListBox;
     private TextView participantCountTextView;
 
-    MultiModeUser user = new MultiModeUser(1, "choco"); // 유저 정보 임시로 더미데이터 활용
-    //MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
+    //MultiModeUser user = new MultiModeUser(1, "choco"); // 유저 정보 임시로 더미데이터 활용
+    MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
 
 
 
@@ -70,6 +70,7 @@ public class MultiModeWaitFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // XML 레이아웃 파일을 inflate
+
         View view = inflater.inflate(R.layout.fragment_multi_room_wait, container, false);
         titleTextView = view.findViewById(R.id.multi_room_wait_title);
         startTimeTextView = view.findViewById(R.id.multi_room_wait_start_time);
@@ -86,10 +87,8 @@ public class MultiModeWaitFragment extends Fragment {
             participantCountTextView = view.findViewById(R.id.participant_count);
 
             titleTextView.setText(selectedRoom.getTitle());
-            startTimeTextView.setText(selectedRoom.getStartTime().getHour() + ":" + selectedRoom.getStartTime().getMinute());
+            startTimeTextView.setText(String.format("%02d:%02d", selectedRoom.getStartTime().getHour(), selectedRoom.getStartTime().getMinute()));
             List<MultiModeUser> userList = selectedRoom.getUserList();
-            Log.d("response", "room users count is " + userList.size());
-
             updateParticipantCount(userList.size(), selectedRoom.getNumRunners());
 
             if (userList != null && !userList.isEmpty()) {
@@ -117,12 +116,12 @@ public class MultiModeWaitFragment extends Fragment {
         return view;
     }
     //현재 유저 / 총 유저 보여주는 부분 업데이트 함수
-    private void updateParticipantCount(int size, int total) {
+    public void updateParticipantCount(int size, int total) {
         String text = size + "/" + total;
         participantCountTextView.setText(text);
     }
     // 입장한 유저 이름 보여주는 waiting list
-    private void addUserNameToWaitingList(String userName) {
+    public void addUserNameToWaitingList(String userName) {
         TextView userNameTextView = new TextView(getContext());
         userNameTextView.setId(View.generateViewId());
         userNameTextView.setText(userName);
@@ -171,6 +170,64 @@ public class MultiModeWaitFragment extends Fragment {
             set.applyTo(waitingListBox);
         }
     }
+
+    public void removeUserNameFromWaitingList(String userName) {
+        int childCount = waitingListBox.getChildCount();
+        View viewToRemove = null;
+
+        for (int i = 0; i < childCount; i++) {
+            View childView = waitingListBox.getChildAt(i);
+
+            if (childView instanceof TextView) {
+                TextView userNameTextView = (TextView) childView;
+                if (userName.equals(userNameTextView.getText().toString())) {
+                    viewToRemove = childView;
+                    break; // 유저 아이디를 찾으면 루프 종료
+                }
+            }
+        }
+
+        if (viewToRemove != null) {
+            waitingListBox.removeView(viewToRemove);
+
+            // 다시 UI를 그리기 위한 레이아웃 로직 구현
+            ConstraintSet set = new ConstraintSet();
+            set.clone(waitingListBox);
+
+            int columns = 3; // 그리드의 열 수
+            int childCountAfterRemoval = waitingListBox.getChildCount();
+
+            for (int i = 0; i < childCountAfterRemoval; i++) {
+                View childView = waitingListBox.getChildAt(i);
+
+                if (childView instanceof TextView) {
+                    TextView userNameTextView = (TextView) childView;
+
+                    // 행 및 열 계산
+                    int row = i / columns;
+                    int col = i % columns;
+
+                    // 왼쪽 상단에 배치되도록 설정
+                    set.connect(userNameTextView.getId(), ConstraintSet.TOP, waitingListBox.getId(), ConstraintSet.TOP, 50);
+                    set.connect(userNameTextView.getId(), ConstraintSet.START, waitingListBox.getId(), ConstraintSet.START, 50);
+
+                    if (row > 0) {
+                        // 두 번째 행부터 아래쪽으로 이동
+                        View previousRowView = waitingListBox.getChildAt(i - columns);
+                        set.connect(userNameTextView.getId(), ConstraintSet.TOP, previousRowView.getId(), ConstraintSet.BOTTOM, 50);
+                    }
+
+                    if (col > 0) {
+                        // 두 번째 열부터 오른쪽으로 이동
+                        View previousColView = waitingListBox.getChildAt(i - 1);
+                        set.connect(userNameTextView.getId(), ConstraintSet.START, previousColView.getId(), ConstraintSet.END, 50);
+                    }
+                }
+            }
+
+            set.applyTo(waitingListBox);
+        }
+    }
     //유저가 나갔을 때 패킷을 받아 방 인원 업데이트
     private final Handler updateHandler = new Handler(Looper.getMainLooper()) {
         @Override
@@ -178,17 +235,15 @@ public class MultiModeWaitFragment extends Fragment {
             super.handleMessage(msg);
 
             if (msg.obj instanceof Packet) {
-                Packet receivedUpdatePacket = (Packet) msg.obj;
-                if(receivedUpdatePacket.getProtocol() == Protocol.UPDATE_ROOM){
-                    selectedRoom.setUserList(receivedUpdatePacket.getSelectedRoom().getUserList());
+                Packet receivedPacket = (Packet) msg.obj;
+                if(receivedPacket.getProtocol() == Protocol.UPDATE_ROOM){
+                    selectedRoom.setUserList(receivedPacket.getSelectedRoom().getUserList());
 
                     waitingListBox.removeAllViews();
 
                     List<MultiModeUser> updatedUserList = selectedRoom.getUserList();
                     if (updatedUserList != null && !updatedUserList.isEmpty()) {
-                        Log.d("response", "new user list , num is " + receivedUpdatePacket.getSelectedRoom().getUserList().size());
                         for (MultiModeUser user : updatedUserList) {
-                            Log.d("response", user.getNickname());
                             addUserNameToWaitingList(user.getNickname());
                         }
                     }
@@ -203,6 +258,7 @@ public class MultiModeWaitFragment extends Fragment {
 
         @Override
         protected Boolean doInBackground(Void... voids) {
+            boolean success = true;
             try {
                 Log.d("response socketManager", socketManager.toString());
                 ObjectOutputStream oos = socketManager.getOOS();
@@ -211,24 +267,27 @@ public class MultiModeWaitFragment extends Fragment {
                 oos.writeObject(requestPacket);
                 oos.flush();
 
+                Object receivedObject = ois.readObject();
+                if (receivedObject instanceof Packet) {
+                    packet = (Packet) receivedObject;
+                    selectedRoom.exitUser(user);
+                }
 
-
-
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
-                return false;
+                success = false;
             } finally {
                 try {
                     socketManager.closeSocket();
                     Log.d("response", "socket closed");
-                    return true;
 
                 } catch (IOException e) {
                     Log.d("response", "socket close error");
-                    throw new RuntimeException(e);
+                    success = false;
                 }
 
             }
+            return success;
         }
         //ExitRoomTask 실행 결과에 따라 수행
         @Override
@@ -288,7 +347,7 @@ public class MultiModeWaitFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        socketListenerThread = new SocketListenerThread(updateHandler);
+        socketListenerThread = new SocketListenerThread(this, updateHandler, selectedRoom);
         socketListenerThread.start();
     }
 

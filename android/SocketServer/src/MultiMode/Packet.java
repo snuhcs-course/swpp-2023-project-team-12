@@ -51,6 +51,14 @@ public class Packet implements Serializable { //서버와 통신하기 위해 �
         this.selectedRoom = selectedRoom;
     }
 
+    public Packet(int protocol, List<MultiModeRoom> roomList, MultiModeUser user, MultiModeRoom selectedRoom ){
+        this.protocol = protocol;
+        this.roomList = roomList;
+        this.selectedRoom = selectedRoom;
+        this.user = user;
+    }
+
+
 
 
     public int getProtocol() {
