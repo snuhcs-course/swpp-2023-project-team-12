@@ -48,6 +48,10 @@ public class SingleModeFragment extends Fragment {
     private List<LatLng> pathPoints = new ArrayList<>();
     Chronometer currentTimeText;
     SimpleDateFormat dateFormat;
+    FusedLocationProviderClient fusedLocationClient;
+    LocationCallback locationCallback;
+    LocationRequest locationRequest;
+    MainActivity2 mainActivity;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -57,7 +61,7 @@ public class SingleModeFragment extends Fragment {
         binding = FragmentSingleModeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        MainActivity2 mainActivity = (MainActivity2) getActivity();
+        mainActivity = (MainActivity2) getActivity();
         Button showMissionButton = (Button) binding.showMissionButton;
         Button quitButton = (Button) binding.quitButton;
         TextView currentDistanceText = (TextView) binding.currentDistanceText;
@@ -84,14 +88,14 @@ public class SingleModeFragment extends Fragment {
         });
         currentTimeText.start();
 
-        LocationRequest locationRequest = LocationRequest.create();
+        locationRequest = LocationRequest.create();
         locationRequest.setInterval(5000); // Update interval in milliseconds
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         //TODO: only draw lines if running is started
         //TODO: doesn't update location when app is in background -> straight lines are drawn from the last location when app is opened again
         //TODO: lines are ugly and noisy -> need to filter out some points or smoothed
-        LocationCallback locationCallback = new LocationCallback() {
+        locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 if (locationResult != null) {
@@ -113,18 +117,8 @@ public class SingleModeFragment extends Fragment {
             }
         };
 
-        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(mainActivity);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(mainActivity);
 
-        if (ActivityCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1000);
-        }
-        if (ActivityCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1000);
-        }
-
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
 
         // Finding the visual component displaying the map
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
@@ -155,7 +149,26 @@ public class SingleModeFragment extends Fragment {
         currentTimeText.stop();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        fusedLocationClient.removeLocationUpdates(locationCallback);
 
+        if (ActivityCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1000);
+        }
+        if (ActivityCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1000);
+        }
 
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+    }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        fusedLocationClient.removeLocationUpdates(locationCallback);
+    }
 }
