@@ -1,5 +1,6 @@
 package MultiMode;
-
+import java.io.*;
+import java.net.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,13 +18,13 @@ public class RoomManager implements Serializable {
 
     }
 
-    public static MultiModeRoom createRoom(MultiModeUser owner, RoomCreateInfo roomCreateInfo){
+    public static MultiModeRoom createRoom(MultiModeUser owner, RoomCreateInfo roomCreateInfo, ObjectOutputStream o){
         int roomId = atomicInteger.incrementAndGet();
 
         MultiModeRoom room = new MultiModeRoom(roomId, roomCreateInfo);
         room.enterUser(owner);
         room.setRoomOwner(owner);
-
+        room.addOutputStream(o);
         roomList.add(room);
         System.out.println("Room Created, RoomId is " + roomId);
         return room;
@@ -47,11 +48,26 @@ public class RoomManager implements Serializable {
         }
         return null;
     }
+    public static void updateRoom(MultiModeRoom room){
+        for(MultiModeRoom mroom : roomList){
+            if(mroom.getId() == room.getId()){
+                mroom.setUserList(room.getUserList());
+                mroom.setRoomOwner(room.getRoomOwner());
+                break;
+            }
+        }
+    }
 
 
     public static void removeRoom(MultiModeRoom room){
         room.close();
-        roomList.remove(room);
+        MultiModeRoom removeRoom = null;
+        for(MultiModeRoom mroom : roomList){
+            if(mroom.getId() == room.getId()){
+                removeRoom = mroom;
+            }
+        }
+        roomList.remove(removeRoom);
         System.out.println("Room Deleted");
     }
 

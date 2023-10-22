@@ -39,9 +39,12 @@ import java.util.List;
 import java.util.Random;
 
 public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.ViewHolder> {
-//MultiMode List 화면에서 각 Room Button과 관련된 Adapter
+    //MultiMode List 화면에서 각 Room Button과 관련된 Adapter
     private List<MultiModeRoom> roomList;
     MultiModeRoom selectedRoom;
+    //MultiModeUser user = new MultiModeUser(1, "choco"); // 유저 정보 임시로 더미데이터 활용
+    MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
+
 
     private SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
 
@@ -77,20 +80,20 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
         button.setOnClickListener(v -> {
             // 클릭된 버튼의 MultiModeRoom 정보 가져오기
             selectedRoom = roomList.get(position);
-
-            new EnterRoomTask(v.getContext()).execute();
+            NavController navController = Navigation.findNavController(v);
+            new EnterRoomTask(v.getContext(), navController).execute();
 
             // 방 정보를 전달하기 위해 Bundle을 생성
-            Bundle bundle = new Bundle();
-            bundle.putSerializable("room", selectedRoom);
-
+            //Bundle bundle = new Bundle();
+            //bundle.putSerializable("room", selectedRoom);
             // NavController를 사용하여 다음 fragment로 이동
-            NavController navController = Navigation.findNavController(v);
-            navController.navigate(R.id.navigation_multi_room_wait, bundle);
+            //NavController navController = Navigation.findNavController(v);
+            //navController.navigate(R.id.navigation_multi_room_wait, bundle);
 
         });
 
     }
+
     private static AppCompatActivity unwrap(Context context) {
         while (!(context instanceof Activity) && context instanceof ContextWrapper) {
             context = ((ContextWrapper) context).getBaseContext();
@@ -116,51 +119,62 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
     private class EnterRoomTask extends AsyncTask<Void, Void, Boolean> {
         Packet packet;
         private Context mContext;
+        private NavController navcon;
 
-        public EnterRoomTask(Context context) {
+        public EnterRoomTask(Context context, NavController navcon) {
             this.mContext = context;
+            this.navcon = navcon;
         }
 
         @Override
         protected Boolean doInBackground(Void... voids) {
             Socket socket = null;
+            boolean success = true;
             try {
                 socketManager.openSocket(); // 소켓 연결
 
                 ObjectOutputStream oos = socketManager.getOOS(); //서버로 바이트스트림을 직렬화하기 위해 필요.
                 ObjectInputStream ois = socketManager.getOIS(); //서버로부터 받는 바이트스트림을 역직렬화하기 위해 필요.
-                MultiModeUser user = new MultiModeUser(1, "chocochip"); // 유저 정보 임시로 더미데이터 활용
 
 
                 if (selectedRoom.getUserList().size() < selectedRoom.getNumRunners()) {
                     Packet requestPacket = new Packet(Protocol.ENTER_ROOM, user, selectedRoom);
+                    Log.d("response enterroom", "protocol : " + requestPacket.getProtocol() + " user is " + user.getNickname());
                     oos.writeObject(requestPacket); //서버로 패킷 전송
                     oos.flush();
 
                     Object receivedObject = ois.readObject(); //서버로부터 패킷 수신
                     if (receivedObject instanceof Packet) {
                         packet = (Packet) receivedObject;
+                        Log.d("response", "userlist size is " + packet.getSelectedRoom().getUserList().size());
+                        selectedRoom.enterUser(user);
+                        printRoomInfo(packet.getSelectedRoom());
                     }
-                    return true;
                 }
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
-                return false;
+                success = false;
             }finally {
-                return false;
             }
+            return success;
         }
 
         @Override
         protected void onPostExecute(Boolean success) { //doInBackground()의 return값에 따라 작업 수행. 룸 리스트 업데이트, 입장하는 방 정보 업데이트
             super.onPostExecute(success);
+            setRoomList(packet.getRoomList());
+            selectedRoom = packet.getSelectedRoom();
             if (success) {
                 Log.d("SendPacket", "Packet sent successfully!");
                 setRoomList(packet.getRoomList());
                 selectedRoom = packet.getSelectedRoom();
 
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("room", selectedRoom);
+                // NavController를 사용하여 다음 fragment로 이동
+                navcon.navigate(R.id.navigation_multi_room_wait, bundle);
             } else {
-                showFullRoomToast(mContext); // 방이 이미 꽉 찼다는 Toast 띄우기
+                showFullRoomToast(mContext); // 방이 이미 꽉 찼다는 Toast 보내기
                 Log.e("SendPacket", "Failed to send packet!");
             }
         }
@@ -169,6 +183,18 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
 
     private void showFullRoomToast(Context context) {
         Toast.makeText(context, "인원이 초과되었습니다.", Toast.LENGTH_SHORT).show();
+    }
+
+    private void printRoomInfo(MultiModeRoom room){
+        if(room == null){
+            Log.d("response", "room is null");
+            return;
+        }else{
+            List<MultiModeUser> userList = room.getUserList();
+            for(MultiModeUser user : userList){
+                Log.d("response", "username : " + user.getNickname());
+            }
+        }
     }
 
 }

@@ -7,6 +7,8 @@ public class Protocol {
     public static final int EXIT_ROOM = 4;
     // 다른 프로토콜 상수 추가
     public static final int UPDATE_ROOM = 5;
-    public static final int UPDATE_EVERY_ROOM = 6;
+    public static final int UPDATE_ROOM_ENTER = 6;
+    public static final int UPDATE_ROOM_EXIT = 6;
+
 }
 
