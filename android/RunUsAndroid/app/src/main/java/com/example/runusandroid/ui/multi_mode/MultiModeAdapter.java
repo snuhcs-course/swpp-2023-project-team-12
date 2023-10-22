@@ -42,7 +42,6 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
     //MultiMode List 화면에서 각 Room Button과 관련된 Adapter
     private List<MultiModeRoom> roomList;
     MultiModeRoom selectedRoom;
-
     //MultiModeUser user = new MultiModeUser(1, "choco"); // 유저 정보 임시로 더미데이터 활용
     MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
 

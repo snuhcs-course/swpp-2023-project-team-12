@@ -162,7 +162,9 @@ public class Server {
 
         for(int i=0; i<oosList.size(); i++){
             ObjectOutputStream oos = oosList.get(i);
-            if (oos != null && oos != findOutputStreamByUser(packet.getUser())){
+            if (oos != null ){
+                //&& oos != findOutputStreamByUser(packet.getUser())
+                // 방에 들어오거나 나가는 유저가 아닌 다른 유저들한테만 패킷을 보내기 위한 조건
                 try {
                     oos.writeObject(packet);
                     oos.flush();
