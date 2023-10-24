@@ -1,13 +1,23 @@
 package com.example.runusandroid;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.TextPaint;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -30,6 +40,36 @@ public class LoginActivity extends AppCompatActivity {
 
         accountApi = RetrofitClient.getClient().create(AccountApi.class);
 
+        TextView signInMessage = findViewById(R.id.SignInMessage);
+
+        String text = "아직 회원이 아니신가요? ";
+        String signUpText = "회원가입";
+        SpannableString spannableString = new SpannableString(text + signUpText);
+
+        // 회원가입 부분에 색상 적용
+        ForegroundColorSpan colorSpan = new ForegroundColorSpan(Color.parseColor("#4AA570"));
+        spannableString.setSpan(colorSpan, text.length(), text.length() + signUpText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        // 회원가입 부분에 클릭 이벤트 적용
+        ClickableSpan clickableSpan = new ClickableSpan() {
+            @Override
+            public void onClick(@NonNull View widget) {
+                // 회원가입 클릭시 SignUpActivity 시작
+                Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
+                startActivity(intent);
+            }
+
+            @Override
+            public void updateDrawState(@NonNull TextPaint ds) {
+                super.updateDrawState(ds);
+            }
+        };
+        spannableString.setSpan(clickableSpan, text.length(), text.length() + signUpText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        // TextView에 SpannableString 설정
+        signInMessage.setText(spannableString);
+        signInMessage.setMovementMethod(LinkMovementMethod.getInstance());
+
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -44,6 +84,16 @@ public class LoginActivity extends AppCompatActivity {
                         if(response.isSuccessful()) {
                             Log.d("Login","Login Success");
                             Toast.makeText(LoginActivity.this, "Login Success", Toast.LENGTH_SHORT).show();
+
+                            // 로그인 성공 시 SharePreferences에 아이디 저장
+                            SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putString("user_id", userName);
+                            editor.apply();
+
+                            Intent intent = new Intent(LoginActivity.this, MainActivity2.class);
+                            startActivity(intent);
+                            finish();
                         }
                         else{
                             Log.d("Login","Login Failed, Status Code : " + response.code());

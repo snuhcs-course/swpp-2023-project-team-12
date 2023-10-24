@@ -1,13 +1,14 @@
 package com.example.runusandroid;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -75,6 +76,9 @@ public class SignUpActivity extends AppCompatActivity {
                         if(response.isSuccessful()) {
                             Log.d("Sign Up","Sign Up Success");
                             Toast.makeText(SignUpActivity.this, "SignUp Success", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(SignUpActivity.this, LoginActivity.class);
+                            startActivity(intent);
+                            finish();
                         }
                         else{
                             Log.d("Sign Up","Sign Up Failed, Status Code : " + response.code());

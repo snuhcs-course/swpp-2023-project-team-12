@@ -4,15 +4,11 @@ import android.Manifest;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import com.example.runusandroid.ActivityRecognition.UserActivityBroadcastReceiver;
-import com.example.runusandroid.ActivityRecognition.UserActivityTransitionManager;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,7 +17,12 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
 
+import com.example.runusandroid.ActivityRecognition.UserActivityBroadcastReceiver;
+import com.example.runusandroid.ActivityRecognition.UserActivityTransitionManager;
 import com.example.runusandroid.databinding.ActivityMain2Binding;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity2 extends AppCompatActivity {
 
@@ -36,6 +37,17 @@ public class MainActivity2 extends AppCompatActivity {
 
         binding = ActivityMain2Binding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        String userId = sharedPreferences.getString("user_id", null);
+
+        if(userId == null) {
+            // 로그인되어 있지 않으면 LoginActivity로 전환
+            Intent intent = new Intent(MainActivity2.this, LoginActivity.class);
+            startActivity(intent);
+            finish();  // MainActivity2를 종료
+            return;
+        }
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
