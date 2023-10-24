@@ -8,35 +8,65 @@
 
     <TextView
         android:id="@+id/LoginText"
-        android:paddingVertical="100dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Login"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        android:paddingTop="100dp"
+        android:text="이메일"
+        app:layout_constraintLeft_toLeftOf="@id/IdInput"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/IdInput"
-        android:layout_width="match_parent"
+        android:layout_width="375dp"
         android:layout_height="wrap_content"
-        android:hint="Id"
+        android:layout_marginBottom="50dp"
+        android:background="@drawable/round_shape_for_field"
+        android:hint="    이메일을 입력해 주세요."
         android:inputType="text"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/LoginText" />
+
+    <TextView
+        android:id="@+id/PasswordText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:text="비밀번호"
+        app:layout_constraintBottom_toTopOf="@id/PasswordInput"
+        app:layout_constraintLeft_toLeftOf="@id/PasswordInput"
+        app:layout_constraintTop_toBottomOf="@id/IdInput" />
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/PasswordInput"
-        android:layout_width="match_parent"
+        android:layout_width="375dp"
         android:layout_height="wrap_content"
-        android:hint="Password"
+        android:background="@drawable/round_shape_for_field"
+        android:hint="    비밀번호를 입력해 주세요."
         android:inputType="text"
-        app:layout_constraintTop_toBottomOf="@id/IdInput" />
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/PasswordText" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/LoginBtn"
-        android:layout_width="match_parent"
+        android:layout_width="375dp"
         android:layout_height="wrap_content"
-        android:text="Login"
+        android:layout_marginTop="85dp"
+        android:background="@drawable/round_shape_green"
+        android:text="로그인"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/PasswordInput" />
+
+    <TextView
+        android:id="@+id/SignInMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="85dp"
+        android:text="아직 회원이 아니신가요? 회원가입"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/LoginBtn" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
