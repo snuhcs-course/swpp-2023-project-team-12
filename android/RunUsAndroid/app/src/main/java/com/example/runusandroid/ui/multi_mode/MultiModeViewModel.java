@@ -4,7 +4,8 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class MultiModeViewModel extends ViewModel {
+public class
+MultiModeViewModel extends ViewModel {
 
     private final MutableLiveData<String> mText;
 

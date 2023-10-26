@@ -5,18 +5,15 @@ import java.util.List;
 
 public class Packet implements Serializable { //서버와 통신하기 위해 사용하는 클래스. Protocol + 필요한 정보 넣어서 전송 및 수신
     private static final long serialVersionUID = 1L;
-
     // 데이터 유형을 나타내는 필드
-    private int protocol;
-
+    private final int protocol;
+    UserDistance[] top3UserDistance = null;
     private RoomCreateInfo roomCreateInfo = null;
-
     // 실제 데이터
     private MultiModeUser user;
-
+    private double distance;
     private MultiModeRoom selectedRoom = null;
-
-    private List<MultiModeRoom> roomList = null;
+    private List<MultiModeRoom> roomList = null; //top3 유저 정보 가져오는 자료구조
 
     public Packet(int protocol, MultiModeUser user) {
         this.protocol = protocol;
@@ -28,36 +25,46 @@ public class Packet implements Serializable { //서버와 통신하기 위해 �
         this.selectedRoom = selectedRoom;
     }
 
-    public Packet(int protocol, MultiModeUser user, RoomCreateInfo roomCreateInfo ){
+    public Packet(int protocol, MultiModeUser user, RoomCreateInfo roomCreateInfo) {
         this.protocol = protocol;
         this.user = user;
         this.roomCreateInfo = roomCreateInfo;
     }
 
-    public Packet(int protocol, MultiModeUser user, MultiModeRoom selectedRoom ){
+    public Packet(int protocol, MultiModeUser user, MultiModeRoom selectedRoom) {
         this.protocol = protocol;
         this.user = user;
         this.selectedRoom = selectedRoom;
     }
 
-    public Packet(int protocol, List<MultiModeRoom> roomList ){
+    public Packet(int protocol, List<MultiModeRoom> roomList) {
         this.protocol = protocol;
         this.roomList = roomList;
     }
 
-    public Packet(int protocol, List<MultiModeRoom> roomList, MultiModeRoom selectedRoom ){
+    public Packet(int protocol, List<MultiModeRoom> roomList, MultiModeRoom selectedRoom) {
         this.protocol = protocol;
         this.roomList = roomList;
         this.selectedRoom = selectedRoom;
     }
 
-    public Packet(int protocol, List<MultiModeRoom> roomList, MultiModeUser user, MultiModeRoom selectedRoom ){
+    public Packet(int protocol, List<MultiModeRoom> roomList, MultiModeUser user, MultiModeRoom selectedRoom) {
         this.protocol = protocol;
         this.roomList = roomList;
         this.selectedRoom = selectedRoom;
         this.user = user;
     }
 
+    public Packet(int protocol, UserDistance[] top3UserDistance) {
+        this.protocol = protocol;
+        this.top3UserDistance = top3UserDistance;
+    }
+
+    public Packet(int protocol, MultiModeUser user, double distance) {
+        this.protocol = protocol;
+        this.user = user;
+        this.distance = distance;
+    }
 
 
     public int getProtocol() {
@@ -68,9 +75,23 @@ public class Packet implements Serializable { //서버와 통신하기 위해 �
         return user;
     }
 
-    public RoomCreateInfo getRoomCreateInfo() {return roomCreateInfo; }
+    public RoomCreateInfo getRoomCreateInfo() {
+        return roomCreateInfo;
+    }
 
-    public MultiModeRoom getSelectedRoom() {return selectedRoom;}
+    public MultiModeRoom getSelectedRoom() {
+        return selectedRoom;
+    }
 
-    public List<MultiModeRoom> getRoomList() {return roomList;}
+    public List<MultiModeRoom> getRoomList() {
+        return roomList;
+    }
+
+    public double getDistance() {
+        return distance;
+    }
+
+    public UserDistance[] getTop3UserDistance() {
+        return top3UserDistance;
+    }
 }

@@ -93,7 +93,6 @@ public class Server {
                             broadcastToRoomUsers(enteredRoom, new Packet(Protocol.UPDATE_ROOM, user, enteredRoom));
                             enteredRoom.addOutputStream(oos);
                         } else if (((Packet) data).getProtocol() == Protocol.EXIT_ROOM) {
-
                             MultiModeRoom exitRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
                             int index = exitRoom.exitUser(user);
                             if(index != -1) exitRoom.removeOutputStream(index);
@@ -101,25 +100,20 @@ public class Server {
                             oos.writeObject(exitRoomPacket);
                             oos.flush();
                             broadcastToRoomUsers(exitRoom, new Packet(Protocol.EXIT_ROOM, user, exitRoom));
-
                         }
-                    }else if(data instanceof String){
-                        System.out.println((String) data);
-                    }
+                        }else if(data instanceof String){
+                            System.out.println((String) data);
+                        }
 
                     printRoomListInfo(RoomManager.getRoomList());
 
-                } catch (EOFException e) {
+                } catch (SocketException | EOFException e) {
                     System.out.println("클라이언트 연결 종료: " + socket.getInetAddress());
                     allClientOutputStreams.removeIf(clientOOS -> clientOOS == oos);
                     break;
                 }
             }
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            cleanupClientResources(oos, socket);  // Cleanup resources if there's an error
-
-        }finally { //유저가 경기 방에 있다가 서버와의 연결이 갑자기 끊겼을 때 유저를 방에서 내보내는 코드
+        } catch (SocketException e) {
             MultiModeUser currentUser = null;
             MultiModeRoom exitRoom = null;
             for(MultiModeUser muser : userList) {
@@ -136,8 +130,12 @@ public class Server {
                     userList.remove(currentUser);
                     broadcastToRoomUsers(exitRoom, new Packet(Protocol.EXIT_ROOM, user, exitRoom));
                 }
-
             }
+        }
+        catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            cleanupClientResources(oos, socket);  // Cleanup resources if there's an error
+        } finally { //유저가 경기 방에 있다가 서버와의 연결이 갑자기 끊겼을 때 유저를 방에서 내보내는 코드
         }
     }
     private void addNewUserToList(MultiModeUser newUser) {

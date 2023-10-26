@@ -1,8 +1,8 @@
 package MultiMode;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 public class RoomCreateInfo implements Serializable {
     //방을 새로 생성할 때 담기는 정보.
@@ -14,13 +14,11 @@ public class RoomCreateInfo implements Serializable {
     private int numRunners;
 
 
-
-
-    private LocalTime duration;
+    private Duration duration;
 
 
     // 생성자
-    public RoomCreateInfo(String title, double distance, LocalDateTime startTime, int numRunners, LocalTime duration) {
+    public RoomCreateInfo(String title, double distance, LocalDateTime startTime, int numRunners, Duration duration) {
         this.title = title;
         this.distance = distance;
         this.startTime = startTime;
@@ -48,15 +46,17 @@ public class RoomCreateInfo implements Serializable {
     public LocalDateTime getStartTime() {
         return startTime;
     }
-    public LocalTime getDuration() {
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public Duration getDuration() {
         return duration;
     }
 
-    public void setDuration(LocalTime duration) {
+    public void setDuration(Duration duration) {
         this.duration = duration;
-    }
-    public void setStartTime(LocalDateTime startTime) {
-        this.startTime = startTime;
     }
 
     public int getNumRunners() {
@@ -66,8 +66,6 @@ public class RoomCreateInfo implements Serializable {
     public void setNumRunners(int numRunners) {
         this.numRunners = numRunners;
     }
-
-
 
 
 }

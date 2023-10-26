@@ -10,6 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.NumberPicker;
+import android.widget.TimePicker;
 
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
@@ -17,45 +21,41 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import MultiMode.MultiModeRoom;
-import MultiMode.MultiModeUser;
-import MultiMode.Packet;
-import MultiMode.Protocol;
-import MultiMode.RoomCreateInfo;
-
 import com.example.runusandroid.R;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.NumberPicker;
-import android.widget.TimePicker;
+import MultiMode.MultiModeRoom;
+import MultiMode.MultiModeUser;
+import MultiMode.Packet;
+import MultiMode.Protocol;
+import MultiMode.RoomCreateInfo;
 
 public class MultiModeFragment extends Fragment {
+
+    private final SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
+    Dialog dialog;
+    //MultiModeUser user = new MultiModeUser(1, "choco");
+    MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
 
     private Button createRoomButton;
     private RecyclerView recyclerView;
     private MultiModeAdapter adapter;
-
     private List<MultiModeRoom> roomList = new ArrayList<>();
-    Dialog dialog;
-
-    private SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
-
-    //MultiModeUser user = new MultiModeUser(1, "choco");
-    MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
+    //MultiModeUser user = new MultiModeUser(3, "apple");
 
 
-
+    public MultiModeFragment() {
+    }
 
     private void showModal(Context context) {
         dialog = new Dialog(context);
@@ -86,7 +86,7 @@ public class MultiModeFragment extends Fragment {
         time_picker.setMinute(0);
         membersEditText.setText("5");
         numberPickerHour.setValue(0);
-        numberPickerMinute.setValue(30);
+        numberPickerMinute.setValue(1);
 
         Button completeButton = dialog.findViewById(R.id.buttonComplete);
         final String[] pickedTime = new String[1];
@@ -105,7 +105,9 @@ public class MultiModeFragment extends Fragment {
                 int timePickerCurrentHour = time_picker.getCurrentHour();
                 int timePickerCurrentMinute = time_picker.getCurrentMinute();
 
-                LocalTime duration = LocalTime.of(numberPickerHour.getValue(), numberPickerMinute.getValue());
+                //LocalTime duration = LocalTime.of(numberPickerHour.getValue(), numberPickerMinute.getValue());
+                //Duration duration = Duration.ofHours(numberPickerHour.getValue()).plusMinutes(numberPickerMinute.getValue());
+                Duration duration = Duration.ofHours(0).plusMinutes(0).plusSeconds(30);
                 LocalDate today = LocalDate.now();
                 LocalDateTime startTime = LocalDateTime.of(today, LocalTime.of(timePickerCurrentHour, timePickerCurrentMinute));
                 // 현재 시간보다 선택한 시간이 느린 경우 하루 뒤로 설정
@@ -113,6 +115,7 @@ public class MultiModeFragment extends Fragment {
                 if (startTime.isBefore(now)) {
                     startTime = startTime.plusDays(1);
                 }
+                //RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, distance, LocalDateTime.now().plusSeconds(5), numRunners, duration);
                 RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, distance, startTime, numRunners, duration);
                 new SendRoomInfoTask().execute(roomInfo); //소켓에 연결하여 패킷 전송
 
@@ -128,9 +131,6 @@ public class MultiModeFragment extends Fragment {
         });
 
         dialog.show();
-    }
-
-    public MultiModeFragment() {
     }
 
     @Override
@@ -155,6 +155,24 @@ public class MultiModeFragment extends Fragment {
         return view;
     }
 
+    private void printRoomListInfo(List<MultiModeRoom> roomList) {
+        for (MultiModeRoom room : roomList) {
+            printRoomInfo(room);
+        }
+    }
+
+    private void printRoomInfo(MultiModeRoom room) {
+        if (room == null) {
+            Log.d("response", "room is null");
+        } else {
+            List<MultiModeUser> userList = room.getUserList();
+            Log.d("response", "room name is " + room.getTitle());
+            for (MultiModeUser user : userList) {
+                Log.d("response", "username : " + user.getNickname());
+            }
+        }
+    }
+
     private class GetRoomListTask extends AsyncTask<Void, Void, List<MultiModeRoom>> {
         @Override
         protected List<MultiModeRoom> doInBackground(Void... voids) {
@@ -164,7 +182,6 @@ public class MultiModeFragment extends Fragment {
 
                 ObjectOutputStream oos = socketManager.getOOS();
                 ObjectInputStream ois = socketManager.getOIS();
-
 
 
                 int dataType = Protocol.ROOM_LIST;
@@ -214,6 +231,7 @@ public class MultiModeFragment extends Fragment {
     private class SendRoomInfoTask extends AsyncTask<RoomCreateInfo, Void, Boolean> {
 
         Packet packet;
+
         @Override
         protected Boolean doInBackground(RoomCreateInfo... roomInfo) {
             boolean success = false;
@@ -257,25 +275,6 @@ public class MultiModeFragment extends Fragment {
             NavController navController = Navigation.findNavController(rootView);
             navController.navigate(R.id.navigation_multi_room_wait, bundle);
 
-        }
-    }
-
-    private void printRoomListInfo(List<MultiModeRoom> roomList){
-        for(MultiModeRoom room : roomList){
-            printRoomInfo(room);
-        }
-    }
-
-    private void printRoomInfo(MultiModeRoom room){
-        if(room == null){
-            Log.d("response", "room is null");
-            return;
-        }else{
-            List<MultiModeUser> userList = room.getUserList();
-            Log.d("response", "room name is " + room.getTitle());
-            for(MultiModeUser user : userList){
-                Log.d("response", "username : " + user.getNickname());
-            }
         }
     }
 }

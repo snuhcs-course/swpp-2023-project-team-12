@@ -1,30 +1,33 @@
 package MultiMode;
 
-import java.io.*;
-import java.net.*;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Queue;
 
 public class MultiModeRoom implements Serializable {
 
 
     private static final long serialVersionUID = 1L;
+    private final transient List<ObjectOutputStream> clientOutputStreams = new ArrayList<>();
     private int id; // 룸 ID
     private List<MultiModeUser> userList; //유저 정보
     private MultiModeUser roomOwner; // 방장
-
     private RoomCreateInfo roomCreateInfo; //방 정보
-    private transient List<ObjectOutputStream> clientOutputStreams = new ArrayList<>();
-
     private String title; //방 제목
     private double distance; //목표 거리
     private int numRunners; //제한 인원
 
     private LocalDateTime startTime; //시작 시각
 
-    private LocalTime duration; //목표 시간(달리는 시간)
+    private Duration duration; //목표 시간(달리는 시간)
+
+    private Queue<UserDistance> updateQueue;
 
     public MultiModeRoom(int roomId, RoomCreateInfo roomCreateInfo) { // 유저가 방을 만들때
         userList = new ArrayList<MultiModeUser>();
@@ -36,7 +39,8 @@ public class MultiModeRoom implements Serializable {
         this.duration = roomCreateInfo.getDuration();
         this.numRunners = roomCreateInfo.getNumRunners();
     }
-    public MultiModeRoom(MultiModeUser user ) { // 유저가 방을 만들때
+
+    public MultiModeRoom(MultiModeUser user) { // 유저가 방을 만들때
         userList = new ArrayList<MultiModeUser>();
         user.enterRoom(this);
         userList.add(user); // 유저를 추가시킨 후
@@ -48,17 +52,17 @@ public class MultiModeRoom implements Serializable {
 
     }
 
-    public void enterUser(MultiModeUser user){
+    public void enterUser(MultiModeUser user) {
         user.enterRoom(this);
         userList.add(user);
     }
 
 
-    public int exitUser(MultiModeUser user){
+    public int exitUser(MultiModeUser user) {
         user.exitRoom(this);
         MultiModeUser userToRemove = null;
         int index = -1;
-        for(int i=0; i<userList.size(); i++){
+        for (int i = 0; i < userList.size(); i++) {
             MultiModeUser muser = userList.get(i);
             if (muser.getId() == user.getId()) {
                 userToRemove = muser;
@@ -73,27 +77,27 @@ public class MultiModeRoom implements Serializable {
             userList.remove(userToRemove);
         }
 
-        if(userList.size() < 1){
+        if (userList.size() < 1) {
             RoomManager.removeRoom(this);
             return index;
         }
 
 
-        if(this.roomOwner.equals(user)){
+        if (this.roomOwner.equals(user)) {
             this.roomOwner = userList.get(0);
         }
         return index;
     }
 
-    public void close(){
-        for(MultiModeUser user : userList){
+    public void close() {
+        for (MultiModeUser user : userList) {
             user.exitRoom(this);
             this.userList.clear();
             this.userList = null;
         }
     }
 
-    public void broadcast(byte[] data){
+    public void broadcast(byte[] data) {
 
     }
 
@@ -112,11 +116,17 @@ public class MultiModeRoom implements Serializable {
         return title;
     }
 
-    public double getDistance() { return distance;}
+    public double getDistance() {
+        return distance;
+    }
 
-    public LocalDateTime getStartTime() {return startTime;}
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
 
-    public int getNumRunners() {return numRunners;}
+    public int getNumRunners() {
+        return numRunners;
+    }
 
     public int getUserSize() { // 유저의 수를 리턴
         return userList.size();
@@ -150,26 +160,70 @@ public class MultiModeRoom implements Serializable {
         this.roomOwner = roomOwner;
     }
 
-    public LocalTime getDuration(){
+    public Duration getDuration() {
         return duration;
     }
 
-    public RoomCreateInfo getRoomCreateInfo(){return roomCreateInfo;}
-    public List<ObjectOutputStream> getOutputStream(){
+    public RoomCreateInfo getRoomCreateInfo() {
+        return roomCreateInfo;
+    }
+
+    public List<ObjectOutputStream> getOutputStream() {
         return clientOutputStreams;
     }
 
-    public void addOutputStream(ObjectOutputStream o){
+    public void addOutputStream(ObjectOutputStream o) {
         clientOutputStreams.add(o);
     }
 
-    public void removeOutputStream(int index){
+    public void removeOutputStream(int index) {
         clientOutputStreams.remove(index);
     }
 
 
-    public void addUser(MultiModeUser user){
+    public void addUser(MultiModeUser user) {
         userList.add(user);
+    }
+
+    public boolean isRoomOwner(MultiModeUser user) {
+        return user.getId() == roomOwner.getId();
+    }
+
+    public void updateDistance(UserDistance userDistance) { //유저의 distance를 업데이트
+        updateQueue.add(userDistance);
+    }
+
+    public UserDistance[] getTop3UserDistance() { //탑3 유저 distance를 리턴
+        if (updateQueue.size() >= userList.size()) {
+            // userList의 크기만큼의 원소를 updateQueue에서 빼내어 저장할 리스트
+            List<UserDistance> topUserDistances = new ArrayList<>();
+
+            // userList의 크기만큼 원소를 빼내어 topUserDistances에 저장
+            for (int i = 0; i < userList.size(); i++) {
+                UserDistance userDistance = updateQueue.poll();
+                if (userDistance != null) {
+                    topUserDistances.add(userDistance);
+                }
+            }
+
+            // distance를 기준으로 내림차순으로 정렬
+            Collections.sort(topUserDistances, new Comparator<UserDistance>() {
+                @Override
+                public int compare(UserDistance user1, UserDistance user2) {
+                    return Double.compare(user2.getDistance(), user1.getDistance());
+                }
+            });
+
+            // 상위 3개의 UserDistance 객체를 배열에 저장
+            UserDistance[] top3UserDistances = new UserDistance[Math.min(3, topUserDistances.size())];
+            for (int i = 0; i < top3UserDistances.length; i++) {
+                top3UserDistances[i] = topUserDistances.get(i);
+            }
+
+            return top3UserDistances;
+        }
+
+        return null;
     }
 
     @Override

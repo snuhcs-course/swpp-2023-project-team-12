@@ -38,14 +38,16 @@ import MultiMode.Protocol;
 public class MultiModeWaitFragment extends Fragment {
 
     private final Handler handler = new Handler(); // 남은 시간 계산 위한 Handler
-    private final int updateTimeInSeconds = 1; // 1초마다 업데이트
-    public ConstraintLayout waitingListBox;
-    public TextView participantCountTextView;
+    private final int updateTimeInSeconds = 1; // 1초마다 업데이트/
     //MultiModeUser user = new MultiModeUser(1, "choco"); // 유저 정보 임시로 더미데이터 활용
     MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
+    //MultiModeUser user = new MultiModeUser(3, "apple");
     SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
     private MultiModeRoom selectedRoom; // MultiModeRoom 객체를 저장할 멤버 변수
-    //유저가 나갔을 때 패킷을 받아 방 인원 업데이트
+    private TextView titleTextView;
+    private TextView startTimeTextView;
+    private TextView timeRemainingTextView;
+    private ConstraintLayout waitingListBox;
     private final Handler updateHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
@@ -68,9 +70,10 @@ public class MultiModeWaitFragment extends Fragment {
             }
         }
     };
-    private TextView titleTextView;
-    private TextView startTimeTextView;
-    private TextView timeRemainingTextView;
+    private TextView participantCountTextView;
+    private ObjectInputStream ois;
+    private SocketListenerThread socketListenerThread;
+
     //남은 시간 계산 로직
     private final Runnable updateTimeRunnable = new Runnable() {
         @Override
@@ -87,6 +90,14 @@ public class MultiModeWaitFragment extends Fragment {
             // startTime이 현재 시간보다 앞선 경우
             if (duration.isNegative() || duration.isZero()) {
                 timeRemainingTextView.setText("시작까지 0분 0초 남음");
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("room", selectedRoom);
+                bundle.putSerializable("user", user);
+                bundle.putSerializable("socketListenerThread", socketListenerThread);
+
+                NavController navController = Navigation.findNavController(requireView());
+                navController.navigate(R.id.navigation_multi_room_play, bundle);
+
                 return;  // Runnable 종료
             }
 
@@ -112,7 +123,6 @@ public class MultiModeWaitFragment extends Fragment {
             handler.postDelayed(this, 1000);
         }
     };
-    private SocketListenerThread socketListenerThread;
 
     public MultiModeWaitFragment() {
     }
@@ -128,6 +138,9 @@ public class MultiModeWaitFragment extends Fragment {
         timeRemainingTextView = view.findViewById(R.id.time_remaining);
 
         waitingListBox = view.findViewById(R.id.waiting_list_box);
+
+        Button testButton = view.findViewById(R.id.testButton);
+
 
         selectedRoom = (MultiModeRoom) getArguments().getSerializable("room");
         // 여기에서 MultiModeRoom 객체(multiModeRoom)를 사용하여 UI에 표현되어야 하는 text 설정
@@ -164,13 +177,16 @@ public class MultiModeWaitFragment extends Fragment {
             }
         });
 
-        Button testButton = view.findViewById(R.id.testButton);
         testButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 떠나기 버튼을 눌렀을 때 실행할 동작 추가
-                NavController navController = Navigation.findNavController(v);
-                navController.navigate(R.id.navigation_multi_room_play);
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("room", selectedRoom);
+                bundle.putSerializable("user", user);
+
+                NavController navController = Navigation.findNavController(requireView());
+                navController.navigate(R.id.navigation_multi_room_play, bundle);
+
             }
         });
 
@@ -182,6 +198,7 @@ public class MultiModeWaitFragment extends Fragment {
         String text = size + "/" + total;
         participantCountTextView.setText(text);
     }
+    //유저가 나갔을 때 패킷을 받아 방 인원 업데이트
 
     // 입장한 유저 이름 보여주는 waiting list
     public void addUserNameToWaitingList(String userName) {
@@ -295,7 +312,9 @@ public class MultiModeWaitFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        socketListenerThread = new SocketListenerThread(this, updateHandler, selectedRoom);
+        socketManager = SocketManager.getInstance();
+        ois = socketManager.getOIS();
+        socketListenerThread = new SocketListenerThread(this, updateHandler, selectedRoom, ois);
         socketListenerThread.start();
     }
 
@@ -303,7 +322,9 @@ public class MultiModeWaitFragment extends Fragment {
     public void onPause() {
         super.onPause();
         if (socketListenerThread != null) {
-            socketListenerThread.interrupt();
+            //socketListenerThread.interrupt();
+            socketListenerThread.pauseListening();
+            Log.d("response", "socketListenerThread interrupted");
         }
     }
 
@@ -322,20 +343,11 @@ public class MultiModeWaitFragment extends Fragment {
         protected Boolean doInBackground(Void... voids) {
             boolean success = true;
             try {
-                Log.d("response socketManager", socketManager.toString());
                 ObjectOutputStream oos = socketManager.getOOS();
-                ObjectInputStream ois = socketManager.getOIS();
                 Packet requestPacket = new Packet(Protocol.EXIT_ROOM, user, selectedRoom);
                 oos.writeObject(requestPacket);
                 oos.flush();
-
-                Object receivedObject = ois.readObject();
-                if (receivedObject instanceof Packet) {
-                    packet = (Packet) receivedObject;
-                    selectedRoom.exitUser(user);
-                }
-
-            } catch (IOException | ClassNotFoundException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
                 success = false;
             } finally {
@@ -360,7 +372,7 @@ public class MultiModeWaitFragment extends Fragment {
                 Log.d("SendPacket", "Packet sent successfully!");
 
             } else {
-                Log.e("SendPacket", "Failed to send packet!");
+                Log.d("ExitSendPacket", "Failed to send packet!");
             }
         }
 
