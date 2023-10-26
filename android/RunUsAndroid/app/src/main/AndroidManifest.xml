@@ -35,7 +35,6 @@
             android:exported="false"></activity>
 
         <activity android:name=".LoginActivity"></activity>
-        <activity android:name=".SignUpActivity"></activity>
         <activity android:name=".SignUpStep1Activity"></activity>
         <activity android:name=".SignUpStep2Activity"></activity>
         <activity android:name=".SignUpStep3Activity"></activity>
