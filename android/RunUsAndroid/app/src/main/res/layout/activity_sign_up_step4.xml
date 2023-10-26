@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SignUpStep4Activity">
+
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/SignUpHeightInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="키"
+        android:inputType="text"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/SignUpWeightInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="체중"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/SignUpHeightInput" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/SignUpAgeInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="나이"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/SignUpWeightInput" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/SignUpGenderInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="성별 (1: 남성, 2: 여성)"
+        android:inputType="number"
+        app:layout_constraintTop_toBottomOf="@id/SignUpAgeInput" />
+
+
+    <Button
+        android:id="@+id/nextButton2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="완료"
+        app:layout_constraintTop_toBottomOf="@id/SignUpGenderInput" />
+</androidx.constraintlayout.widget.ConstraintLayout>

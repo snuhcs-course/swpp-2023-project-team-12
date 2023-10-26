@@ -29,6 +29,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextView passwordInput;
     private Button loginButton;
     private AccountApi accountApi;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,7 +56,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(@NonNull View widget) {
                 // 회원가입 클릭시 SignUpActivity 시작
-                Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
+                Intent intent = new Intent(LoginActivity.this, SignUpStep1Activity.class);
                 startActivity(intent);
             }
 
@@ -81,8 +82,8 @@ public class LoginActivity extends AppCompatActivity {
                 accountApi.postLoginData(requestData).enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        if(response.isSuccessful()) {
-                            Log.d("Login","Login Success");
+                        if (response.isSuccessful()) {
+                            Log.d("Login", "Login Success");
                             Toast.makeText(LoginActivity.this, "Login Success", Toast.LENGTH_SHORT).show();
 
                             // 로그인 성공 시 SharePreferences에 아이디 저장
@@ -94,9 +95,8 @@ public class LoginActivity extends AppCompatActivity {
                             Intent intent = new Intent(LoginActivity.this, MainActivity2.class);
                             startActivity(intent);
                             finish();
-                        }
-                        else{
-                            Log.d("Login","Login Failed, Status Code : " + response.code());
+                        } else {
+                            Log.d("Login", "Login Failed, Status Code : " + response.code());
                             Toast.makeText(LoginActivity.this, "Login Failed", Toast.LENGTH_SHORT).show();
                         }
                     }
