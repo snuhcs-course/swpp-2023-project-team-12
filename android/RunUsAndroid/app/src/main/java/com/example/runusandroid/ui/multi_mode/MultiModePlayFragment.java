@@ -1,5 +1,9 @@
 package com.example.runusandroid.ui.multi_mode;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,15 +17,27 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
+import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import MultiMode.MultiModeRoom;
@@ -40,7 +56,14 @@ public class MultiModePlayFragment extends Fragment {
     //MultiModeUser user = new MultiModeUser(3, "apple");
 
     double distance = 0;
+    private List<LatLng> pathPoints = new ArrayList<>();
+    FusedLocationProviderClient fusedLocationClient;
+    LocationCallback locationCallback;
+    LocationRequest locationRequest;
+
     TextView paceGoalContentTextView;
+    MainActivity2 mainActivity;
+
     TextView timeGoalContentTextView;
     TextView goldDistanceTextView;
     TextView goldNickNameTextView;
@@ -91,6 +114,12 @@ public class MultiModePlayFragment extends Fragment {
 //            throw new RuntimeException(e);
 //        }
 
+        mainActivity = (MainActivity2) getActivity();
+        locationRequest = LocationRequest.create();
+        // TODO: let's find out which interval has best tradeoff
+        locationRequest.setInterval(1000); // Update interval in milliseconds
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
         View view = inflater.inflate(R.layout.fragment_multi_room_play, container, false); //각종 view 선언
         if (selectedRoom != null) {
             timeGoalContentTextView = view.findViewById(R.id.time_goal_content);
@@ -101,6 +130,8 @@ public class MultiModePlayFragment extends Fragment {
             silverDistanceTextView = view.findViewById(R.id.silver_distance);
             bronzeNickNameTextView = view.findViewById(R.id.bronze_nickname);
             bronzeDistanceTextView = view.findViewById(R.id.bronze_distance);
+            distancePresentContentTextView = view.findViewById(R.id.distance_present_content);
+            pacePresentContentTextView = view.findViewById(R.id.pace_present_content);
 
             //목표 시간 계산하기 위한 코드
             long secondsRemaining = selectedRoom.getDuration().getSeconds();
@@ -115,6 +146,40 @@ public class MultiModePlayFragment extends Fragment {
             timeGoalContentTextView.setText(formattedTime);
 
         }
+
+        //TODO: only draw lines if running is started
+        //TODO: doesn't update location when app is in background -> straight lines are drawn from the last location when app is opened again
+        //TODO: lines are ugly and noisy -> need to filter out some points or smoothed
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult != null) {
+                    Location location = locationResult.getLastLocation();
+                    Log.d("test:location", "Location:" + location.getLatitude() + ", " + location.getLongitude());
+
+                    LatLng newPoint = new LatLng(location.getLatitude(), location.getLongitude());
+                    pathPoints.add(newPoint);
+
+                    // TODO: check calculate distance
+                    if (newPoint != null) {
+                        // first few points might be noisy
+                        if (pathPoints.size() > 5) {
+                            Location lastLocation = new Location("");
+                            lastLocation.setLatitude(pathPoints.get(pathPoints.size() - 2).latitude);
+                            lastLocation.setLongitude(pathPoints.get(pathPoints.size() - 2).longitude);
+                            // unit : meter -> kilometer
+                            distance += location.distanceTo(lastLocation) / (double)1000;
+                            Log.d("test:distance", "Distance:" + distance);
+                        }
+                    }
+                    // update distance text
+                    distancePresentContentTextView.setText(String.format(Locale.getDefault(), "%.1f"+"km", distance));
+                }
+            }
+        };
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(mainActivity);
+
 
         //경과 시간 업데이트
         timeHandler = new Handler(Looper.getMainLooper());
@@ -160,7 +225,7 @@ public class MultiModePlayFragment extends Fragment {
             @Override
             public void run() {
                 Packet requestPacket = new Packet(Protocol.UPDATE_USER_DISTANCE, user, distance);
-                distance += 1;
+                //distance += 1;
                 new SendPacketTask().execute(requestPacket);
                 if (isFinished == 0) {
                     // 1초마다 Runnable 실행
@@ -235,6 +300,18 @@ public class MultiModePlayFragment extends Fragment {
 
         //top3UpdateHandler.postDelayed(sendDataRunnable, 5000);
 
+        fusedLocationClient.removeLocationUpdates(locationCallback);
+
+        if (ActivityCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1000);
+        }
+        if (ActivityCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1000);
+        }
+
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
 
     }
 
@@ -244,6 +321,7 @@ public class MultiModePlayFragment extends Fragment {
         if (socketListenerThread != null) {
             socketListenerThread.interrupt();
         }
+        fusedLocationClient.removeLocationUpdates(locationCallback);
     }
 
     @Override
