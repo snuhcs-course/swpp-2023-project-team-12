@@ -25,7 +25,7 @@
         android:layout_marginTop="50dp"
         android:gravity="center_vertical"
         android:lineSpacingExtra="-4sp"
-        android:text="10km"
+        android:text=""
         android:textAppearance="@style/multi_room_wait_distance"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"

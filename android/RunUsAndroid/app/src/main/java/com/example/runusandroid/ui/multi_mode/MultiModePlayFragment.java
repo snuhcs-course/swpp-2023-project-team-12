@@ -49,8 +49,8 @@ public class MultiModePlayFragment extends Fragment {
     private final List<LatLng> pathPoints = new ArrayList<>();
 
     //MultiModeUser user = new MultiModeUser(1, "choco");
-    //MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
-    MultiModeUser user = new MultiModeUser(3, "apple");
+    MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
+    //MultiModeUser user = new MultiModeUser(3, "apple");
 
     SocketManager socketManager = SocketManager.getInstance();
     ObjectOutputStream oos;
@@ -69,8 +69,6 @@ public class MultiModePlayFragment extends Fragment {
     TextView bronzeDistanceTextView;
     TextView bronzeNickNameTextView;
     ProgressBar progressBar;
-    LocalDateTime gameStartTime;
-
     private final Handler top3UpdateHandler = new Handler(Looper.getMainLooper()) {//탑3 유저 업데이트. 아마 handleMessage 코드가 실제로 실행되는지는 모르겟음
         @Override
         public void handleMessage(Message msg) {
@@ -86,6 +84,7 @@ public class MultiModePlayFragment extends Fragment {
             }
         }
     };
+    LocalDateTime gameStartTime;
     TextView distancePresentContentTextView; //API 사용해서 구한 나의 현재 이동 거리
     TextView pacePresentContentTextView; //API 사용해서 구한 나의 현재 페이스
     SocketListenerThread socketListenerThread = null;
@@ -98,6 +97,7 @@ public class MultiModePlayFragment extends Fragment {
     private Runnable sendDataRunnable;
     private int isFinished = 0;
     private ObjectInputStream ois;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

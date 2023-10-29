@@ -43,10 +43,10 @@ import MultiMode.RoomCreateInfo;
 public class MultiModeFragment extends Fragment {
 
 
-    //MultiModeUser user = new MultiModeUser(1, "choco");
-    //MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
-    MultiModeUser user = new MultiModeUser(3, "apple");
+    //MultiModeUser user = new MultiModeUser(3, "apple");
     private final SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
+    MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
+    //MultiModeUser user = new MultiModeUser(1, "choco");
     Dialog dialog;
     private Button createRoomButton;
     private RecyclerView recyclerView;
@@ -64,11 +64,11 @@ public class MultiModeFragment extends Fragment {
         dialog.setCanceledOnTouchOutside(true);
         ImageButton closeButton = dialog.findViewById(R.id.buttonClose);
         EditText groupNameEditText = dialog.findViewById(R.id.editTextGroupName);
-        EditText distanceEditText = dialog.findViewById(R.id.editTextDistance);
+        //EditText distanceEditText = dialog.findViewById(R.id.editTextDistance);
         //EditText timeEditText = dialog.findViewById(R.id.editTextTime);
         TimePicker time_picker = dialog.findViewById(R.id.timePicker);
         EditText membersEditText = dialog.findViewById(R.id.editTextMembers);
-        EditText tagEditText = dialog.findViewById(R.id.editTextTag);
+        //EditText tagEditText = dialog.findViewById(R.id.editTextTag);
         NumberPicker numberPickerHour = dialog.findViewById(R.id.hourPicker);
         NumberPicker numberPickerMinute = dialog.findViewById(R.id.minutePicker);
 
@@ -81,7 +81,7 @@ public class MultiModeFragment extends Fragment {
 
         // 초기값 설정
         groupNameEditText.setText("Test");
-        distanceEditText.setText("5");
+        //distanceEditText.setText("5");
         time_picker.setHour(0);
         time_picker.setMinute(0);
         membersEditText.setText("5");
@@ -100,7 +100,7 @@ public class MultiModeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 String groupName = groupNameEditText.getText().toString();
-                double distance = Double.parseDouble(distanceEditText.getText().toString());
+                //double distance = Double.parseDouble(distanceEditText.getText().toString());
                 int numRunners = Integer.parseInt(membersEditText.getText().toString());
                 int timePickerCurrentHour = time_picker.getCurrentHour();
                 int timePickerCurrentMinute = time_picker.getCurrentMinute();
@@ -115,7 +115,7 @@ public class MultiModeFragment extends Fragment {
                     startTime = startTime.plusDays(1);
                 }
                 //RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, distance, LocalDateTime.now().plusSeconds(5), numRunners, duration);
-                RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, distance, startTime, numRunners, duration);
+                RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, 0, startTime, numRunners, duration);
                 new SendRoomInfoTask().execute(roomInfo); //소켓에 연결하여 패킷 전송
 
             }
