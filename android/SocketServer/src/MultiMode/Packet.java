@@ -1,7 +1,9 @@
 package MultiMode;
 
 import java.io.Serializable;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Packet implements Serializable { //서버와 통신하기 위해 사용하는 클래스. Protocol + 필요한 정보 넣어서 전송 및 수신
     private static final long serialVersionUID = 1L;
@@ -13,10 +15,13 @@ public class Packet implements Serializable { //서버와 통신하기 위해 �
 
     // 실제 데이터
     private MultiModeUser user;
+    private double distance;
 
     private MultiModeRoom selectedRoom = null;
 
-    private List<MultiModeRoom> roomList = null;
+    private List<MultiModeRoom> roomList = null; //top3 유저 정보 가져오는 자료구조
+
+    UserDistance[] top3UserDistance = null;
 
     public Packet(int protocol, MultiModeUser user) {
         this.protocol = protocol;
@@ -58,6 +63,17 @@ public class Packet implements Serializable { //서버와 통신하기 위해 �
         this.user = user;
     }
 
+    public Packet(int protocol, UserDistance[] top3UserDistance){
+        this.protocol = protocol;
+        this.top3UserDistance = top3UserDistance;
+    }
+
+    public Packet(int protocol, MultiModeUser user, double distance){
+        this.protocol = protocol;
+        this.user = user;
+        this.distance = distance;
+    }
+
 
 
 
@@ -74,4 +90,8 @@ public class Packet implements Serializable { //서버와 통신하기 위해 �
     public MultiModeRoom getSelectedRoom() {return selectedRoom;}
 
     public List<MultiModeRoom> getRoomList() {return roomList;}
+
+    public double getDistance() {return distance;}
+
+    public UserDistance[] getTop3UserDistance() {return top3UserDistance;}
 }

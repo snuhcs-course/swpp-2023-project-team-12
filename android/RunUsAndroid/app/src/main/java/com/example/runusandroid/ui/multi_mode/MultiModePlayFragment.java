@@ -2,7 +2,6 @@ package com.example.runusandroid.ui.multi_mode;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -13,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -27,9 +27,7 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -48,30 +46,28 @@ import MultiMode.UserDistance;
 
 public class MultiModePlayFragment extends Fragment {
 
+    private final List<LatLng> pathPoints = new ArrayList<>();
     SocketManager socketManager = SocketManager.getInstance();
     ObjectOutputStream oos;
     MultiModeRoom selectedRoom;
-    //MultiModeUser user = new MultiModeUser(1, "choco");
-    MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
+    //MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
     //MultiModeUser user = new MultiModeUser(3, "apple");
-
+    MultiModeUser user = new MultiModeUser(1, "choco");
     double distance = 0;
-    private List<LatLng> pathPoints = new ArrayList<>();
     FusedLocationProviderClient fusedLocationClient;
     LocationCallback locationCallback;
     LocationRequest locationRequest;
-
     TextView paceGoalContentTextView;
     MainActivity2 mainActivity;
-
     TextView timeGoalContentTextView;
     TextView goldDistanceTextView;
     TextView goldNickNameTextView;
-
     TextView silverDistanceTextView;
     TextView silverNickNameTextView;
     TextView bronzeDistanceTextView;
     TextView bronzeNickNameTextView;
+
+    ProgressBar progressBar;
     private final Handler top3UpdateHandler = new Handler(Looper.getMainLooper()) {//탑3 유저 업데이트. 아마 handleMessage 코드가 실제로 실행되는지는 모르겟음
         @Override
         public void handleMessage(Message msg) {
@@ -132,6 +128,7 @@ public class MultiModePlayFragment extends Fragment {
             bronzeDistanceTextView = view.findViewById(R.id.bronze_distance);
             distancePresentContentTextView = view.findViewById(R.id.distance_present_content);
             pacePresentContentTextView = view.findViewById(R.id.pace_present_content);
+            progressBar = view.findViewById(R.id.linear_progress_bar);
 
             //목표 시간 계산하기 위한 코드
             long secondsRemaining = selectedRoom.getDuration().getSeconds();
@@ -168,12 +165,12 @@ public class MultiModePlayFragment extends Fragment {
                             lastLocation.setLatitude(pathPoints.get(pathPoints.size() - 2).latitude);
                             lastLocation.setLongitude(pathPoints.get(pathPoints.size() - 2).longitude);
                             // unit : meter -> kilometer
-                            distance += location.distanceTo(lastLocation) / (double)1000;
+                            distance += location.distanceTo(lastLocation) / (double) 1000;
                             Log.d("test:distance", "Distance:" + distance);
                         }
                     }
                     // update distance text
-                    distancePresentContentTextView.setText(String.format(Locale.getDefault(), "%.1f"+"km", distance));
+                    distancePresentContentTextView.setText(String.format(Locale.getDefault(), "%.1f" + "km", distance));
                 }
             }
         };
@@ -255,39 +252,48 @@ public class MultiModePlayFragment extends Fragment {
             Log.d("response", "In updateTop3UserDistance, user " + i + " : " + userDistances[0].getUser().getNickName() + " , distance : " + userDistances[0].getDistance());
 
         }
+        double goldDistance = 0;
+
         if (top3UserDistance.length == 1) {
             goldNickNameTextView.setText(top3UserDistance[0].getUser().getNickName());
-            double goldDistance = top3UserDistance[0].getDistance();
-            String goldDistanceString = String.format("%.1f", goldDistance);
+            goldDistance = top3UserDistance[0].getDistance();
+            String goldDistanceString = String.format("%.3fkm", goldDistance);
             goldDistanceTextView.setText(goldDistanceString);
         } else if (top3UserDistance.length == 2) {
             goldNickNameTextView.setText(top3UserDistance[0].getUser().getNickName());
-            double goldDistance = top3UserDistance[0].getDistance();
-            String goldDistanceString = String.format("%.1f", goldDistance);
+            goldDistance = top3UserDistance[0].getDistance();
+            String goldDistanceString = String.format("%.3fkm", goldDistance);
             goldDistanceTextView.setText(goldDistanceString);
 
             silverNickNameTextView.setText(top3UserDistance[1].getUser().getNickName());
             double silverDistance = top3UserDistance[1].getDistance();
-            String silverDistanceString = String.format("%.1f", silverDistance);
+            String silverDistanceString = String.format("%.3fkm", silverDistance);
             silverDistanceTextView.setText(silverDistanceString);
 
 
         } else {
             goldNickNameTextView.setText(top3UserDistance[0].getUser().getNickName());
-            double goldDistance = top3UserDistance[0].getDistance();
-            String goldDistanceString = String.format("%.1f", goldDistance);
+            goldDistance = top3UserDistance[0].getDistance();
+            String goldDistanceString = String.format("%.3fkm", goldDistance);
             goldDistanceTextView.setText(goldDistanceString);
 
             silverNickNameTextView.setText(top3UserDistance[1].getUser().getNickName());
             double silverDistance = top3UserDistance[1].getDistance();
-            String silverDistanceString = String.format("%.1f", silverDistance);
+            String silverDistanceString = String.format("%.3fkm", silverDistance);
             silverDistanceTextView.setText(silverDistanceString);
 
             bronzeNickNameTextView.setText(top3UserDistance[2].getUser().getNickName());
             double bronzeDistance = top3UserDistance[2].getDistance();
-            String bronzeDistanceString = String.format("%.1f", bronzeDistance);
+            String bronzeDistanceString = String.format("%.3fkm", bronzeDistance);
             silverDistanceTextView.setText(bronzeDistanceString);
         }
+
+        int progress = 0;
+        if (goldDistance != 0) {
+            progress = (int) ((int) distance / goldDistance) * 100;
+        }
+        progressBar.setProgress(progress);
+
     }
 
     @Override

@@ -60,13 +60,17 @@ public class Server {
                     if (data instanceof Packet) {
                         connectedUser = ((Packet) data).getUser();
                         user = connectedUser;
+                        int userInUserList = 0;
                         for(MultiModeUser multiModeUser : userList){
                             if(multiModeUser.getId() == connectedUser.getId()){
                                 user = multiModeUser;
+                                userInUserList = 1;
                                 break;
                             }
                         }
-                        userList.add(user);
+                        if(userInUserList == 0){
+                            userList.add(user);
+                        }
                         System.out.println(user.getNickName());
                         System.out.println("protocol : "+((Packet) data).getProtocol());
 
@@ -100,6 +104,29 @@ public class Server {
                             oos.writeObject(exitRoomPacket);
                             oos.flush();
                             broadcastToRoomUsers(exitRoom, new Packet(Protocol.EXIT_ROOM, user, exitRoom));
+                        } else if(((Packet) data).getProtocol() == Protocol.UPDATE_USER_DISTANCE){
+                            MultiModeRoom updateRoom = RoomManager.getRoom(user.getRoom().getId());
+                            Double distance = ((Packet) data).getDistance();
+                            System.out.println("user " + ((Packet) data).getUser().getNickName() + "'s update distance is " + distance);
+                            updateRoom.updateDistance(new UserDistance(user, distance));
+
+
+                            if(updateRoom.isRoomOwner(user)){
+                                UserDistance[] top3UserDistance = null;
+                                while(true){
+                                   top3UserDistance  = updateRoom.getTop3UserDistance();
+                                    if(top3UserDistance != null){
+                                        break;
+                                    }
+                                }
+
+                                for(int i = 0; i < top3UserDistance.length; i++){
+                                    System.out.println("user " + i + " : " + top3UserDistance[0].getUser().getNickName() + " , distance : " + top3UserDistance[0].getDistance());
+                                }
+
+                                Packet updateTop3Packet = new Packet(Protocol.UPDATE_TOP3_STATES, top3UserDistance);
+                                broadcastToRoomUsers(updateRoom, updateTop3Packet);
+                            }
                         }
                         }else if(data instanceof String){
                             System.out.println((String) data);
@@ -157,7 +184,9 @@ public class Server {
 
         List<ObjectOutputStream> oosList = room.getOutputStream();
         System.out.println("numbers of oos list : "+oosList.size());
-
+        if(packet.getProtocol() == Protocol.UPDATE_TOP3_STATES){
+            System.out.println("send top3 packet " + packet.getProtocol() + " 1st user is " + packet.getTop3UserDistance()[0].getUser().getNickName());
+        }
         for(int i=0; i<oosList.size(); i++){
             ObjectOutputStream oos = oosList.get(i);
             if (oos != null ){
