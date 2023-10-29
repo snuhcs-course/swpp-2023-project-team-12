@@ -12,6 +12,7 @@ import com.example.runusandroid.R;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.net.Socket;
 import java.net.SocketException;
 
 import MultiMode.MultiModeRoom;
@@ -33,9 +34,8 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
         this.ois = ois;
         this.waitFragment = waitFragment;
         this.selectedRoom = selectedRoom;
-
-        Log.d("response", "waitFragment is " + waitFragment);
-        Log.d("response", "playFragment is " + playFragment);
+        Log.d("response", "waitFragment is " + this.waitFragment);
+        Log.d("response", "playFragment is " + this.playFragment);
 
     }
 
@@ -93,6 +93,7 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
                             public void run() {
                                 Bundle bundle = new Bundle();
                                 bundle.putSerializable("room", selectedRoom);
+                                bundle.putSerializable("socketListenerThread", SocketListenerThread.this);
                                 NavController navController = Navigation.findNavController(waitFragment.requireView());
                                 navController.navigate(R.id.navigation_multi_room_play, bundle);
                             }

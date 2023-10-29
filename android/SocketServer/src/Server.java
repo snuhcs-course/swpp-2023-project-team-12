@@ -126,7 +126,6 @@ public class Server {
                                 for(int i = 0; i < top3UserDistance.length; i++){
                                     System.out.println("user " + i + " : " + top3UserDistance[0].getUser().getNickName() + " , distance : " + top3UserDistance[0].getDistance());
                                 }
-
                                 Packet updateTop3Packet = new Packet(Protocol.UPDATE_TOP3_STATES, top3UserDistance);
                                 broadcastToRoomUsers(updateRoom, updateTop3Packet);
                             }

@@ -49,8 +49,8 @@ public class MultiModePlayFragment extends Fragment {
     private final List<LatLng> pathPoints = new ArrayList<>();
 
     //MultiModeUser user = new MultiModeUser(1, "choco");
-    MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
-    //MultiModeUser user = new MultiModeUser(3, "apple");
+    //MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
+    MultiModeUser user = new MultiModeUser(3, "apple");
 
     SocketManager socketManager = SocketManager.getInstance();
     ObjectOutputStream oos;
@@ -98,7 +98,6 @@ public class MultiModePlayFragment extends Fragment {
     private Runnable sendDataRunnable;
     private int isFinished = 0;
     private ObjectInputStream ois;
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -304,11 +303,9 @@ public class MultiModePlayFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        socketManager = SocketManager.getInstance();
-//        ois = socketManager.getOIS();
-//        socketListenerThread = new SocketListenerThread(null, this, top3UpdateHandler, selectedRoom, ois);
-//        socketListenerThread.start();
-
+        socketListenerThread = (SocketListenerThread) getArguments().getSerializable("socketListenerThread"); //waitFragment의 socketListenrThread객체 가져와서 이어서 사용
+        socketListenerThread.addPlayFragment(this);
+        socketListenerThread.resumeListening();
         //top3UpdateHandler.postDelayed(sendDataRunnable, 5000);
 
         fusedLocationClient.removeLocationUpdates(locationCallback);

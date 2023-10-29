@@ -223,7 +223,6 @@ public class MultiModeRoom implements Serializable {
 
             return top3UserDistances;
         }
-
         return null;
     }
 

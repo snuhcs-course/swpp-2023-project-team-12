@@ -44,8 +44,8 @@ public class MultiModeFragment extends Fragment {
 
 
     //MultiModeUser user = new MultiModeUser(1, "choco");
-    MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
-    //MultiModeUser user = new MultiModeUser(3, "apple");
+    //MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
+    MultiModeUser user = new MultiModeUser(3, "apple");
     private final SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
     Dialog dialog;
     private Button createRoomButton;
