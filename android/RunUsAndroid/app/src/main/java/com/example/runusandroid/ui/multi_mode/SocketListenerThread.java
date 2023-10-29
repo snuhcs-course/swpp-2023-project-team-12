@@ -1,7 +1,13 @@
 package com.example.runusandroid.ui.multi_mode;
 
+import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+
+import com.example.runusandroid.R;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -79,6 +85,16 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
                                 Log.d("event", "user list: " + room.getUserList());
                                 Log.d("event", "user num: " + room.getUserSize());
                                 waitFragment.updateParticipantCount(room.getUserSize(), room.getNumRunners());
+                            }
+                        });
+                    } else if (packet.getProtocol() == Protocol.START_GAME) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Bundle bundle = new Bundle();
+                                bundle.putSerializable("room", selectedRoom);
+                                NavController navController = Navigation.findNavController(waitFragment.requireView());
+                                navController.navigate(R.id.navigation_multi_room_play, bundle);
                             }
                         });
                     } else if (packet.getProtocol() == Protocol.UPDATE_TOP3_STATES) {

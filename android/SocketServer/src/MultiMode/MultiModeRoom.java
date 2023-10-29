@@ -158,7 +158,7 @@ public class MultiModeRoom implements Serializable {
         this.roomOwner = roomOwner;
     }
 
-    public Duration getDuration() {
+    public Duration getDuration(){
         return duration;
     }
 

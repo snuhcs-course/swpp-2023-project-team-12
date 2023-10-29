@@ -37,10 +37,12 @@ import MultiMode.Protocol;
 
 public class MultiModeWaitFragment extends Fragment {
 
+
     private final Handler handler = new Handler(); // 남은 시간 계산 위한 Handler
     private final int updateTimeInSeconds = 1; // 1초마다 업데이트/
-    MultiModeUser user = new MultiModeUser(1, "choco"); // 유저 정보 임시로 더미데이터 활용
-    //MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
+    //MultiModeUser user = new MultiModeUser(1, "choco"); // 유저 정보 임시로 더미데이터 활용
+    MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
+
     //MultiModeUser user = new MultiModeUser(3, "apple");
     SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
     private MultiModeRoom selectedRoom; // MultiModeRoom 객체를 저장할 멤버 변수
@@ -180,13 +182,14 @@ public class MultiModeWaitFragment extends Fragment {
         testButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                new StartRoomTask().execute();
+                /*
                 Bundle bundle = new Bundle();
                 bundle.putSerializable("room", selectedRoom);
                 bundle.putSerializable("user", user);
-
                 NavController navController = Navigation.findNavController(requireView());
                 navController.navigate(R.id.navigation_multi_room_play, bundle);
-
+                 */
             }
         });
 
@@ -373,6 +376,37 @@ public class MultiModeWaitFragment extends Fragment {
 
             } else {
                 Log.d("ExitSendPacket", "Failed to send packet!");
+            }
+        }
+
+    }
+
+    private class StartRoomTask extends AsyncTask<Void, Void, Boolean> {
+        Packet packet;
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            boolean success = true;
+            try {
+                ObjectOutputStream oos = socketManager.getOOS();
+                Packet requestPacket = new Packet(Protocol.START_GAME, selectedRoom);
+                oos.writeObject(requestPacket);
+                oos.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+                success = false;
+            }
+            return success;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (success) {
+                Log.d("SendPacket", "Start Game Packet sent successfully!");
+
+            } else {
+                Log.d("ExitSendPacket", "Failed to send Start Game packet!");
             }
         }
 

@@ -61,17 +61,20 @@ public class Server {
                         connectedUser = ((Packet) data).getUser();
                         user = connectedUser;
                         int userInUserList = 0;
-                        for(MultiModeUser multiModeUser : userList){
-                            if(multiModeUser.getId() == connectedUser.getId()){
-                                user = multiModeUser;
-                                userInUserList = 1;
-                                break;
+                        if(connectedUser != null){
+                            for(MultiModeUser multiModeUser : userList){
+                                if(multiModeUser.getId() == connectedUser.getId()){
+                                    user = multiModeUser;
+                                    userInUserList = 1;
+                                    break;
+                                }
                             }
+                            userList.add(user);
+                            System.out.println(user.getNickName());
                         }
                         if(userInUserList == 0){
                             userList.add(user);
                         }
-                        System.out.println(user.getNickName());
                         System.out.println("protocol : "+((Packet) data).getProtocol());
 
                         if (((Packet) data).getProtocol() == Protocol.ROOM_LIST) {
@@ -127,10 +130,13 @@ public class Server {
                                 Packet updateTop3Packet = new Packet(Protocol.UPDATE_TOP3_STATES, top3UserDistance);
                                 broadcastToRoomUsers(updateRoom, updateTop3Packet);
                             }
+                        } else if (((Packet) data).getProtocol() == Protocol.START_GAME) {
+                            MultiModeRoom enteredRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
+                            broadcastToRoomUsers(enteredRoom, new Packet(Protocol.START_GAME, enteredRoom));
                         }
-                        }else if(data instanceof String){
-                            System.out.println((String) data);
-                        }
+                    } else if(data instanceof String){
+                        System.out.println((String) data);
+                    }
 
                     printRoomListInfo(RoomManager.getRoomList());
 

@@ -47,12 +47,14 @@ import MultiMode.UserDistance;
 public class MultiModePlayFragment extends Fragment {
 
     private final List<LatLng> pathPoints = new ArrayList<>();
+
+    //MultiModeUser user = new MultiModeUser(1, "choco");
+    MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
+    //MultiModeUser user = new MultiModeUser(3, "apple");
+
     SocketManager socketManager = SocketManager.getInstance();
     ObjectOutputStream oos;
     MultiModeRoom selectedRoom;
-    //MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
-    //MultiModeUser user = new MultiModeUser(3, "apple");
-    MultiModeUser user = new MultiModeUser(1, "choco");
     double distance = 0;
     FusedLocationProviderClient fusedLocationClient;
     LocationCallback locationCallback;
@@ -66,8 +68,9 @@ public class MultiModePlayFragment extends Fragment {
     TextView silverNickNameTextView;
     TextView bronzeDistanceTextView;
     TextView bronzeNickNameTextView;
-
     ProgressBar progressBar;
+    LocalDateTime gameStartTime;
+
     private final Handler top3UpdateHandler = new Handler(Looper.getMainLooper()) {//탑3 유저 업데이트. 아마 handleMessage 코드가 실제로 실행되는지는 모르겟음
         @Override
         public void handleMessage(Message msg) {
@@ -101,14 +104,15 @@ public class MultiModePlayFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         selectedRoom = (MultiModeRoom) getArguments().getSerializable("room");
-        socketListenerThread = (SocketListenerThread) getArguments().getSerializable("socketListenerThread"); //waitFragment의 socketListenrThread객체 가져와서 이어서 사용
-        socketListenerThread.addPlayFragment(this);
-        socketListenerThread.resumeListening();
+        //socketListenerThread = (SocketListenerThread) getArguments().getSerializable("socketListenerThread"); //waitFragment의 socketListenrThread객체 가져와서 이어서 사용
+        //socketListenerThread.addPlayFragment(this);
+        //socketListenerThread.resumeListening();
 //        try {
 //            socketManager.openSocket();
 //        } catch (IOException e) {
 //            throw new RuntimeException(e);
 //        }
+        gameStartTime = LocalDateTime.now();
 
         mainActivity = (MainActivity2) getActivity();
         locationRequest = LocationRequest.create();
@@ -187,7 +191,8 @@ public class MultiModePlayFragment extends Fragment {
             public void run() {
                 if (selectedRoom != null) {
                     LocalDateTime currentTime = LocalDateTime.now();
-                    Duration present = Duration.between(selectedRoom.getStartTime(), currentTime);
+                    //Duration present = Duration.between(selectedRoom.getStartTime(), currentTime);
+                    Duration present = Duration.between(gameStartTime, currentTime);
                     long secondsElapsed = present.getSeconds();
 
                     // 시간, 분, 초로 변환
