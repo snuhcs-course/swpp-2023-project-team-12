@@ -34,7 +34,7 @@ public class UserSettingFragment extends Fragment {
         final TextView textView = binding.textUserSetting;
         userSettingViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
 
-        AppCompatButton logoutButton = root.findViewById(R.id.LogoutBtn); // 수정된 부분
+        AppCompatButton logoutButton = root.findViewById(R.id.LogoutBtn);
 
         logoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -43,7 +43,7 @@ public class UserSettingFragment extends Fragment {
             }
         });
 
-        return root;  // 이 부분이 올바른 위치로 이동되었습니다.
+        return root;
     }
 
     private void logoutUser() {

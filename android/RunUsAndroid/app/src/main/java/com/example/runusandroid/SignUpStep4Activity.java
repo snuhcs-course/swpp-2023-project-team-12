@@ -18,7 +18,7 @@ public class SignUpStep4Activity extends AppCompatActivity {
     private EditText signUpHeightInput;
     private EditText signUpWeightInput;
     private EditText signUpAgeInput;
-    private EditText signUpGenderInput;  // 추가
+    private EditText signUpGenderInput;
     private Button completeButton;
     private AccountApi accountApi;
 
