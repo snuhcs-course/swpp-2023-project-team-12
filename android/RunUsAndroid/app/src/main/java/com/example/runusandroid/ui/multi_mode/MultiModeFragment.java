@@ -43,10 +43,10 @@ import MultiMode.RoomCreateInfo;
 public class MultiModeFragment extends Fragment {
 
 
-    //MultiModeUser user = new MultiModeUser(3, "apple");
+    public static MultiModeUser user = new MultiModeUser(1, "choco");
+    //public static MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
+    //public static MultiModeUser user = new MultiModeUser(3, "apple");
     private final SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
-    MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
-    //MultiModeUser user = new MultiModeUser(1, "choco");
     Dialog dialog;
     private Button createRoomButton;
     private RecyclerView recyclerView;
@@ -114,8 +114,8 @@ public class MultiModeFragment extends Fragment {
                 if (startTime.isBefore(now)) {
                     startTime = startTime.plusDays(1);
                 }
-                //RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, distance, LocalDateTime.now().plusSeconds(5), numRunners, duration);
-                RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, 0, startTime, numRunners, duration);
+                RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, 0, LocalDateTime.now().plusSeconds(5), numRunners, duration);
+                //RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, 0, startTime, numRunners, duration);
                 new SendRoomInfoTask().execute(roomInfo); //소켓에 연결하여 패킷 전송
 
             }
@@ -276,4 +276,6 @@ public class MultiModeFragment extends Fragment {
 
         }
     }
+
+
 }

@@ -7,16 +7,17 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 public class MultiModeRoom implements Serializable {
-
-
     private static final long serialVersionUID = 1L;
+    private final int GAME_STARTED = 1;
+    private final int GAME_NOT_STARTED = 0;
+    private final transient List<ObjectOutputStream> clientOutputStreams = new ArrayList<>();
+    private int status = GAME_NOT_STARTED;
+    private final HashSet<Integer> finishedUserSet = new HashSet<>();
+    private int finishCount = 0;
     private int id; // 룸 ID
     private List<MultiModeUser> userList; //유저 정보
     private MultiModeUser roomOwner; // 방장
-
     private RoomCreateInfo roomCreateInfo; //방 정보
-    private final transient List<ObjectOutputStream> clientOutputStreams = new ArrayList<>();
-
     private String title; //방 제목
     private double distance; //목표 거리
     private int numRunners; //제한 인원
@@ -26,6 +27,7 @@ public class MultiModeRoom implements Serializable {
     private Duration duration; //목표 시간(달리는 시간)
 
     private Queue<UserDistance> updateQueue = new LinkedList<>();
+
 
     public MultiModeRoom(int roomId, RoomCreateInfo roomCreateInfo) { // 유저가 방을 만들때
         userList = new ArrayList<MultiModeUser>();
@@ -76,6 +78,10 @@ public class MultiModeRoom implements Serializable {
         }
 
         if (userList.size() < 1) {
+            System.out.println("exitroom - roomId is " + id);
+            System.out.println();
+            System.out.println();
+            System.out.println();
             RoomManager.removeRoom(this);
             return index;
         }
@@ -158,7 +164,7 @@ public class MultiModeRoom implements Serializable {
         this.roomOwner = roomOwner;
     }
 
-    public Duration getDuration(){
+    public Duration getDuration() {
         return duration;
     }
 
@@ -183,18 +189,15 @@ public class MultiModeRoom implements Serializable {
         userList.add(user);
     }
 
-    public boolean isRoomOwner(MultiModeUser user){
-        if(user.getId() == roomOwner.getId()){
-            return true;
-        }
-        return false;
+    public boolean isRoomOwner(MultiModeUser user) {
+        return user.getId() == roomOwner.getId();
     }
 
-    public void updateDistance(UserDistance userDistance){ //유저의 distance를 업데이트
+    public void updateDistance(UserDistance userDistance) { //유저의 distance를 업데이트
         updateQueue.add(userDistance);
     }
 
-    public UserDistance[] getTop3UserDistance(){ //탑3 유저 distance를 리턴
+    public UserDistance[] getTop3UserDistance() { //탑3 유저 distance를 리턴
         if (updateQueue.size() >= userList.size()) {
             // userList의 크기만큼의 원소를 updateQueue에서 빼내어 저장할 리스트
             List<UserDistance> topUserDistances = new ArrayList<>();
@@ -223,8 +226,24 @@ public class MultiModeRoom implements Serializable {
 
             return top3UserDistances;
         }
+
         return null;
     }
+
+    public void addFinishCount(MultiModeUser user) {
+        if (!finishedUserSet.contains(user.getId())) {
+            finishCount++;
+        }
+    }
+
+    public boolean checkGameFinished() {
+        return finishCount == userList.size();
+    }
+
+    public void startGame(){
+        status = GAME_STARTED;
+    }
+
 
     @Override
     public int hashCode() {

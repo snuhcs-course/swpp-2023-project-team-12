@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/goal_box"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:id="@+id/pace_present_box"
+            android:layout_width="167dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintLeft_toLeftOf="parent"
+
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/pace_present_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="현재 페이스"
+                android:textAppearance="@style/multi_room_play_goal" />
+
+            <TextView
+                android:id="@+id/pace_present_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="--:--"
+                android:textAppearance="@style/multi_room_play_goal" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/time_goal_box"
+            android:layout_width="167dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/time_goal_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="목표 시간"
+                android:textAppearance="@style/multi_room_play_goal" />
+
+            <TextView
+                android:id="@+id/time_goal_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="00:00:00"
+                android:textAppearance="@style/multi_room_play_goal" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <View
+        android:id="@+id/gray_box"
+        android:layout_width="match_parent"
+        android:layout_height="360dp"
+        android:background="#D9D9D9"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/goal_box" />
+
+    <ProgressBar
+        android:id="@+id/linear_progress_bar"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="326dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:max="100"
+        android:progress="0"
+        android:progressDrawable="@drawable/custom_progress_bar"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/gray_box" />
+
+    <LinearLayout
+        android:id="@+id/top_3_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="120dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/gray_box">
+
+        <FrameLayout
+            android:layout_width="326dp"
+            android:layout_height="52dp"
+            android:layout_marginTop="10dp">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/round_shape_multi_room_play_gold" />
+
+            <TextView
+                android:id="@+id/gold_nickname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|start"
+                android:layout_marginLeft="100dp"
+                android:text="-"
+                android:textColor="#FFFFFF" />
+
+            <TextView
+                android:id="@+id/gold_distance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:layout_marginRight="50dp"
+                android:text="-"
+                android:textColor="#FFFFFF" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="326dp"
+            android:layout_height="52dp"
+            android:layout_marginTop="10dp">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/round_shape_multi_room_play_silver" />
+
+
+            <TextView
+                android:id="@+id/silver_nickname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|start"
+                android:layout_marginLeft="100dp"
+                android:text="-"
+                android:textColor="#FFFFFF" />
+
+            <TextView
+                android:id="@+id/silver_distance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:layout_marginRight="50dp"
+                android:text="-"
+                android:textColor="#FFFFFF" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="326dp"
+            android:layout_height="52dp"
+            android:layout_marginTop="10dp">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/round_shape_multi_room_play_bronze" />
+
+            <TextView
+                android:id="@+id/bronze_nickname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|start"
+                android:layout_marginLeft="100dp"
+                android:text="-"
+                android:textColor="#FFFFFF" />
+
+            <TextView
+                android:id="@+id/bronze_distance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:layout_marginRight="50dp"
+                android:text="-"
+                android:textColor="#FFFFFF" />
+        </FrameLayout>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/present_box"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/gray_box">
+
+        <LinearLayout
+            android:id="@+id/distance_present_box"
+            android:layout_width="167dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintLeft_toLeftOf="parent"
+
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/distance_present_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="거리"
+                android:textAppearance="@style/multi_room_play_present" />
+
+            <TextView
+                android:id="@+id/distance_present_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="1km"
+                android:textAppearance="@style/multi_room_play_present" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/time_present_box"
+            android:layout_width="167dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/time_present_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="경과 시간"
+                android:textAppearance="@style/multi_room_play_present" />
+
+            <TextView
+                android:id="@+id/time_present_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:text="00:20:00"
+                android:textAppearance="@style/multi_room_play_present" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/play_leaveButton"
+        android:layout_width="112dp"
+        android:layout_height="39dp"
+        android:background="@drawable/leave_button"
+        android:gravity="center"
+        android:text="나가기"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@navigation/mobile_navigation"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/present_box" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+

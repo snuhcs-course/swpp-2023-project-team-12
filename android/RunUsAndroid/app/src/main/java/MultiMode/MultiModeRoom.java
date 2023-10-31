@@ -7,14 +7,18 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
 
 public class MultiModeRoom implements Serializable {
-
-
     private static final long serialVersionUID = 1L;
+    private final int GAME_STARTED = 1;
+    private final int GAME_NOT_STARTED = 0;
     private final transient List<ObjectOutputStream> clientOutputStreams = new ArrayList<>();
+    private final HashSet<Integer> finishedUserSet = new HashSet<>();
+    private int status = GAME_NOT_STARTED;
+    private int finishCount = 0;
     private int id; // 룸 ID
     private List<MultiModeUser> userList; //유저 정보
     private MultiModeUser roomOwner; // 방장
@@ -28,6 +32,7 @@ public class MultiModeRoom implements Serializable {
     private Duration duration; //목표 시간(달리는 시간)
 
     private Queue<UserDistance> updateQueue;
+
 
     public MultiModeRoom(int roomId, RoomCreateInfo roomCreateInfo) { // 유저가 방을 만들때
         userList = new ArrayList<MultiModeUser>();
@@ -225,6 +230,21 @@ public class MultiModeRoom implements Serializable {
 
         return null;
     }
+
+    public void addFinishCount(MultiModeUser user) {
+        if (!finishedUserSet.contains(user.getId())) {
+            finishCount++;
+        }
+    }
+
+    public boolean checkGameFinished() {
+        return finishCount == userList.size();
+    }
+
+    public void startGame() {
+        status = GAME_STARTED;
+    }
+
 
     @Override
     public int hashCode() {

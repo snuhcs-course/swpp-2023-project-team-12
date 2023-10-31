@@ -11,5 +11,8 @@ public class Protocol {
     public static final int UPDATE_USER_DISTANCE = 7;
     public static final int UPDATE_TOP3_STATES = 8;
     public static final int START_GAME = 9;
+    public static final int EXIT_GAME = 10;
+    public static final int FINISH_GAME = 11;
+    public static final int CLOSE_GAME = 12;
 }
 

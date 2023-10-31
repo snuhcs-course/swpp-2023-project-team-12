@@ -12,7 +12,6 @@ import com.example.runusandroid.R;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.net.Socket;
 import java.net.SocketException;
 
 import MultiMode.MultiModeRoom;
@@ -79,12 +78,19 @@ public class SocketListenerThread extends Thread implements Serializable { // �
                                     selectedRoom.enterUser(user);
                                     waitFragment.addUserNameToWaitingList(user.getNickName());
                                 } else {
+
                                     selectedRoom.exitUser(user);
                                     waitFragment.removeUserNameFromWaitingList(user.getNickName());
                                 }
                                 Log.d("event", "user list: " + room.getUserList());
                                 Log.d("event", "user num: " + room.getUserSize());
                                 waitFragment.updateParticipantCount(room.getUserSize(), room.getNumRunners());
+
+                                if (selectedRoom.getOwner().getId() == user.getId()) { //만약 기존 방장이 방을 나가는 경우 방장 변경
+                                    selectedRoom.setRoomOwner(room.getRoomOwner());
+                                    waitFragment.startGame();
+                                }
+
                             }
                         });
                     } else if (packet.getProtocol() == Protocol.START_GAME) {
@@ -117,6 +123,13 @@ public class SocketListenerThread extends Thread implements Serializable { // �
                                     playFragment.updateTop3UserDistance(userDistances);
                                 }
 
+                            }
+                        });
+                    } else if (packet.getProtocol() == Protocol.CLOSE_GAME) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                UserDistance[] userDistance = packet.getTop3UserDistance();
                             }
                         });
                     }

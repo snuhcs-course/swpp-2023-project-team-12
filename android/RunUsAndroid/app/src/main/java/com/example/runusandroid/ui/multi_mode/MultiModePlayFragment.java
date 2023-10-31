@@ -7,11 +7,11 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -19,6 +19,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
@@ -47,9 +49,9 @@ import MultiMode.UserDistance;
 public class MultiModePlayFragment extends Fragment {
 
     private final List<LatLng> pathPoints = new ArrayList<>();
-
+    MultiModeUser user = MultiModeFragment.user;
     //MultiModeUser user = new MultiModeUser(1, "choco");
-    MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
+    //MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
     //MultiModeUser user = new MultiModeUser(3, "apple");
 
     SocketManager socketManager = SocketManager.getInstance();
@@ -69,24 +71,12 @@ public class MultiModePlayFragment extends Fragment {
     TextView bronzeDistanceTextView;
     TextView bronzeNickNameTextView;
     ProgressBar progressBar;
-    private final Handler top3UpdateHandler = new Handler(Looper.getMainLooper()) {//탑3 유저 업데이트. 아마 handleMessage 코드가 실제로 실행되는지는 모르겟음
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
 
-            if (msg.obj instanceof Packet) {
-                Packet receivedPacket = (Packet) msg.obj;
-                if (receivedPacket.getProtocol() == Protocol.UPDATE_TOP3_STATES) {
-                    UserDistance[] top3UserDistance = receivedPacket.getTop3UserDistance();
-                    updateTop3UserDistance(top3UserDistance);
-
-                }
-            }
-        }
-    };
     LocalDateTime gameStartTime;
     TextView distancePresentContentTextView; //API 사용해서 구한 나의 현재 이동 거리
     TextView pacePresentContentTextView; //API 사용해서 구한 나의 현재 페이스
+
+    Button playLeaveButton;
     SocketListenerThread socketListenerThread = null;
     private TextView timePresentContentTextView;
     private Handler timeHandler;
@@ -103,14 +93,6 @@ public class MultiModePlayFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         selectedRoom = (MultiModeRoom) getArguments().getSerializable("room");
-        //socketListenerThread = (SocketListenerThread) getArguments().getSerializable("socketListenerThread"); //waitFragment의 socketListenrThread객체 가져와서 이어서 사용
-        //socketListenerThread.addPlayFragment(this);
-        //socketListenerThread.resumeListening();
-//        try {
-//            socketManager.openSocket();
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
         gameStartTime = LocalDateTime.now();
 
         mainActivity = (MainActivity2) getActivity();
@@ -132,7 +114,7 @@ public class MultiModePlayFragment extends Fragment {
             distancePresentContentTextView = view.findViewById(R.id.distance_present_content);
             pacePresentContentTextView = view.findViewById(R.id.pace_present_content);
             progressBar = view.findViewById(R.id.linear_progress_bar);
-
+            playLeaveButton = view.findViewById(R.id.play_leaveButton);
             //목표 시간 계산하기 위한 코드
             long secondsRemaining = selectedRoom.getDuration().getSeconds();
 
@@ -146,6 +128,15 @@ public class MultiModePlayFragment extends Fragment {
             timeGoalContentTextView.setText(formattedTime);
 
         }
+
+        playLeaveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new ExitGameTask().execute();
+                NavController navController = Navigation.findNavController(v);
+                navController.navigate(R.id.navigation_multi_mode);
+            }
+        });
 
         //TODO: only draw lines if running is started
         //TODO: doesn't update location when app is in background -> straight lines are drawn from the last location when app is opened again
@@ -215,6 +206,8 @@ public class MultiModePlayFragment extends Fragment {
                 if (isFinished == 0) {
                     // 1초마다 Runnable 실행
                     timeHandler.postDelayed(this, 1000);
+                } else {
+                    new SendFinishedTask().execute();
                 }
             }
         };
@@ -227,7 +220,7 @@ public class MultiModePlayFragment extends Fragment {
             public void run() {
                 Packet requestPacket = new Packet(Protocol.UPDATE_USER_DISTANCE, user, distance);
                 //distance += 1;
-                new SendPacketTask().execute(requestPacket);
+                new SendDistanceTask().execute(requestPacket);
                 if (isFinished == 0) {
                     // 1초마다 Runnable 실행
                     sendDataHandler.postDelayed(this, 5000); // 5초마다 전송. 처음에 socketlistnerthread 설정 때문에 약간의 딜레이가 필요할 듯 함
@@ -263,6 +256,12 @@ public class MultiModePlayFragment extends Fragment {
             goldDistance = top3UserDistance[0].getDistance();
             String goldDistanceString = String.format("%.3fkm", goldDistance);
             goldDistanceTextView.setText(goldDistanceString);
+
+            silverNickNameTextView.setText("-");
+            silverDistanceTextView.setText("-");
+
+            bronzeNickNameTextView.setText("-");
+            bronzeDistanceTextView.setText("-");
         } else if (top3UserDistance.length == 2) {
             goldNickNameTextView.setText(top3UserDistance[0].getUser().getNickName());
             goldDistance = top3UserDistance[0].getDistance();
@@ -274,7 +273,8 @@ public class MultiModePlayFragment extends Fragment {
             String silverDistanceString = String.format("%.3fkm", silverDistance);
             silverDistanceTextView.setText(silverDistanceString);
 
-
+            bronzeNickNameTextView.setText("-");
+            bronzeDistanceTextView.setText("-");
         } else {
             goldNickNameTextView.setText(top3UserDistance[0].getUser().getNickName());
             goldDistance = top3UserDistance[0].getDistance();
@@ -289,7 +289,7 @@ public class MultiModePlayFragment extends Fragment {
             bronzeNickNameTextView.setText(top3UserDistance[2].getUser().getNickName());
             double bronzeDistance = top3UserDistance[2].getDistance();
             String bronzeDistanceString = String.format("%.3fkm", bronzeDistance);
-            silverDistanceTextView.setText(bronzeDistanceString);
+            bronzeDistanceTextView.setText(bronzeDistanceString);
         }
 
         int progress = 0;
@@ -339,7 +339,7 @@ public class MultiModePlayFragment extends Fragment {
         timeHandler.removeCallbacks(timeRunnable);
     }
 
-    private class SendPacketTask extends AsyncTask<Packet, Void, Boolean> { // 서버에 업데이트할 거리 정보 전송
+    private class SendDistanceTask extends AsyncTask<Packet, Void, Boolean> { // 서버에 업데이트할 거리 정보 전송
         @Override
         protected Boolean doInBackground(Packet... packets) {
             boolean success = true;
@@ -375,5 +375,88 @@ public class MultiModePlayFragment extends Fragment {
                 Log.d("SendPacket", "Failed to send packet! distance : " + distance);
             }
         }
+    }
+
+
+    //경기 시간이 종료되었을 경우 해당 유저의 레이스가 종료되었다는 패킷을 보냄
+    private class SendFinishedTask extends AsyncTask<Void, Void, Boolean> {
+        Packet packet;
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            boolean success = true;
+            try {
+                ObjectOutputStream oos = socketManager.getOOS();
+                Packet requestPacket = new Packet(Protocol.FINISH_GAME, user, selectedRoom);
+                oos.writeObject(requestPacket);
+                oos.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+                success = false;
+            } finally {
+                timeHandler.removeCallbacks(timeRunnable);
+                sendDataHandler.removeCallbacks(sendDataRunnable);
+                Log.d("response", "socket closed");
+            }
+            return success;
+        }
+
+        //ExitGameTask 실행 결과에 따라 수행
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (success) {
+                Log.d("SendPacket", "Packet sent successfully!");
+
+            } else {
+                Log.d("ExitSendPacket", "Failed to send packet!");
+            }
+        }
+
+    }
+
+    private class ExitGameTask extends AsyncTask<Void, Void, Boolean> {
+        Packet packet;
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            boolean success = true;
+            try {
+                ObjectOutputStream oos = socketManager.getOOS();
+                Packet requestPacket = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
+                oos.writeObject(requestPacket);
+                oos.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+                success = false;
+            } finally {
+                try {
+                    socketManager.closeSocket();
+                    timeHandler.removeCallbacks(timeRunnable);
+                    sendDataHandler.removeCallbacks(sendDataRunnable);
+                    Log.d("response", "socket closed");
+
+
+                } catch (IOException e) {
+                    Log.d("response", "socket close error");
+                    success = false;
+                }
+
+            }
+            return success;
+        }
+
+        //ExitGameTask 실행 결과에 따라 수행
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (success) {
+                Log.d("SendPacket", "Packet sent successfully!");
+
+            } else {
+                Log.d("ExitSendPacket", "Failed to send packet!");
+            }
+        }
+
     }
 }

@@ -40,14 +40,52 @@ public class MultiModeWaitFragment extends Fragment {
 
     private final Handler handler = new Handler(); // 남은 시간 계산 위한 Handler
     private final int updateTimeInSeconds = 1; // 1초마다 업데이트/
-    //MultiModeUser user = new MultiModeUser(1, "choco"); // 유저 정보 임시로 더미데이터 활용
-    MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
-    //MultiModeUser user = new MultiModeUser(3, "apple");
+    MultiModeUser user = MultiModeFragment.user;
     SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
     private MultiModeRoom selectedRoom; // MultiModeRoom 객체를 저장할 멤버 변수
     private TextView titleTextView;
     private TextView startTimeTextView;
     private TextView timeRemainingTextView;
+    private Duration duration;
+    //남은 시간 계산 로직
+    private final Runnable updateTimeRunnable = new Runnable() {
+        @Override
+        public void run() {
+            // 현재 시간 가져오기
+            LocalDateTime currentDateTime = LocalDateTime.now();
+
+            // startTime 가져오기
+            LocalDateTime startTimeDateTime = selectedRoom.getStartTime();  // startTime을 LocalDateTime 객체로 가정합니다.
+
+            // 남은 시간 계산
+            duration = Duration.between(currentDateTime, startTimeDateTime);
+
+            startGame();
+
+            long secondsRemaining = duration.getSeconds();
+
+            // 시간, 분으로 변환
+            long hours = secondsRemaining / 3600;
+            long minutes = (secondsRemaining % 3600) / 60;
+            long seconds = secondsRemaining % 60;
+
+            // "x시간 x분 남음" 형식으로 문자열 구성
+            String remainingTime;
+            if (hours > 0) {
+                remainingTime = String.format(Locale.getDefault(), "시작까지 %d시간 %d분 남음", hours, minutes);
+            } else if (secondsRemaining >= 0) {
+                remainingTime = String.format(Locale.getDefault(), "시작까지 %d분 %d초 남음", minutes, seconds);
+            } else {
+                remainingTime = "경기가 곧 시작됩니다";
+            }
+
+            // 업데이트된 시간을 텍스트 뷰에 설정
+            timeRemainingTextView.setText(remainingTime);
+
+            // 1초마다 업데이트
+            handler.postDelayed(this, 1000);
+        }
+    };
     private ConstraintLayout waitingListBox;
     private final Handler updateHandler = new Handler(Looper.getMainLooper()) {
         @Override
@@ -75,57 +113,19 @@ public class MultiModeWaitFragment extends Fragment {
     private ObjectInputStream ois;
     private SocketListenerThread socketListenerThread;
 
-    //남은 시간 계산 로직
-    private final Runnable updateTimeRunnable = new Runnable() {
-        @Override
-        public void run() {
-            // 현재 시간 가져오기
-            LocalDateTime currentDateTime = LocalDateTime.now();
-
-            // startTime 가져오기
-            LocalDateTime startTimeDateTime = selectedRoom.getStartTime();  // startTime을 LocalDateTime 객체로 가정합니다.
-
-            // 남은 시간 계산
-            Duration duration = Duration.between(currentDateTime, startTimeDateTime);
-
-            // startTime이 현재 시간보다 앞선 경우
-            if (duration.isNegative() || duration.isZero()) {
-                timeRemainingTextView.setText("시작까지 0분 0초 남음");
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("room", selectedRoom);
-                bundle.putSerializable("user", user);
-                bundle.putSerializable("socketListenerThread", socketListenerThread);
-
-                NavController navController = Navigation.findNavController(requireView());
-                navController.navigate(R.id.navigation_multi_room_play, bundle);
-
-                return;  // Runnable 종료
-            }
-
-            long secondsRemaining = duration.getSeconds();
-
-            // 시간, 분으로 변환
-            long hours = secondsRemaining / 3600;
-            long minutes = (secondsRemaining % 3600) / 60;
-            long seconds = secondsRemaining % 60;
-
-            // "x시간 x분 남음" 형식으로 문자열 구성
-            String remainingTime;
-            if (hours > 0) {
-                remainingTime = String.format(Locale.getDefault(), "시작까지 %d시간 %d분 남음", hours, minutes);
-            } else {
-                remainingTime = String.format(Locale.getDefault(), "시작까지 %d분 %d초 남음", minutes, seconds);
-            }
-
-            // 업데이트된 시간을 텍스트 뷰에 설정
-            timeRemainingTextView.setText(remainingTime);
-
-            // 1초마다 업데이트
-            handler.postDelayed(this, 1000);
-        }
-    };
-
     public MultiModeWaitFragment() {
+    }
+
+    void startGame() {
+        // startTime이 현재 시간보다 앞선 경우
+        if (duration.isNegative() || duration.isZero()) {
+            timeRemainingTextView.setText("곧 경기가 시작됩니다");
+            if (selectedRoom.getRoomOwner().getId() == user.getId()) {
+                new StartRoomTask().execute();
+            }
+
+            // Runnable 종료
+        }
     }
 
     @Override
@@ -178,19 +178,6 @@ public class MultiModeWaitFragment extends Fragment {
             }
         });
 
-        testButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new StartRoomTask().execute();
-                /*
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("room", selectedRoom);
-                bundle.putSerializable("user", user);
-                NavController navController = Navigation.findNavController(requireView());
-                navController.navigate(R.id.navigation_multi_room_play, bundle);
-                 */
-            }
-        });
 
         return view;
     }

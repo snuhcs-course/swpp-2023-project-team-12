@@ -115,23 +115,24 @@ public class Server {
 
 
                             if(updateRoom.isRoomOwner(user)){
-                                UserDistance[] top3UserDistance = null;
-                                while(true){
-                                   top3UserDistance  = updateRoom.getTop3UserDistance();
-                                    if(top3UserDistance != null){
-                                        break;
-                                    }
-                                }
-
-                                for(int i = 0; i < top3UserDistance.length; i++){
-                                    System.out.println("user " + i + " : " + top3UserDistance[0].getUser().getNickName() + " , distance : " + top3UserDistance[0].getDistance());
-                                }
-                                Packet updateTop3Packet = new Packet(Protocol.UPDATE_TOP3_STATES, top3UserDistance);
-                                broadcastToRoomUsers(updateRoom, updateTop3Packet);
+                                updateTop3Users(Protocol.UPDATE_TOP3_STATES, updateRoom);
                             }
                         } else if (((Packet) data).getProtocol() == Protocol.START_GAME) {
                             MultiModeRoom enteredRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
+                            enteredRoom.startGame();
                             broadcastToRoomUsers(enteredRoom, new Packet(Protocol.START_GAME, enteredRoom));
+                        }else if(((Packet) data).getProtocol() == Protocol.EXIT_GAME){
+                            MultiModeRoom exitRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
+                            System.out.println("EXIT_GAME packet received from " + user.getId() + user.getNickName() + "\n\n\n\n");
+                            int index = exitRoom.exitUser(user);
+                            if(index != -1) exitRoom.removeOutputStream(index);
+                        }else if(((Packet) data).getProtocol() == Protocol.FINISH_GAME){
+                            MultiModeRoom finishRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
+                            System.out.println("!!!!!!!!FINISH_GAME packet received from " + user.getId() + user.getNickName() + "\n\n\n\n");
+                            finishRoom.addFinishCount(user);
+                            if(finishRoom.isRoomOwner(user) && finishRoom.checkGameFinished()){
+                                updateTop3Users(Protocol.CLOSE_GAME, finishRoom);
+                            }
                         }
                     } else if(data instanceof String){
                         System.out.println((String) data);
@@ -170,6 +171,23 @@ public class Server {
         } finally { //유저가 경기 방에 있다가 서버와의 연결이 갑자기 끊겼을 때 유저를 방에서 내보내는 코드
         }
     }
+
+    private void updateTop3Users(int protocol, MultiModeRoom room){
+        UserDistance[] top3UserDistance = null;
+        while(true){
+            top3UserDistance  = room.getTop3UserDistance();
+            if(top3UserDistance != null){
+                break;
+            }
+        }
+
+        for(int i = 0; i < top3UserDistance.length; i++){
+            System.out.println("user " + i + " : " + top3UserDistance[0].getUser().getNickName() + " , distance : " + top3UserDistance[0].getDistance());
+        }
+        Packet updateTop3Packet = new Packet(protocol, top3UserDistance);
+        broadcastToRoomUsers(room, updateTop3Packet);
+    }
+
     private void addNewUserToList(MultiModeUser newUser) {
         userList.add(newUser);
     }
