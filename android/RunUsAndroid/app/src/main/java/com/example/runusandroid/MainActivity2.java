@@ -4,15 +4,11 @@ import android.Manifest;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import com.example.runusandroid.ActivityRecognition.UserActivityBroadcastReceiver;
-import com.example.runusandroid.ActivityRecognition.UserActivityTransitionManager;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,15 +17,21 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
 
+import com.example.runusandroid.ActivityRecognition.UserActivityBroadcastReceiver;
+import com.example.runusandroid.ActivityRecognition.UserActivityTransitionManager;
 import com.example.runusandroid.databinding.ActivityMain2Binding;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity2 extends AppCompatActivity {
 
-    private ActivityMain2Binding binding;
-    private FusedLocationProviderClient fusedLocationClient;
     UserActivityTransitionManager activityManager;
     PendingIntent pendingIntent;
     UserActivityBroadcastReceiver activityReceiver;
+    private ActivityMain2Binding binding;
+    private FusedLocationProviderClient fusedLocationClient;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,12 +39,22 @@ public class MainActivity2 extends AppCompatActivity {
         binding = ActivityMain2Binding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+        String token = sharedPreferences.getString("token", null);
+
+        if (token == null) {
+            // 토큰이 저장되어 있지 않으면 로그인되어 있지 않다고 판단하고 LoginActivity로 전환
+            Intent intent = new Intent(MainActivity2.this, LoginActivity.class);
+            startActivity(intent);
+            finish();  // MainActivity2를 종료
+        }
+
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main2);
         NavigationUI.setupWithNavController(binding.navView, navController);
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
                     != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACTIVITY_RECOGNITION}, 1000);
@@ -84,8 +96,9 @@ public class MainActivity2 extends AppCompatActivity {
         activityManager.removeActivityTransitions(pendingIntent);
         super.onPause();
     }
+
     @Override
-    protected void onStop(){
+    protected void onStop() {
         unregisterReceiver(activityReceiver);
         super.onStop();
     }
