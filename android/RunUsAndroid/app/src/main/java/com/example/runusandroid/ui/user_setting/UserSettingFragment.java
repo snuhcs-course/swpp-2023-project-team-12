@@ -47,9 +47,10 @@ public class UserSettingFragment extends Fragment {
     }
 
     private void logoutUser() {
+        // SharedPreferences에서 모든 데이터 삭제
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.remove("user_id");
+        editor.clear();
         editor.apply();
 
         // LoginActivity로 이동
@@ -57,6 +58,7 @@ public class UserSettingFragment extends Fragment {
         startActivity(intent);
         getActivity().finish();
     }
+
 
     @Override
     public void onDestroyView() {

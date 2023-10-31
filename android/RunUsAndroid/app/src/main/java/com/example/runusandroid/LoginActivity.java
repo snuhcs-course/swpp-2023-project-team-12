@@ -19,6 +19,11 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -85,20 +90,48 @@ public class LoginActivity extends AppCompatActivity {
                         if (response.isSuccessful()) {
                             Log.d("Login", "Login Success");
                             Toast.makeText(LoginActivity.this, "Login Success", Toast.LENGTH_SHORT).show();
+                            JSONObject responseBody = null;
+                            try {
+                                String responseBodyString = response.body().string();
+                                responseBody = new JSONObject(responseBodyString);
+                                JSONObject userObject = responseBody.getJSONObject("user");
+                                String username = userObject.getString("username");
+                                String nickname = userObject.getString("nickname");
+                                String email = userObject.getString("email");
+                                String phone_num = userObject.getString("phone_num");
+                                int gender = userObject.getInt("gender");
+                                float height = (float) userObject.getDouble("height");
+                                float weight = (float) userObject.getDouble("weight");
+                                int age = userObject.getInt("age");
 
-                            // 로그인 성공 시 SharePreferences에 아이디 저장
-                            SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
-                            SharedPreferences.Editor editor = sharedPreferences.edit();
-                            editor.putString("user_id", userName);
-                            editor.apply();
+                                String token = responseBody.getJSONObject("jwt_token").getString("access_token");
 
-                            Intent intent = new Intent(LoginActivity.this, MainActivity2.class);
-                            startActivity(intent);
-                            finish();
+                                // 로그인 성공 시 SharePreferences에 유저 정보 및 토큰 저장
+                                SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
+                                SharedPreferences.Editor editor = sharedPreferences.edit();
+                                editor.putString("token", token);
+                                editor.putString("username", username);
+                                editor.putString("nickname", nickname);
+                                editor.putString("email", email);
+                                editor.putString("phone_num", phone_num);
+                                editor.putInt("gender", gender);
+                                editor.putFloat("height", height);
+                                editor.putFloat("weight", weight);
+                                editor.putInt("age", age);
+                                editor.apply();
+                                Log.d("Login", sharedPreferences.getString("phone_num", null));
+                                Intent intent = new Intent(LoginActivity.this, MainActivity2.class);
+                                startActivity(intent);
+                            } catch (JSONException e) {
+                                throw new RuntimeException(e);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
                         } else {
                             Log.d("Login", "Login Failed, Status Code : " + response.code());
                             Toast.makeText(LoginActivity.this, "Login Failed", Toast.LENGTH_SHORT).show();
                         }
+
                     }
 
                     @Override
