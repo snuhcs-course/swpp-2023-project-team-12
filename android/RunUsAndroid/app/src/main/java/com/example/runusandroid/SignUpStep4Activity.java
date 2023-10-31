@@ -31,7 +31,7 @@ public class SignUpStep4Activity extends AppCompatActivity {
         signUpHeightInput = findViewById(R.id.SignUpHeightInput);
         signUpWeightInput = findViewById(R.id.SignUpWeightInput);
         signUpAgeInput = findViewById(R.id.SignUpAgeInput);
-        signUpGenderInput = findViewById(R.id.SignUpGenderInput);  // 추가
+        signUpGenderInput = findViewById(R.id.SignUpGenderInput);
         completeButton = findViewById(R.id.nextButton2);
 
         // Get passed data from previous steps
@@ -51,7 +51,7 @@ public class SignUpStep4Activity extends AppCompatActivity {
                 float height = Float.parseFloat(signUpHeightInput.getText().toString());
                 float weight = Float.parseFloat(signUpWeightInput.getText().toString());
                 int age = Integer.parseInt(signUpAgeInput.getText().toString());
-                int gender = Integer.parseInt(signUpGenderInput.getText().toString());  // 추가
+                int gender = Integer.parseInt(signUpGenderInput.getText().toString());
 
                 // Create sign up data object
                 SignUpData requestData = new SignUpData(

@@ -21,8 +21,9 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="50dp"
         android:background="@drawable/round_shape_for_field"
-        android:hint="    이메일을 입력해 주세요."
+        android:hint=" 이메일을 입력해 주세요."
         android:inputType="text"
+        android:paddingLeft="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/LoginText" />
@@ -42,8 +43,9 @@
         android:layout_width="375dp"
         android:layout_height="wrap_content"
         android:background="@drawable/round_shape_for_field"
-        android:hint="    비밀번호를 입력해 주세요."
+        android:hint=" 비밀번호를 입력해 주세요."
         android:inputType="text"
+        android:paddingLeft="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/PasswordText" />

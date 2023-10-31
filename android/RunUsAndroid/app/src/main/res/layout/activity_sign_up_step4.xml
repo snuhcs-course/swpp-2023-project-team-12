@@ -24,8 +24,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
         android:background="@drawable/round_shape_for_field"
-        android:hint="    키"
+        android:hint=" 키"
         android:inputType="text"
+        android:paddingLeft="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/BodyInfoText" />
@@ -36,8 +37,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
         android:background="@drawable/round_shape_for_field"
-        android:hint="    체중"
+        android:hint=" 체중"
         android:inputType="text"
+        android:paddingLeft="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/SignUpHeightInput" />
@@ -48,8 +50,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
         android:background="@drawable/round_shape_for_field"
-        android:hint="    나이"
+        android:hint=" 나이"
         android:inputType="text"
+        android:paddingLeft="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/SignUpWeightInput" />
@@ -61,8 +64,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
         android:background="@drawable/round_shape_for_field"
-        android:hint="   성별 (1: 남성, 2: 여성)"
+        android:hint=" 성별 (1: 남성, 2: 여성)"
         android:inputType="number"
+        android:paddingLeft="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/SignUpAgeInput" />

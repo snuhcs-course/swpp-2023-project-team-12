@@ -24,8 +24,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="65dp"
         android:background="@drawable/round_shape_for_field"
-        android:hint="    휴대폰 번호"
+        android:hint=" 휴대폰 번호"
         android:inputType="text"
+        android:paddingLeft="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/PhoneNumberText" />

@@ -20,7 +20,6 @@ public class SignUpStep2Activity extends AppCompatActivity {
         signUpNicknameInput = findViewById(R.id.SignUpNicknameInput);
         nextButton2 = findViewById(R.id.nextButton2);
 
-        // 이전 액티비티에서 전달받은 데이터를 가져옵니다.
         Intent intent = getIntent();
         final String userName = intent.getStringExtra("userName");
         final String password = intent.getStringExtra("password");
