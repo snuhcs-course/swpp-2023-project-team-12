@@ -393,8 +393,8 @@ public class MultiModePlayFragment extends Fragment {
                 e.printStackTrace();
                 success = false;
             } finally {
-                timeHandler.removeCallbacks(timeRunnable);
-                sendDataHandler.removeCallbacks(sendDataRunnable);
+                timeHandler.removeCallbacksAndMessages(null);
+                sendDataHandler.removeCallbacksAndMessages(null);
             }
             return success;
         }
@@ -429,9 +429,11 @@ public class MultiModePlayFragment extends Fragment {
                 success = false;
             } finally {
                 try {
+
+                    timeHandler.removeCallbacksAndMessages(null);
+                    sendDataHandler.removeCallbacksAndMessages(null);
                     socketManager.closeSocket();
-                    timeHandler.removeCallbacks(timeRunnable);
-                    sendDataHandler.removeCallbacks(sendDataRunnable);
+
                     Log.d("response", "socket closed");
 
 

@@ -95,6 +95,7 @@ public class LoginActivity extends AppCompatActivity {
                                 String responseBodyString = response.body().string();
                                 responseBody = new JSONObject(responseBodyString);
                                 JSONObject userObject = responseBody.getJSONObject("user");
+                                Long user_id = userObject.getLong("user_id");
                                 String username = userObject.getString("username");
                                 String nickname = userObject.getString("nickname");
                                 String email = userObject.getString("email");
@@ -109,6 +110,7 @@ public class LoginActivity extends AppCompatActivity {
                                 // 로그인 성공 시 SharePreferences에 유저 정보 및 토큰 저장
                                 SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
                                 SharedPreferences.Editor editor = sharedPreferences.edit();
+                                editor.putLong("userid", user_id);
                                 editor.putString("token", token);
                                 editor.putString("username", username);
                                 editor.putString("nickname", nickname);

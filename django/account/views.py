@@ -33,6 +33,7 @@ class LoginView(APIView):
             {
                 "message": "Login Success",
                 "user": {
+                    "user_id": user.id,
                     "username": user.username,
                     "nickname": user.nickname,
                     "email": user.email,

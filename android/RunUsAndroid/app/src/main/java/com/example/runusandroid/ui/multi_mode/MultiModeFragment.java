@@ -1,7 +1,10 @@
 package com.example.runusandroid.ui.multi_mode;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.app.Dialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -40,13 +43,13 @@ import MultiMode.Packet;
 import MultiMode.Protocol;
 import MultiMode.RoomCreateInfo;
 
+
 public class MultiModeFragment extends Fragment {
-
-
     //public static MultiModeUser user = new MultiModeUser(1, "choco");
-    public static MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
+    public static MultiModeUser user; // 유저 정보 임시로 더미데이터 활용
     //public static MultiModeUser user = new MultiModeUser(3, "apple");
     private final SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
+    SharedPreferences sharedPreferences;
     Dialog dialog;
     private Button createRoomButton;
     private RecyclerView recyclerView;
@@ -134,6 +137,8 @@ public class MultiModeFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
+        user = new MultiModeUser((int) sharedPreferences.getLong("user_id", 99999), sharedPreferences.getString("nickname", "guest"));
         View view = inflater.inflate(R.layout.fragment_multi_mode, container, false);
 
         recyclerView = view.findViewById(R.id.recyclerView);
