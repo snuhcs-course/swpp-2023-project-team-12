@@ -29,7 +29,7 @@ public class MainActivity2 extends AppCompatActivity {
     private FusedLocationProviderClient fusedLocationClient;
     UserActivityTransitionManager activityManager;
     PendingIntent pendingIntent;
-    UserActivityBroadcastReceiver activityReceiver;
+    public UserActivityBroadcastReceiver activityReceiver;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

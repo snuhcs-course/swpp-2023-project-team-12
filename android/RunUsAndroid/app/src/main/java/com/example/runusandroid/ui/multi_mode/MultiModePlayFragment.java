@@ -49,6 +49,8 @@ import MultiMode.UserDistance;
 public class MultiModePlayFragment extends Fragment {
 
     private final List<LatLng> pathPoints = new ArrayList<>();
+    LocalDateTime iterationStartTime;
+    private final List<Double> pace = new ArrayList<>(); // 매 km 마다 속력 (km/h)
     MultiModeUser user = MultiModeFragment.user;
     //MultiModeUser user = new MultiModeUser(1, "choco");
     //MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
@@ -92,6 +94,7 @@ public class MultiModePlayFragment extends Fragment {
 
         selectedRoom = (MultiModeRoom) getArguments().getSerializable("room");
         gameStartTime = LocalDateTime.now();
+        iterationStartTime = gameStartTime;
 
         mainActivity = (MainActivity2) getActivity();
         locationRequest = LocationRequest.create();
@@ -149,16 +152,29 @@ public class MultiModePlayFragment extends Fragment {
                     LatLng newPoint = new LatLng(location.getLatitude(), location.getLongitude());
                     pathPoints.add(newPoint);
 
+                    int lastDistanceInt = (int) distance;
+
                     // TODO: check calculate distance
                     if (newPoint != null) {
-                        // first few points might be noisy
-                        if (pathPoints.size() > 5) {
+                        // first few points might be noisy && while activity is running (or walking)
+                        if (pathPoints.size() > 5 && mainActivity.activityReceiver.getIsRunning()) {
                             Location lastLocation = new Location("");
                             lastLocation.setLatitude(pathPoints.get(pathPoints.size() - 2).latitude);
                             lastLocation.setLongitude(pathPoints.get(pathPoints.size() - 2).longitude);
                             // unit : meter -> kilometer
                             distance += location.distanceTo(lastLocation) / (double) 1000;
                             Log.d("test:distance", "Distance:" + distance);
+                            // update pace if new iteration started (every 1km)
+                            if ((int)distance != lastDistanceInt) {
+                                LocalDateTime currentTime = LocalDateTime.now();
+                                Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
+                                long secondsDuration = iterationDuration.getSeconds();
+                                double newPace = 1.0 / (secondsDuration / 3600.0);
+
+                                pace.add(newPace);
+                                iterationStartTime = currentTime;
+
+                            }
                         }
                     }
                     // update distance text
