@@ -26,6 +26,7 @@ public class SocketListenerThread extends Thread implements Serializable { // �
     private final MultiModeRoom selectedRoom;
     private MultiModeWaitFragment waitFragment = null;
     private MultiModePlayFragment playFragment = null;
+    private MultiModeResultFragment resultFragment = null;
     private boolean isPaused = false; // 일시 중지 상태 관리 플래그
 
     public SocketListenerThread(MultiModeWaitFragment waitFragment, Handler handler, MultiModeRoom selectedRoom, ObjectInputStream ois) {
@@ -48,6 +49,10 @@ public class SocketListenerThread extends Thread implements Serializable { // �
 
     public void addPlayFragment(MultiModePlayFragment playFragment) {
         this.playFragment = playFragment;
+    }
+
+    public void addResultFragment(MultiModeResultFragment resultFragment) {
+        this.resultFragment = resultFragment;
     }
 
     @Override
@@ -101,6 +106,7 @@ public class SocketListenerThread extends Thread implements Serializable { // �
                                 bundle.putSerializable("room", selectedRoom);
                                 bundle.putSerializable("socketListenerThread", SocketListenerThread.this);
                                 NavController navController = Navigation.findNavController(waitFragment.requireView());
+                                Log.d("response", "goto play screen");
                                 navController.navigate(R.id.navigation_multi_room_play, bundle);
                             }
                         });
@@ -126,10 +132,30 @@ public class SocketListenerThread extends Thread implements Serializable { // �
                             }
                         });
                     } else if (packet.getProtocol() == Protocol.CLOSE_GAME) {
+                        Log.d("response", "got close game packet!!!!!");
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                UserDistance[] userDistance = packet.getTop3UserDistance();
+
+                                playFragment.timeHandler.removeCallbacks(playFragment.timeRunnable);
+                                playFragment.sendDataHandler.removeCallbacks(playFragment.sendDataRunnable);
+                                Bundle bundle = new Bundle();
+                                bundle.putSerializable("room", selectedRoom);
+                                bundle.putSerializable("socketListenerThread", SocketListenerThread.this);
+                                bundle.putSerializable("top3UserDistance", packet.getTop3UserDistance());
+                                bundle.putSerializable("userDistance", playFragment.distance);
+                                Log.d("response", "go to room result screen");
+                                NavController navController = Navigation.findNavController(playFragment.requireView());
+                                navController.navigate(R.id.navigation_multi_room_result, bundle);
+                                Log.d("response", packet.getTop3UserDistance() + " ");
+                                Log.d("response", resultFragment + "");
+
+//                                resultFragment.updateTop3UserDistance(packet.getTop3UserDistance());
+                                try {
+                                    playFragment.socketManager.closeSocket();
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
                             }
                         });
                     }

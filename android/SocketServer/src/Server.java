@@ -114,7 +114,8 @@ public class Server {
                             updateRoom.updateDistance(new UserDistance(user, distance));
 
 
-                            if(updateRoom.isRoomOwner(user)){
+                            if(updateRoom.canUpdate()){
+                                System.out.println("update top3 distance : " + updateRoom);
                                 updateTop3Users(Protocol.UPDATE_TOP3_STATES, updateRoom);
                             }
                         } else if (((Packet) data).getProtocol() == Protocol.START_GAME) {
@@ -130,8 +131,11 @@ public class Server {
                             MultiModeRoom finishRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
                             System.out.println("!!!!!!!!FINISH_GAME packet received from " + user.getId() + user.getNickName() + "\n\n\n\n");
                             finishRoom.addFinishCount(user);
-                            if(finishRoom.isRoomOwner(user) && finishRoom.checkGameFinished()){
-                                updateTop3Users(Protocol.CLOSE_GAME, finishRoom);
+                            if(finishRoom.checkGameFinished()){
+                                System.out.println("send packet");
+                                System.out.println(finishRoom);
+                                sendResultTop3Users(Protocol.CLOSE_GAME, finishRoom);
+                                RoomManager.removeRoom(finishRoom);
                             }
                         }
                     } else if(data instanceof String){
@@ -174,12 +178,32 @@ public class Server {
 
     private void updateTop3Users(int protocol, MultiModeRoom room){
         UserDistance[] top3UserDistance = null;
+        System.out.println("here");
         while(true){
             top3UserDistance  = room.getTop3UserDistance();
             if(top3UserDistance != null){
                 break;
             }
         }
+        System.out.println("there");
+
+        for(int i = 0; i < top3UserDistance.length; i++){
+            System.out.println("user " + i + " : " + top3UserDistance[0].getUser().getNickName() + " , distance : " + top3UserDistance[0].getDistance());
+        }
+        Packet updateTop3Packet = new Packet(protocol, top3UserDistance);
+        broadcastToRoomUsers(room, updateTop3Packet);
+    }
+
+    private void sendResultTop3Users(int protocol, MultiModeRoom room){
+        UserDistance[] top3UserDistance = null;
+        System.out.println("here");
+        while(true){
+            top3UserDistance  = room.getResultTop3UserDistances();
+            if(top3UserDistance != null){
+                break;
+            }
+        }
+        System.out.println("there");
 
         for(int i = 0; i < top3UserDistance.length; i++){
             System.out.println("user " + i + " : " + top3UserDistance[0].getUser().getNickName() + " , distance : " + top3UserDistance[0].getDistance());
@@ -209,6 +233,8 @@ public class Server {
         System.out.println("numbers of oos list : "+oosList.size());
         if(packet.getProtocol() == Protocol.UPDATE_TOP3_STATES){
             System.out.println("send top3 packet " + packet.getProtocol() + " 1st user is " + packet.getTop3UserDistance()[0].getUser().getNickName());
+        }else if(packet.getProtocol() == Protocol.CLOSE_GAME){
+            System.out.println("!!!send close room packet " + packet.getProtocol() + " 1st user is " + packet.getTop3UserDistance()[0].getUser().getNickName());
         }
         for(int i=0; i<oosList.size(); i++){
             ObjectOutputStream oos = oosList.get(i);

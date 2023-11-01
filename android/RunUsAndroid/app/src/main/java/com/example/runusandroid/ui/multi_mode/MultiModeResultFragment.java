@@ -1,6 +1,7 @@
 package com.example.runusandroid.ui.multi_mode;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,10 +19,10 @@ import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
 
 import java.io.ObjectOutputStream;
-import java.util.Locale;
 
 import MultiMode.MultiModeRoom;
 import MultiMode.MultiModeUser;
+import MultiMode.UserDistance;
 
 public class MultiModeResultFragment extends Fragment {
 
@@ -47,8 +48,9 @@ public class MultiModeResultFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
+        selectedRoom = (MultiModeRoom) getArguments().getSerializable("room");
 
-        View view = inflater.inflate(R.layout.fragment_multi_room_play, container, false); //각종 view 선언
+        View view = inflater.inflate(R.layout.fragment_multi_room_result, container, false); //각종 view 선언
         if (selectedRoom != null) {
             timeGoalContentTextView = view.findViewById(R.id.time_goal_content);
             goldNickNameTextView = view.findViewById(R.id.gold_nickname);
@@ -58,18 +60,7 @@ public class MultiModeResultFragment extends Fragment {
             bronzeNickNameTextView = view.findViewById(R.id.bronze_nickname);
             bronzeDistanceTextView = view.findViewById(R.id.bronze_distance);
             progressBar = view.findViewById(R.id.linear_progress_bar);
-            playLeaveButton = view.findViewById(R.id.play_leaveButton);
-            //목표 시간 계산하기 위한 코드
-            long secondsRemaining = selectedRoom.getDuration().getSeconds();
-
-            // 시간, 분으로 변환
-            long hours = secondsRemaining / 3600;
-            long minutes = (secondsRemaining % 3600) / 60;
-            long seconds = secondsRemaining % 60;
-            String formattedTime = String.format(Locale.getDefault(), "%02d:%02d:%02d",
-                    hours, minutes, seconds);
-
-            timeGoalContentTextView.setText(formattedTime);
+            playLeaveButton = view.findViewById(R.id.result_leaveButton);
 
         }
 
@@ -83,6 +74,76 @@ public class MultiModeResultFragment extends Fragment {
 
 
         return view;
+
+    }
+
+    public void updateTop3UserDistance(UserDistance[] userDistances) { // 화면에 표시되는 top3 유저 정보 업데이트. socketListenerThread에서 사용
+        UserDistance[] top3UserDistance = userDistances;
+        for (int i = 0; i < userDistances.length; i++) {
+
+            Log.d("response", "In updateTop3UserDistance, top3user " + i + " : " + top3UserDistance[0].getUser().getNickName() + " , distance : " + userDistances[0].getDistance());
+            Log.d("response", "In updateTop3UserDistance, user " + i + " : " + userDistances[0].getUser().getNickName() + " , distance : " + userDistances[0].getDistance());
+
+        }
+        double goldDistance = 0;
+
+        if (top3UserDistance.length == 1) {
+            goldNickNameTextView.setText(top3UserDistance[0].getUser().getNickName());
+            goldDistance = top3UserDistance[0].getDistance();
+            String goldDistanceString = String.format("%.3fkm", goldDistance);
+            goldDistanceTextView.setText(goldDistanceString);
+
+            silverNickNameTextView.setText("-");
+            silverDistanceTextView.setText("-");
+
+            bronzeNickNameTextView.setText("-");
+            bronzeDistanceTextView.setText("-");
+        } else if (top3UserDistance.length == 2) {
+            goldNickNameTextView.setText(top3UserDistance[0].getUser().getNickName());
+            goldDistance = top3UserDistance[0].getDistance();
+            String goldDistanceString = String.format("%.3fkm", goldDistance);
+            goldDistanceTextView.setText(goldDistanceString);
+
+            silverNickNameTextView.setText(top3UserDistance[1].getUser().getNickName());
+            double silverDistance = top3UserDistance[1].getDistance();
+            String silverDistanceString = String.format("%.3fkm", silverDistance);
+            silverDistanceTextView.setText(silverDistanceString);
+
+            bronzeNickNameTextView.setText("-");
+            bronzeDistanceTextView.setText("-");
+        } else {
+            goldNickNameTextView.setText(top3UserDistance[0].getUser().getNickName());
+            goldDistance = top3UserDistance[0].getDistance();
+            String goldDistanceString = String.format("%.3fkm", goldDistance);
+            goldDistanceTextView.setText(goldDistanceString);
+
+            silverNickNameTextView.setText(top3UserDistance[1].getUser().getNickName());
+            double silverDistance = top3UserDistance[1].getDistance();
+            String silverDistanceString = String.format("%.3fkm", silverDistance);
+            silverDistanceTextView.setText(silverDistanceString);
+
+            bronzeNickNameTextView.setText(top3UserDistance[2].getUser().getNickName());
+            double bronzeDistance = top3UserDistance[2].getDistance();
+            String bronzeDistanceString = String.format("%.3fkm", bronzeDistance);
+            bronzeDistanceTextView.setText(bronzeDistanceString);
+        }
+
+
+        progressBar.setProgress(100);
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        socketListenerThread = (SocketListenerThread) getArguments().getSerializable("socketListenerThread"); //waitFragment의 socketListenrThread객체 가져와서 이어서 사용
+        socketListenerThread.addResultFragment(this);
+        socketListenerThread.resumeListening();
+        UserDistance[] top3UserDistance = (UserDistance[]) getArguments().getSerializable("top3UserDistance");
+        updateTop3UserDistance(top3UserDistance);
+        distance = (double) getArguments().getSerializable("userDistance");
+        Log.d("response", "here is room result screen");
+
 
     }
 }

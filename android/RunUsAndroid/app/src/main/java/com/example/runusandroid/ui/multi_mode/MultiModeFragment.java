@@ -43,8 +43,8 @@ import MultiMode.RoomCreateInfo;
 public class MultiModeFragment extends Fragment {
 
 
-    public static MultiModeUser user = new MultiModeUser(1, "choco");
-    //public static MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
+    //public static MultiModeUser user = new MultiModeUser(1, "choco");
+    public static MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
     //public static MultiModeUser user = new MultiModeUser(3, "apple");
     private final SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
     Dialog dialog;
@@ -105,8 +105,8 @@ public class MultiModeFragment extends Fragment {
                 int timePickerCurrentHour = time_picker.getCurrentHour();
                 int timePickerCurrentMinute = time_picker.getCurrentMinute();
 
-                Duration duration = Duration.ofHours(numberPickerHour.getValue()).plusMinutes(numberPickerMinute.getValue());
-                //Duration duration = Duration.ofHours(0).plusMinutes(0).plusSeconds(30);
+                //Duration duration = Duration.ofHours(numberPickerHour.getValue()).plusMinutes(numberPickerMinute.getValue());
+                Duration duration = Duration.ofHours(0).plusMinutes(0).plusSeconds(8);
                 LocalDate today = LocalDate.now();
                 LocalDateTime startTime = LocalDateTime.of(today, LocalTime.of(timePickerCurrentHour, timePickerCurrentMinute));
                 // 현재 시간보다 선택한 시간이 느린 경우 하루 뒤로 설정

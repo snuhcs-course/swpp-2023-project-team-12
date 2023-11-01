@@ -78,13 +78,11 @@ public class MultiModePlayFragment extends Fragment {
 
     Button playLeaveButton;
     SocketListenerThread socketListenerThread = null;
+    Handler timeHandler;
+    Runnable timeRunnable;
+    Handler sendDataHandler;
+    Runnable sendDataRunnable;
     private TextView timePresentContentTextView;
-    private Handler timeHandler;
-    private Runnable timeRunnable;
-
-    private Handler sendDataHandler;
-
-    private Runnable sendDataRunnable;
     private int isFinished = 0;
     private ObjectInputStream ois;
 
@@ -306,6 +304,7 @@ public class MultiModePlayFragment extends Fragment {
         socketListenerThread = (SocketListenerThread) getArguments().getSerializable("socketListenerThread"); //waitFragment의 socketListenrThread객체 가져와서 이어서 사용
         socketListenerThread.addPlayFragment(this);
         socketListenerThread.resumeListening();
+        Log.d("response", "start play screen");
         //top3UpdateHandler.postDelayed(sendDataRunnable, 5000);
 
         fusedLocationClient.removeLocationUpdates(locationCallback);
@@ -396,7 +395,6 @@ public class MultiModePlayFragment extends Fragment {
             } finally {
                 timeHandler.removeCallbacks(timeRunnable);
                 sendDataHandler.removeCallbacks(sendDataRunnable);
-                Log.d("response", "socket closed");
             }
             return success;
         }
@@ -459,4 +457,6 @@ public class MultiModePlayFragment extends Fragment {
         }
 
     }
+
+
 }
