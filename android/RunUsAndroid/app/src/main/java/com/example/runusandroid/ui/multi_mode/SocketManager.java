@@ -27,7 +27,7 @@ public class SocketManager { // 모든 fragment에서 공통의 소켓을 활용
 
     public void openSocket() throws IOException { //소켓 열기
         if (socket == null || socket.isClosed()) {
-            socket = new Socket("192.168.0.4", 5001);
+            socket = new Socket("192.168.1.70", 5001);
 
             //socket = new Socket("172.20.10.3", 5001);
             //socket = new Socket("10.0.2.2", 5001);
