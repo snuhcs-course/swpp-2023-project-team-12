@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.List;
 public class Server {
     private List<ObjectOutputStream> allClientOutputStreams = new ArrayList<>();
-    private List<MultiModeUser> userList = new ArrayList<>();
+//    private List<MultiModeUser> userList = new ArrayList<>();
     private RoomManager roomManager = new RoomManager();
     private ObjectOutputStream oos;
     private static final int PORT = 5001;
@@ -60,21 +60,21 @@ public class Server {
                     if (data instanceof Packet) {
                         connectedUser = ((Packet) data).getUser();
                         user = connectedUser;
-                        int userInUserList = 0;
-                        if(connectedUser != null){
-                            for(MultiModeUser multiModeUser : userList){
-                                if(multiModeUser.getId() == connectedUser.getId()){
-                                    user = multiModeUser;
-                                    userInUserList = 1;
-                                    break;
-                                }
-                            }
-                            userList.add(user);
-                            System.out.println(user.getNickName());
-                        }
-                        if(userInUserList == 0){
-                            userList.add(user);
-                        }
+//                        int userInUserList = 0;
+//                        if(connectedUser != null){
+//                            for(MultiModeUser multiModeUser : userList){
+//                                if(multiModeUser.getId() == connectedUser.getId()){
+//                                    user = multiModeUser;
+//                                    userInUserList = 1;
+//                                    break;
+//                                }
+//                            }
+//                            userList.add(user);
+//                            System.out.println(user.getNickName());
+//                        }
+//                        if(userInUserList == 0){
+//                            userList.add(user);
+//                        }
                         System.out.println("protocol : "+((Packet) data).getProtocol());
 
                         if (((Packet) data).getProtocol() == Protocol.ROOM_LIST) {
@@ -159,21 +159,21 @@ public class Server {
         } catch (SocketException e) {
             MultiModeUser currentUser = null;
             MultiModeRoom exitRoom = null;
-            for(MultiModeUser muser : userList) {
-                if (user.getId() == muser.getId()) {
-                    currentUser = muser;
-                    exitRoom = currentUser.getRoom();
-                    break;
-                }
-            }
-
-            if (connectedUser != null && exitRoom != null) {
-                if(RoomManager.roomCount() != 0){
-                    exitRoom.exitUser(user);
-                    userList.remove(currentUser);
-                    broadcastToRoomUsers(exitRoom, new Packet(Protocol.EXIT_ROOM, user, exitRoom));
-                }
-            }
+//            for(MultiModeUser muser : userList) {
+//                if (user.getId() == muser.getId()) {
+//                    currentUser = muser;
+//                    exitRoom = currentUser.getRoom();
+//                    break;
+//                }
+//            }
+//
+//            if (connectedUser != null && exitRoom != null) {
+//                if(RoomManager.roomCount() != 0){
+//                    exitRoom.exitUser(user);
+//                    userList.remove(currentUser);
+//                    broadcastToRoomUsers(exitRoom, new Packet(Protocol.EXIT_ROOM, user, exitRoom));
+//                }
+//            }
         }
         catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
@@ -237,9 +237,9 @@ public class Server {
         broadcastToRoomUsers(room, updateTop3Packet);
     }
 
-    private void addNewUserToList(MultiModeUser newUser) {
-        userList.add(newUser);
-    }
+//    private void addNewUserToList(MultiModeUser newUser) {
+//        userList.add(newUser);
+//    }
     private void broadcastPacketToAllUsers(Packet packet) {
         synchronized (allClientOutputStreams) {
             for (ObjectOutputStream oos : allClientOutputStreams) {
@@ -276,13 +276,13 @@ public class Server {
         }
     }
 
-    private ObjectOutputStream findOutputStreamByUser(MultiModeUser user) {
-        int index = userList.indexOf(user);
-        if (index != -1 && index < allClientOutputStreams.size()) {
-            return allClientOutputStreams.get(index);
-        }
-        return null;
-    }
+//    private ObjectOutputStream findOutputStreamByUser(MultiModeUser user) {
+//        int index = userList.indexOf(user);
+//        if (index != -1 && index < allClientOutputStreams.size()) {
+//            return allClientOutputStreams.get(index);
+//        }
+//        return null;
+//    }
 
 
 

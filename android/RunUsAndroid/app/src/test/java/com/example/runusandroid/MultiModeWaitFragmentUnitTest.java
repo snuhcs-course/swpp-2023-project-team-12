@@ -26,7 +26,7 @@ public class MultiModeWaitFragmentUnitTest {
 
         // 예상 결과와 실제 결과 비교
         String expectedText = "3/5";
-        assertEquals(expectedText, fragment.participantCountTextView.getText().toString());
+        assertEquals(expectedText, fragment.getParticipantCountTextView().getText().toString());
     }
 
 //    @Test

@@ -94,6 +94,7 @@ public class LoginActivity extends AppCompatActivity {
                             try {
                                 String responseBodyString = response.body().string();
                                 responseBody = new JSONObject(responseBodyString);
+                                Log.d("response", responseBodyString);
                                 JSONObject userObject = responseBody.getJSONObject("user");
                                 Long user_id = userObject.getLong("user_id");
                                 String username = userObject.getString("username");

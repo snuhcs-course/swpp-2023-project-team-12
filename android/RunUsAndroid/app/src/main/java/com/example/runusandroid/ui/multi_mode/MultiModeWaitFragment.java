@@ -112,8 +112,11 @@ public class MultiModeWaitFragment extends Fragment {
     private TextView participantCountTextView;
     private ObjectInputStream ois;
     private SocketListenerThread socketListenerThread;
-
     public MultiModeWaitFragment() {
+    }
+
+    public TextView getParticipantCountTextView() {
+        return participantCountTextView;
     }
 
     void startGame() {

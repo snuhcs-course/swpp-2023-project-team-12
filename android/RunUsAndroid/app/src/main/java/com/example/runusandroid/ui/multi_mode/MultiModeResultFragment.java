@@ -31,6 +31,7 @@ public class MultiModeResultFragment extends Fragment {
     ObjectOutputStream oos;
     MultiModeRoom selectedRoom;
     float distance = 0;
+    NavController navController;
     TextView paceGoalContentTextView;
     MainActivity2 mainActivity;
     TextView timeGoalContentTextView;
@@ -66,7 +67,7 @@ public class MultiModeResultFragment extends Fragment {
         playLeaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                NavController navController = Navigation.findNavController(v);
+                navController = Navigation.findNavController(v);
                 navController.navigate(R.id.navigation_multi_mode);
             }
         });

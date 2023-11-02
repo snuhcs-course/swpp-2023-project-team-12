@@ -104,13 +104,59 @@ public class MultiModePlayFragment extends Fragment {
     private ObjectInputStream ois;
     private int groupHistoryId = 999;
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        gameStartTime = LocalDateTime.now();
+        //경과 시간 업데이트
+        timeHandler = new Handler(Looper.getMainLooper());
+
+        // Runnable을 사용하여 매 초마다 시간 업데이트
+        timeRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (selectedRoom != null) {
+                    LocalDateTime currentTime = LocalDateTime.now();
+                    //Duration present = Duration.between(selectedRoom.getStartTime(), currentTime);
+                    Duration present = Duration.between(gameStartTime, currentTime);
+                    long secondsElapsed = present.getSeconds();
+
+                    // 시간, 분, 초로 변환
+                    long hours = secondsElapsed / 3600;
+                    long minutes = (secondsElapsed % 3600) / 60;
+                    long seconds = secondsElapsed % 60;
+
+                    String formattedTime = String.format(Locale.getDefault(), "%02d:%02d:%02d",
+                            hours, minutes, seconds);
+                    Log.d("response", formattedTime);
+                    timePresentContentTextView.setText(formattedTime);
+
+                    // present가 목표 시간(selectedRoom.getDuration())과 같아지면 업데이트 중지
+                    Log.d("response", "present : " + present.getSeconds());
+                    Log.d("response", "getDuration : " + selectedRoom.getDuration().getSeconds());
+                    if (present.getSeconds() >= selectedRoom.getDuration().getSeconds()) {
+                        timeHandler.removeCallbacks(timeRunnable);
+                        isFinished = 1;
+                    }
+                }
+                if (isFinished == 0) {
+                    // 1초마다 Runnable 실행
+                    timeHandler.postDelayed(this, 1000);
+                } else {
+                    new SendFinishedTask().execute();
+                }
+            }
+        };
+        timeHandler.post(timeRunnable);
+
+    }
+
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
+        Log.d("response", "createPlayFragment");
         selectedRoom = (MultiModeRoom) getArguments().getSerializable("room");
-        gameStartTime = LocalDateTime.now();
         iterationStartTime = gameStartTime;
         historyApi = RetrofitClient.getClient().create(HistoryApi.class);
 
@@ -205,47 +251,6 @@ public class MultiModePlayFragment extends Fragment {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(mainActivity);
 
-
-        //경과 시간 업데이트
-        timeHandler = new Handler(Looper.getMainLooper());
-
-        // Runnable을 사용하여 매 초마다 시간 업데이트
-        timeRunnable = new Runnable() {
-            @Override
-            public void run() {
-                if (selectedRoom != null) {
-                    LocalDateTime currentTime = LocalDateTime.now();
-                    //Duration present = Duration.between(selectedRoom.getStartTime(), currentTime);
-                    Duration present = Duration.between(gameStartTime, currentTime);
-                    long secondsElapsed = present.getSeconds();
-
-                    // 시간, 분, 초로 변환
-                    long hours = secondsElapsed / 3600;
-                    long minutes = (secondsElapsed % 3600) / 60;
-                    long seconds = secondsElapsed % 60;
-
-                    String formattedTime = String.format(Locale.getDefault(), "%02d:%02d:%02d",
-                            hours, minutes, seconds);
-                    Log.d("response", formattedTime);
-                    timePresentContentTextView.setText(formattedTime);
-
-                    // present가 목표 시간(selectedRoom.getDuration())과 같아지면 업데이트 중지
-                    Log.d("response", "present : " + present.getSeconds());
-                    Log.d("response", "getDuration : " + selectedRoom.getDuration().getSeconds());
-                    if (present.getSeconds() >= selectedRoom.getDuration().getSeconds()) {
-                        timeHandler.removeCallbacks(timeRunnable);
-                        isFinished = 1;
-                    }
-                }
-                if (isFinished == 0) {
-                    // 1초마다 Runnable 실행
-                    timeHandler.postDelayed(this, 1000);
-                } else {
-                    new SendFinishedTask().execute();
-                }
-            }
-        };
-        timeHandler.post(timeRunnable);
 
         //5초마다 현재 이동 거리 전송
         sendDataHandler = new Handler(Looper.getMainLooper());
