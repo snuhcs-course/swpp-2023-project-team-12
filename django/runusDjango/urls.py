@@ -33,6 +33,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("DATA_APP/", include("DATA_APP.urls")),
     path("account/", include("account.urls")),
+    path("history/", include("history.urls")),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("", include(router.urls)),

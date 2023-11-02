@@ -35,6 +35,7 @@ ALLOWED_HOSTS = [
     ".ap-northeast-2.compute.amazonaws.com",
     "google.com",
     "10.0.2.2",
+    "192.168.0.4",
 ]
 
 
@@ -53,6 +54,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "account",
     "DATA_APP",
+    "history"
 ]
 
 MIDDLEWARE = [
@@ -128,7 +130,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "ko-kr"
 
-TIME_ZONE = "Asia/Seoul"
+TIME_ZONE = 'Asia/Seoul'
 
 USE_I18N = True
 

@@ -2,17 +2,18 @@ package MultiMode;
 
 import java.io.Serializable;
 
-public class UserDistance  implements Serializable {
+public class UserDistance implements Serializable {
 
 
     MultiModeUser user;
 
-    double distance;
+    float distance;
 
-    public UserDistance(MultiModeUser user, double distance){
+    public UserDistance(MultiModeUser user, float distance) {
         this.user = user;
         this.distance = distance;
     }
+
     public MultiModeUser getUser() {
         return user;
     }
@@ -21,11 +22,11 @@ public class UserDistance  implements Serializable {
         this.user = user;
     }
 
-    public double getDistance() {
+    public float getDistance() {
         return distance;
     }
 
-    public void setDistance(double distance) {
+    public void setDistance(float distance) {
         this.distance = distance;
     }
 }

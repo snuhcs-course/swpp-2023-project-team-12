@@ -138,7 +138,7 @@ public class MultiModeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
-        user = new MultiModeUser((int) sharedPreferences.getLong("user_id", 99999), sharedPreferences.getString("nickname", "guest"));
+        user = new MultiModeUser((int) sharedPreferences.getLong("userid", 99999), sharedPreferences.getString("nickname", "guest"));
         View view = inflater.inflate(R.layout.fragment_multi_mode, container, false);
 
         recyclerView = view.findViewById(R.id.recyclerView);

@@ -17,7 +17,7 @@ public class MultiModeRoom implements Serializable {
     private final int GAME_STARTED = 1;
     private final int GAME_NOT_STARTED = 0;
     private final transient List<ObjectOutputStream> clientOutputStreams = new ArrayList<>();
-    private final HashSet<Integer> finishedUserSet = new HashSet<>();
+    private final HashSet<Long> finishedUserSet = new HashSet<>();
     private final Queue<UserDistance> updateQueue = new LinkedList<>();
     UserDistance[] top3UserDistances;
     private int status = GAME_NOT_STARTED;
@@ -272,6 +272,18 @@ public class MultiModeRoom implements Serializable {
         return updateQueue.size() >= userList.size();
     }
 
+    public ObjectOutputStream getRoomOwnerOos() {
+        int index = -1;
+        for (int i = 0; i < userList.size(); i++) {
+            if (roomOwner.getId() == userList.get(i).getId()) {
+                index = i;
+                break;
+            }
+        }
+        if (index != -1) {
+            return clientOutputStreams.get(index);
+        } else return null;
+    }
 
     @Override
     public int hashCode() {

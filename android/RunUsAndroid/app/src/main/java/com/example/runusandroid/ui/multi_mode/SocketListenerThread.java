@@ -9,6 +9,8 @@ import androidx.navigation.Navigation;
 
 import com.example.runusandroid.R;
 
+import org.json.JSONException;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
@@ -131,6 +133,18 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
 
                             }
                         });
+                    } else if (packet.getProtocol() == Protocol.SAVE_GROUP_HISTORY) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    playFragment.saveGroupHistoryData(packet.getTop3UserDistance());
+                                } catch (JSONException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        });
+
                     } else if (packet.getProtocol() == Protocol.CLOSE_GAME) {
                         Log.d("response", "got close game packet!!!!!");
                         handler.post(new Runnable() {
@@ -145,6 +159,11 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
                                 bundle.putSerializable("top3UserDistance", packet.getTop3UserDistance());
                                 bundle.putSerializable("userDistance", playFragment.distance);
                                 Log.d("response", "go to room result screen");
+                                try {
+                                    playFragment.saveHistoryData(packet.getGroupHistoryId());
+                                } catch (JSONException e) {
+                                    throw new RuntimeException(e);
+                                }
                                 NavController navController = Navigation.findNavController(playFragment.requireView());
                                 navController.navigate(R.id.navigation_multi_room_result, bundle);
                                 Log.d("response", packet.getTop3UserDistance() + " ");

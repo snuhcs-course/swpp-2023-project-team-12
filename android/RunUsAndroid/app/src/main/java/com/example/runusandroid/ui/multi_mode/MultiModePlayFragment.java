@@ -22,8 +22,12 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.example.runusandroid.GroupHistoryData;
+import com.example.runusandroid.HistoryApi;
+import com.example.runusandroid.HistoryData;
 import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
+import com.example.runusandroid.RetrofitClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -31,12 +35,17 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -45,21 +54,25 @@ import MultiMode.MultiModeUser;
 import MultiMode.Packet;
 import MultiMode.Protocol;
 import MultiMode.UserDistance;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MultiModePlayFragment extends Fragment {
-
     private final List<LatLng> pathPoints = new ArrayList<>();
+    private final List<Float> speedList = new ArrayList<>(); // 매 km 마다 속력 (km/h)
     LocalDateTime iterationStartTime;
-    private final List<Double> pace = new ArrayList<>(); // 매 km 마다 속력 (km/h)
     MultiModeUser user = MultiModeFragment.user;
+    SocketManager socketManager = SocketManager.getInstance();
     //MultiModeUser user = new MultiModeUser(1, "choco");
     //MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
     //MultiModeUser user = new MultiModeUser(3, "apple");
-
-    SocketManager socketManager = SocketManager.getInstance();
     ObjectOutputStream oos;
     MultiModeRoom selectedRoom;
-    double distance = 0;
+    float distance = 0;
+
+    float calories = 0;
     FusedLocationProviderClient fusedLocationClient;
     LocationCallback locationCallback;
     LocationRequest locationRequest;
@@ -73,20 +86,24 @@ public class MultiModePlayFragment extends Fragment {
     TextView bronzeDistanceTextView;
     TextView bronzeNickNameTextView;
     ProgressBar progressBar;
-
     LocalDateTime gameStartTime;
     TextView distancePresentContentTextView; //API 사용해서 구한 나의 현재 이동 거리
     TextView pacePresentContentTextView; //API 사용해서 구한 나의 현재 페이스
-
     Button playLeaveButton;
     SocketListenerThread socketListenerThread = null;
     Handler timeHandler;
     Runnable timeRunnable;
     Handler sendDataHandler;
     Runnable sendDataRunnable;
+    private float minSpeed;
+    private float maxSpeed;
+    private float medianSpeed;
+    private HistoryApi historyApi;
     private TextView timePresentContentTextView;
     private int isFinished = 0;
     private ObjectInputStream ois;
+    private int groupHistoryId = 999;
+
 
     @Nullable
     @Override
@@ -95,13 +112,15 @@ public class MultiModePlayFragment extends Fragment {
         selectedRoom = (MultiModeRoom) getArguments().getSerializable("room");
         gameStartTime = LocalDateTime.now();
         iterationStartTime = gameStartTime;
+        historyApi = RetrofitClient.getClient().create(HistoryApi.class);
 
         mainActivity = (MainActivity2) getActivity();
         locationRequest = LocationRequest.create();
         // TODO: let's find out which interval has best tradeoff
         locationRequest.setInterval(1000); // Update interval in milliseconds
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
+        maxSpeed = 0;
+        minSpeed = 999;
         View view = inflater.inflate(R.layout.fragment_multi_room_play, container, false); //각종 view 선언
         if (selectedRoom != null) {
             timeGoalContentTextView = view.findViewById(R.id.time_goal_content);
@@ -165,13 +184,14 @@ public class MultiModePlayFragment extends Fragment {
                             distance += location.distanceTo(lastLocation) / (double) 1000;
                             Log.d("test:distance", "Distance:" + distance);
                             // update pace if new iteration started (every 1km)
-                            if ((int)distance != lastDistanceInt) {
+                            if ((int) distance != lastDistanceInt) {
                                 LocalDateTime currentTime = LocalDateTime.now();
                                 Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
                                 long secondsDuration = iterationDuration.getSeconds();
-                                double newPace = 1.0 / (secondsDuration / 3600.0);
-
-                                pace.add(newPace);
+                                float newPace = (float) (1.0 / (secondsDuration / 3600.0));
+                                if (newPace > maxSpeed) maxSpeed = newPace;
+                                if (newPace < minSpeed) minSpeed = newPace;
+                                speedList.add(newPace);
                                 iterationStartTime = currentTime;
 
                             }
@@ -354,6 +374,107 @@ public class MultiModePlayFragment extends Fragment {
         timeHandler.removeCallbacks(timeRunnable);
     }
 
+    void saveHistoryData(long groupHistoryId) throws JSONException {
+        if ((int) minSpeed == 999) minSpeed = 0;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        String startTimeString = selectedRoom.getStartTime().format(formatter);
+        String finishTimeString = LocalDateTime.now().format(formatter);
+        long durationInSeconds = selectedRoom.getDuration().getSeconds();
+        HistoryData requestData = new HistoryData(user.getId(), distance, durationInSeconds,
+                true, startTimeString, finishTimeString, calories, true, maxSpeed, minSpeed, calculateMedian(speedList), speedList, groupHistoryId);
+
+        historyApi.postHistoryData(requestData).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Log.d("response", "Send History Success");
+                } else {
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            }
+        });
+    }
+
+    void saveGroupHistoryData(UserDistance[] userDistances) throws JSONException {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        String startTimeString = selectedRoom.getStartTime().format(formatter);
+        long durationInSeconds = selectedRoom.getDuration().getSeconds();
+        GroupHistoryData requestData;
+        if (userDistances.length == 3) {
+            long firstPlaceUserId = userDistances[0].getUser().getId();
+            float firstPlaceUserDistance = userDistances[0].getDistance();
+            long secondPlaceUserId = userDistances[1].getUser().getId();
+            float secondPlaceUserDistance = userDistances[1].getDistance();
+            long thirdPlaceUserId = userDistances[2].getUser().getId();
+            float thirdPlaceUserDistance = userDistances[2].getDistance();
+            requestData = new GroupHistoryData(selectedRoom.getTitle(), startTimeString, durationInSeconds, selectedRoom.getUserList().size(), firstPlaceUserId, firstPlaceUserDistance, secondPlaceUserId, secondPlaceUserDistance, thirdPlaceUserId, thirdPlaceUserDistance);
+
+        } else if (userDistances.length == 2) {
+            long firstPlaceUserId = userDistances[0].getUser().getId();
+            float firstPlaceUserDistance = userDistances[0].getDistance();
+            long secondPlaceUserId = userDistances[1].getUser().getId();
+            float secondPlaceUserDistance = userDistances[1].getDistance();
+            requestData = new GroupHistoryData(selectedRoom.getTitle(), startTimeString, durationInSeconds, selectedRoom.getUserList().size(), firstPlaceUserId, firstPlaceUserDistance, secondPlaceUserId, secondPlaceUserDistance);
+
+        } else {
+            long firstPlaceUserId = userDistances[0].getUser().getId();
+            float firstPlaceUserDistance = userDistances[0].getDistance();
+            requestData = new GroupHistoryData(selectedRoom.getTitle(), startTimeString, durationInSeconds, selectedRoom.getUserList().size(), firstPlaceUserId, firstPlaceUserDistance);
+
+        }
+
+        historyApi.postGroupHistoryData(requestData).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Log.d("response", "Send History Success");
+                    JSONObject responseBody = null;
+                    String responseBodyString = null;
+                    try {
+                        responseBodyString = response.body().string();
+                        responseBody = new JSONObject(responseBodyString);
+                        Log.d("response", responseBodyString);
+                        groupHistoryId = (int) responseBody.getLong("id");
+                        new SendSavedInfoTask().execute();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                } else {
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            }
+        });
+    }
+
+    public float calculateMedian(List<Float> numbers) {
+        // 리스트를 정렬합니다.
+        Collections.sort(numbers);
+
+        int size = numbers.size();
+        if (size == 0) return 0;
+
+        // 리스트의 크기가 홀수인 경우 중간값을 반환합니다.
+        if (size % 2 == 1) {
+            return numbers.get(size / 2);
+        } else {
+            // 리스트의 크기가 짝수인 경우 중간 두 값을 더한 후 2로 나눈 값을 반환합니다.
+            double middle1 = numbers.get((size - 1) / 2);
+            double middle2 = numbers.get(size / 2);
+            return (float) ((float) (middle1 + middle2) / 2.0);
+        }
+    }
+
     private class SendDistanceTask extends AsyncTask<Packet, Void, Boolean> { // 서버에 업데이트할 거리 정보 전송
         @Override
         protected Boolean doInBackground(Packet... packets) {
@@ -392,7 +513,6 @@ public class MultiModePlayFragment extends Fragment {
         }
     }
 
-
     //경기 시간이 종료되었을 경우 해당 유저의 레이스가 종료되었다는 패킷을 보냄
     private class SendFinishedTask extends AsyncTask<Void, Void, Boolean> {
         Packet packet;
@@ -421,6 +541,38 @@ public class MultiModePlayFragment extends Fragment {
             super.onPostExecute(success);
             if (success) {
                 Log.d("SendPacket", "Packet sent successfully!");
+
+            } else {
+                Log.d("ExitSendPacket", "Failed to send packet!");
+            }
+        }
+
+    }
+
+    private class SendSavedInfoTask extends AsyncTask<Void, Void, Boolean> {
+        Packet packet;
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            boolean success = true;
+            try {
+                ObjectOutputStream oos = socketManager.getOOS();
+                Packet requestPacket = new Packet(Protocol.SAVE_GROUP_HISTORY, user, selectedRoom, groupHistoryId);
+                oos.writeObject(requestPacket);
+                oos.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+                success = false;
+            }
+            return success;
+        }
+
+        //ExitGameTask 실행 결과에 따라 수행
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (success) {
+                Log.d("SendPacket", "Packet  savegroupinfo sent successfully!");
 
             } else {
                 Log.d("ExitSendPacket", "Failed to send packet!");
@@ -475,6 +627,4 @@ public class MultiModePlayFragment extends Fragment {
         }
 
     }
-
-
 }

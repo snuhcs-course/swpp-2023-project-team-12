@@ -11,9 +11,10 @@ public class Packet implements Serializable { //서버와 통신하기 위해 �
     private RoomCreateInfo roomCreateInfo = null;
     // 실제 데이터
     private MultiModeUser user;
-    private double distance;
+    private float distance;
     private MultiModeRoom selectedRoom = null;
     private List<MultiModeRoom> roomList = null; //top3 유저 정보 가져오는 자료구조
+    private long groupHistoryId; //db에 저장된 히스토리 id
 
     public Packet(int protocol, MultiModeUser user) {
         this.protocol = protocol;
@@ -35,6 +36,13 @@ public class Packet implements Serializable { //서버와 통신하기 위해 �
         this.protocol = protocol;
         this.user = user;
         this.selectedRoom = selectedRoom;
+    }
+
+    public Packet(int protocol, MultiModeUser user, MultiModeRoom selectedRoom, long groupHistoryId) {
+        this.protocol = protocol;
+        this.user = user;
+        this.selectedRoom = selectedRoom;
+        this.groupHistoryId = groupHistoryId;
     }
 
     public Packet(int protocol, List<MultiModeRoom> roomList) {
@@ -60,10 +68,24 @@ public class Packet implements Serializable { //서버와 통신하기 위해 �
         this.top3UserDistance = top3UserDistance;
     }
 
-    public Packet(int protocol, MultiModeUser user, double distance) {
+    public Packet(int protocol, UserDistance[] top3UserDistance, long groupHistoryId) {
+        this.protocol = protocol;
+        this.top3UserDistance = top3UserDistance;
+        this.groupHistoryId = groupHistoryId;
+    }
+
+    public Packet(int protocol, MultiModeUser user, float distance) {
         this.protocol = protocol;
         this.user = user;
         this.distance = distance;
+    }
+
+    public long getGroupHistoryId() {
+        return groupHistoryId;
+    }
+
+    public void setGroupHistoryId(long groupHistoryId) {
+        this.groupHistoryId = groupHistoryId;
     }
 
 
@@ -87,7 +109,7 @@ public class Packet implements Serializable { //서버와 통신하기 위해 �
         return roomList;
     }
 
-    public double getDistance() {
+    public float getDistance() {
         return distance;
     }
 

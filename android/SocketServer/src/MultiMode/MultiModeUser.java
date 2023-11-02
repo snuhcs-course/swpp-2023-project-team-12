@@ -6,7 +6,7 @@ import java.net.Socket;
 public class MultiModeUser implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private int id;
+    private long id;
     private MultiModeRoom room;
     private Socket socket;
     private String nickname;
@@ -27,7 +27,7 @@ public class MultiModeUser implements Serializable {
     public void exitRoom(MultiModeRoom room){
         this.room = null;
     }
-    public int getId() {
+    public long getId() {
         return id;
     }
 
@@ -73,6 +73,6 @@ public class MultiModeUser implements Serializable {
 
     @Override
     public int hashCode() {
-        return id;
+        return (int) id;
     }
 }

@@ -30,7 +30,7 @@ public class MultiModeResultFragment extends Fragment {
     SocketManager socketManager = SocketManager.getInstance();
     ObjectOutputStream oos;
     MultiModeRoom selectedRoom;
-    double distance = 0;
+    float distance = 0;
     TextView paceGoalContentTextView;
     MainActivity2 mainActivity;
     TextView timeGoalContentTextView;
@@ -52,7 +52,6 @@ public class MultiModeResultFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_multi_room_result, container, false); //각종 view 선언
         if (selectedRoom != null) {
-            timeGoalContentTextView = view.findViewById(R.id.time_goal_content);
             goldNickNameTextView = view.findViewById(R.id.gold_nickname);
             goldDistanceTextView = view.findViewById(R.id.gold_distance);
             silverNickNameTextView = view.findViewById(R.id.silver_nickname);
@@ -141,7 +140,7 @@ public class MultiModeResultFragment extends Fragment {
         socketListenerThread.resumeListening();
         UserDistance[] top3UserDistance = (UserDistance[]) getArguments().getSerializable("top3UserDistance");
         updateTop3UserDistance(top3UserDistance);
-        distance = (double) getArguments().getSerializable("userDistance");
+        distance = (float) getArguments().getSerializable("userDistance");
         Log.d("response", "here is room result screen");
 
 

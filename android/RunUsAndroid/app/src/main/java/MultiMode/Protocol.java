@@ -13,6 +13,9 @@ public class Protocol {
     public static final int START_GAME = 9;
     public static final int EXIT_GAME = 10;
     public static final int FINISH_GAME = 11;
-    public static final int CLOSE_GAME = 12;
+
+    public static final int SAVE_GROUP_HISTORY = 12;
+
+    public static final int CLOSE_GAME = 13;
 }
 

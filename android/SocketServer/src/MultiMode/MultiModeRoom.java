@@ -17,7 +17,7 @@ public class MultiModeRoom implements Serializable {
     private final int GAME_STARTED = 1;
     private final int GAME_NOT_STARTED = 0;
     private final transient List<ObjectOutputStream> clientOutputStreams = new ArrayList<>();
-    private final HashSet<Integer> finishedUserSet = new HashSet<>();
+    private final HashSet<Long> finishedUserSet = new HashSet<>();
     private final Queue<UserDistance> updateQueue = new LinkedList<>();
     UserDistance[] top3UserDistances;
     private int status = GAME_NOT_STARTED;
@@ -80,11 +80,11 @@ public class MultiModeRoom implements Serializable {
         if (userToRemove != null) {
             System.out.println("remove user: " + userToRemove.getNickName());
             userList.remove(userToRemove);
-            if(top3UserDistances != null){
-                UserDistance[] newTop3UserDistance =  new UserDistance[Math.min(3, userList.size())];
+            if (top3UserDistances != null) {
+                UserDistance[] newTop3UserDistance = new UserDistance[Math.min(3, userList.size())];
                 int arrindex = 0;
-                for(int i = 0; i < top3UserDistances.length; i++){
-                    if(userList.contains(top3UserDistances[i].getUser())){
+                for (int i = 0; i < top3UserDistances.length; i++) {
+                    if (userList.contains(top3UserDistances[i].getUser())) {
                         newTop3UserDistance[arrindex++] = top3UserDistances[i];
                     }
                 }
@@ -268,13 +268,22 @@ public class MultiModeRoom implements Serializable {
         status = GAME_STARTED;
     }
 
-    public boolean canUpdate(){
-        if(updateQueue.size() >= userList.size()){
-            return true;
-        }
-        return false;
+    public boolean canUpdate() {
+        return updateQueue.size() >= userList.size();
     }
 
+    public ObjectOutputStream getRoomOwnerOos() {
+        int index = -1;
+        for (int i = 0; i < userList.size(); i++) {
+            if (roomOwner.getId() == userList.get(i).getId()) {
+                index = i;
+                break;
+            }
+        }
+        if (index != -1) {
+            return clientOutputStreams.get(index);
+        } else return null;
+    }
 
     @Override
     public int hashCode() {
