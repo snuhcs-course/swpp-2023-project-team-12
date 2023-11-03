@@ -1,15 +1,14 @@
 package com.example.runusandroid.ui.single_mode;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.TimeZone;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
 import android.os.SystemClock;
-import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,11 +30,9 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,17 +40,18 @@ import java.util.Locale;
 
 public class SingleModeFragment extends Fragment {
 
-    private FragmentSingleModeBinding binding;
-    private GoogleMap mMap;
-    private List<LatLng> pathPoints = new ArrayList<>();
+    private final List<LatLng> pathPoints = new ArrayList<>();
     Chronometer currentTimeText;
     SimpleDateFormat dateFormat;
     FusedLocationProviderClient fusedLocationClient;
     LocationCallback locationCallback;
     LocationRequest locationRequest;
     MainActivity2 mainActivity;
-
     double distance = 0;
+    private FragmentSingleModeBinding binding;
+    private GoogleMap mMap;
+    private Location lastLocation = null;
+    private float totalDistance = 0;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -64,31 +62,95 @@ public class SingleModeFragment extends Fragment {
         View root = binding.getRoot();
 
         mainActivity = (MainActivity2) getActivity();
-        Button showMissionButton = (Button) binding.showMissionButton;
-        Button quitButton = (Button) binding.quitButton;
-        TextView currentDistanceText = (TextView) binding.currentDistanceText;
-        currentTimeText = (Chronometer) binding.currentTimeText;
+        Button showMissionButton = binding.showMissionButton;
+        Button quitButton = binding.quitButton;
+        Button startButton = binding.startButton;
+        Button MissionButton = binding.showMissionButton;
+        TextView currentDistanceText = binding.currentDistanceText;
+        currentTimeText = binding.currentTimeText;
         currentTimeText.setBase(SystemClock.elapsedRealtime());
+        TextView goalDistanceStaticText = binding.goalDistanceStaticText;
+        TextView goalDistanceText = binding.goalDistanceText;
+        TextView goalTimeStaticText = binding.goalTimeStaticText;
+        TextView goalTimeText = binding.goalTimeText;
 
-        // clicking the quit button will print location in log. for testing
-        quitButton.setOnClickListener(new View.OnClickListener() {
+        MissionButton.setOnClickListener(new View.OnClickListener() {
+            //TODO: 미션 생성 함수에서 받은 값으로 업데이트 해주어야 함
             @Override
             public void onClick(View v) {
-                mainActivity.getLastLocation();
+                goalDistanceStaticText.setText("목표 거리");
+                goalDistanceText.setText("5km");
+                goalTimeStaticText.setText("목표 시간");
+                goalTimeText.setText("01:00:00");
             }
         });
 
         dateFormat = new SimpleDateFormat("HH:mm:ss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 
-        // time ticking begins right away
-        currentTimeText.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
-            public void onChronometerTick(Chronometer chronometer) {
-                long time = SystemClock.elapsedRealtime() - chronometer.getBase();
-                chronometer.setText(dateFormat.format(time));
+        startButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startButton.setVisibility(View.GONE);
+                quitButton.setVisibility(View.VISIBLE);
+                lastLocation = null;
+                totalDistance = 0;
+                currentDistanceText.setText("0.00 km");
+                currentTimeText.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+                    public void onChronometerTick(Chronometer chronometer) {
+                        long time = SystemClock.elapsedRealtime() - chronometer.getBase();
+                        chronometer.setText(dateFormat.format(time));
+                    }
+                });
+                currentTimeText.setBase(SystemClock.elapsedRealtime());
+                currentTimeText.start();
             }
         });
-        currentTimeText.start();
+
+        quitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                quitButton.setVisibility(View.GONE);
+                startButton.setVisibility(View.VISIBLE);
+                mainActivity.getLastLocation(); // ?
+                currentTimeText.stop();
+                View dialogView;
+                Button confirmButton;
+                boolean missionCompleted = true; // TODO: 변수명은 받아와야 함
+
+                LayoutInflater inflater = requireActivity().getLayoutInflater();
+                if (missionCompleted) {
+                    dialogView = inflater.inflate(R.layout.dialog_mission_success, null);
+                    confirmButton = dialogView.findViewById(R.id.buttonConfirm);
+                    TextView elapsedTimeTextView = dialogView.findViewById(R.id.textViewElapsedTimeonSuccess);
+                    TextView distanceTextView = dialogView.findViewById(R.id.textViewDistanceonSuccess);
+                    elapsedTimeTextView.setText("달린 시간: " + currentTimeText.getText());
+                    distanceTextView.setText("달린 거리: " + currentDistanceText.getText());
+                } else {
+                    dialogView = inflater.inflate(R.layout.dialog_mission_failure, null);
+                    confirmButton = dialogView.findViewById(R.id.buttonConfirmFailure);
+                    TextView elapsedTimeTextView = dialogView.findViewById(R.id.textViewElapsedTimeonSuccess);
+                    TextView distanceTextView = dialogView.findViewById(R.id.textViewDistanceonFailure);
+                    elapsedTimeTextView.setText("달린 시간: " + currentTimeText.getText());
+                    distanceTextView.setText("달린 거리: " + currentDistanceText.getText());
+                }
+
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setView(dialogView);
+
+                final AlertDialog dialog = builder.create();
+
+                confirmButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                });
+                dialog.show();
+                // TODO: 1. 미션 성공 여부 확인 2. DB에 러닝 데이터 저장 3. 미션 성공 or 실패 모달 꾸미기
+            }
+        });
 
         locationRequest = LocationRequest.create();
         locationRequest.setInterval(5000); // Update interval in milliseconds
@@ -107,14 +169,6 @@ public class SingleModeFragment extends Fragment {
                     LatLng newPoint = new LatLng(location.getLatitude(), location.getLongitude());
                     pathPoints.add(newPoint);
 
-                    // Update UI (draw line, zoom in)
-                    if (mMap != null) {
-                        mMap.clear(); // Remove previous polylines
-                        mMap.addPolyline(new PolylineOptions().addAll(pathPoints).color(Color.BLUE).width(10));
-                        if (newPoint != null) {
-                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 16));
-                        }
-                    }
                     // get distance
                     if (newPoint != null) {
                         // first few points might be noisy
@@ -123,12 +177,19 @@ public class SingleModeFragment extends Fragment {
                             lastLocation.setLatitude(pathPoints.get(pathPoints.size() - 2).latitude);
                             lastLocation.setLongitude(pathPoints.get(pathPoints.size() - 2).longitude);
                             // unit : meter -> kilometer
-                            distance += location.distanceTo(lastLocation) / (double)1000;
+                            distance += location.distanceTo(lastLocation) / (double) 1000;
                             Log.d("test:distance", "Distance:" + distance);
                         }
                     }
                     // update distance text
-                    currentDistanceText.setText(String.format(Locale.getDefault(), "%.1f"+"km", distance));
+                    currentDistanceText.setText(String.format(Locale.getDefault(), "%.1f" + "km", distance));
+
+                    if (lastLocation != null) {
+                        totalDistance += lastLocation.distanceTo(location);
+                        // Update DistanceTextView
+                        currentDistanceText.setText(String.format("%.2f km", totalDistance / 1000));
+                    }
+                    lastLocation = location;
                 }
             }
         };
@@ -147,8 +208,6 @@ public class SingleModeFragment extends Fragment {
                 mMap.setMyLocationEnabled(true);
             }
         });
-
-
 
 
         // Viewmodel contains status, and when status changes (observe), the text will change
