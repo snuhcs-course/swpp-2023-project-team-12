@@ -107,7 +107,8 @@ public class MultiModePlayFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        gameStartTime = LocalDateTime.now();
+        gameStartTime = (LocalDateTime) getArguments().getSerializable("startTime");
+        Log.d("currentTime", gameStartTime + "");
         //경과 시간 업데이트
         timeHandler = new Handler(Looper.getMainLooper());
 
@@ -126,29 +127,29 @@ public class MultiModePlayFragment extends Fragment {
                     long minutes = (secondsElapsed % 3600) / 60;
                     long seconds = secondsElapsed % 60;
 
-                    String formattedTime = String.format(Locale.getDefault(), "%02d:%02d:%02d",
-                            hours, minutes, seconds);
-                    Log.d("response", formattedTime);
-                    timePresentContentTextView.setText(formattedTime);
-
-                    // present가 목표 시간(selectedRoom.getDuration())과 같아지면 업데이트 중지
-                    Log.d("response", "present : " + present.getSeconds());
-                    Log.d("response", "getDuration : " + selectedRoom.getDuration().getSeconds());
-                    if (present.getSeconds() >= selectedRoom.getDuration().getSeconds()) {
+                    if (present.getSeconds() > selectedRoom.getDuration().getSeconds()) {
                         timeHandler.removeCallbacks(timeRunnable);
                         isFinished = 1;
+                    } else {
+                        String formattedTime = String.format(Locale.getDefault(), "%02d:%02d:%02d",
+                                hours, minutes, seconds);
+                        timePresentContentTextView.setText(formattedTime);
+
                     }
                 }
                 if (isFinished == 0) {
                     // 1초마다 Runnable 실행
                     timeHandler.postDelayed(this, 1000);
                 } else {
-                    new SendFinishedTask().execute();
+                    Packet requestPacket = new Packet(Protocol.FINISH_GAME, user, selectedRoom);
+                    new SendFinishedTask().execute(requestPacket);
                 }
             }
         };
         timeHandler.post(timeRunnable);
-
+        selectedRoom = (MultiModeRoom) getArguments().getSerializable("room");
+        iterationStartTime = gameStartTime;
+        historyApi = RetrofitClient.getClient().create(HistoryApi.class);
     }
 
 
@@ -156,9 +157,7 @@ public class MultiModePlayFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.d("response", "createPlayFragment");
-        selectedRoom = (MultiModeRoom) getArguments().getSerializable("room");
-        iterationStartTime = gameStartTime;
-        historyApi = RetrofitClient.getClient().create(HistoryApi.class);
+
 
         mainActivity = (MainActivity2) getActivity();
         locationRequest = LocationRequest.create();
@@ -198,7 +197,8 @@ public class MultiModePlayFragment extends Fragment {
         playLeaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new ExitGameTask().execute();
+                Packet requestPacket = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
+                new ExitGameTask().execute(requestPacket);
                 NavController navController = Navigation.findNavController(v);
                 navController.navigate(R.id.navigation_multi_mode);
             }
@@ -290,45 +290,27 @@ public class MultiModePlayFragment extends Fragment {
         }
         double goldDistance = 0;
 
-        if (top3UserDistance.length == 1) {
+        if (top3UserDistance.length >= 1) {
             goldNickNameTextView.setText(top3UserDistance[0].getUser().getNickName());
             goldDistance = top3UserDistance[0].getDistance();
             String goldDistanceString = String.format("%.3fkm", goldDistance);
             goldDistanceTextView.setText(goldDistanceString);
 
-            silverNickNameTextView.setText("-");
-            silverDistanceTextView.setText("-");
+            if (top3UserDistance.length >= 2) {
 
-            bronzeNickNameTextView.setText("-");
-            bronzeDistanceTextView.setText("-");
-        } else if (top3UserDistance.length == 2) {
-            goldNickNameTextView.setText(top3UserDistance[0].getUser().getNickName());
-            goldDistance = top3UserDistance[0].getDistance();
-            String goldDistanceString = String.format("%.3fkm", goldDistance);
-            goldDistanceTextView.setText(goldDistanceString);
+                silverNickNameTextView.setText(top3UserDistance[1].getUser().getNickName());
+                double silverDistance = top3UserDistance[1].getDistance();
+                String silverDistanceString = String.format("%.3fkm", silverDistance);
+                silverDistanceTextView.setText(silverDistanceString);
 
-            silverNickNameTextView.setText(top3UserDistance[1].getUser().getNickName());
-            double silverDistance = top3UserDistance[1].getDistance();
-            String silverDistanceString = String.format("%.3fkm", silverDistance);
-            silverDistanceTextView.setText(silverDistanceString);
+                if (top3UserDistance.length >= 3) {
 
-            bronzeNickNameTextView.setText("-");
-            bronzeDistanceTextView.setText("-");
-        } else {
-            goldNickNameTextView.setText(top3UserDistance[0].getUser().getNickName());
-            goldDistance = top3UserDistance[0].getDistance();
-            String goldDistanceString = String.format("%.3fkm", goldDistance);
-            goldDistanceTextView.setText(goldDistanceString);
-
-            silverNickNameTextView.setText(top3UserDistance[1].getUser().getNickName());
-            double silverDistance = top3UserDistance[1].getDistance();
-            String silverDistanceString = String.format("%.3fkm", silverDistance);
-            silverDistanceTextView.setText(silverDistanceString);
-
-            bronzeNickNameTextView.setText(top3UserDistance[2].getUser().getNickName());
-            double bronzeDistance = top3UserDistance[2].getDistance();
-            String bronzeDistanceString = String.format("%.3fkm", bronzeDistance);
-            bronzeDistanceTextView.setText(bronzeDistanceString);
+                    bronzeNickNameTextView.setText(top3UserDistance[2].getUser().getNickName());
+                    double bronzeDistance = top3UserDistance[2].getDistance();
+                    String bronzeDistanceString = String.format("%.3fkm", bronzeDistance);
+                    bronzeDistanceTextView.setText(bronzeDistanceString);
+                }
+            }
         }
 
         int progress = 0;
@@ -444,7 +426,8 @@ public class MultiModePlayFragment extends Fragment {
                         responseBody = new JSONObject(responseBodyString);
                         Log.d("response", responseBodyString);
                         groupHistoryId = (int) responseBody.getLong("id");
-                        new SendSavedInfoTask().execute();
+                        Packet requestPacket = new Packet(Protocol.SAVE_GROUP_HISTORY, user, selectedRoom, groupHistoryId);
+                        new SendSavedInfoTask().execute(requestPacket);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     } catch (JSONException e) {
@@ -480,9 +463,21 @@ public class MultiModePlayFragment extends Fragment {
         }
     }
 
-    private class SendDistanceTask extends AsyncTask<Packet, Void, Boolean> { // 서버에 업데이트할 거리 정보 전송
+    public void setSocketManager(SocketManager socketManager) {
+        this.socketManager = socketManager;
+    }
+
+    public void setTimeHandler(Handler timeHandler) {
+        this.timeHandler = timeHandler;
+    }
+
+    public void setSendDataHandler(Handler sendDataHandler) {
+        this.sendDataHandler = sendDataHandler;
+    }
+
+    public class SendDistanceTask extends AsyncTask<Packet, Void, Boolean> { // 서버에 업데이트할 거리 정보 전송
         @Override
-        protected Boolean doInBackground(Packet... packets) {
+        public Boolean doInBackground(Packet... packets) {
             boolean success = true;
             try {
                 if (packets.length > 0) {
@@ -519,17 +514,23 @@ public class MultiModePlayFragment extends Fragment {
     }
 
     //경기 시간이 종료되었을 경우 해당 유저의 레이스가 종료되었다는 패킷을 보냄
-    private class SendFinishedTask extends AsyncTask<Void, Void, Boolean> {
+    public class SendFinishedTask extends AsyncTask<Packet, Void, Boolean> {
         Packet packet;
 
         @Override
-        protected Boolean doInBackground(Void... voids) {
+        public Boolean doInBackground(Packet... packets) {
             boolean success = true;
             try {
-                ObjectOutputStream oos = socketManager.getOOS();
-                Packet requestPacket = new Packet(Protocol.FINISH_GAME, user, selectedRoom);
-                oos.writeObject(requestPacket);
-                oos.flush();
+                if (packets.length > 0) {
+                    Packet requestPacket = packets[0];
+
+                    ObjectOutputStream oos = socketManager.getOOS();
+                    oos.writeObject(requestPacket);
+                    oos.flush();
+                } else {
+                    success = false;
+                }
+
             } catch (IOException e) {
                 e.printStackTrace();
                 success = false;
@@ -554,17 +555,22 @@ public class MultiModePlayFragment extends Fragment {
 
     }
 
-    private class SendSavedInfoTask extends AsyncTask<Void, Void, Boolean> {
+    public class SendSavedInfoTask extends AsyncTask<Packet, Void, Boolean> {
         Packet packet;
 
         @Override
-        protected Boolean doInBackground(Void... voids) {
+        public Boolean doInBackground(Packet... packets) {
             boolean success = true;
             try {
-                ObjectOutputStream oos = socketManager.getOOS();
-                Packet requestPacket = new Packet(Protocol.SAVE_GROUP_HISTORY, user, selectedRoom, groupHistoryId);
-                oos.writeObject(requestPacket);
-                oos.flush();
+                if (packets.length > 0) {
+                    Packet requestPacket = packets[0];
+                    ObjectOutputStream oos = socketManager.getOOS();
+                    oos.writeObject(requestPacket);
+                    oos.flush();
+
+                } else {
+                    success = false;
+                }
             } catch (IOException e) {
                 e.printStackTrace();
                 success = false;
@@ -586,17 +592,21 @@ public class MultiModePlayFragment extends Fragment {
 
     }
 
-    private class ExitGameTask extends AsyncTask<Void, Void, Boolean> {
+    public class ExitGameTask extends AsyncTask<Packet, Void, Boolean> {
         Packet packet;
 
         @Override
-        protected Boolean doInBackground(Void... voids) {
+        public Boolean doInBackground(Packet... packets) {
             boolean success = true;
             try {
-                ObjectOutputStream oos = socketManager.getOOS();
-                Packet requestPacket = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
-                oos.writeObject(requestPacket);
-                oos.flush();
+                if (packets.length > 0) {
+                    Packet requestPacket = packets[0];
+                    ObjectOutputStream oos = socketManager.getOOS();
+                    oos.writeObject(requestPacket);
+                    oos.flush();
+                } else {
+                    success = false;
+                }
             } catch (IOException e) {
                 e.printStackTrace();
                 success = false;
@@ -607,11 +617,11 @@ public class MultiModePlayFragment extends Fragment {
                     sendDataHandler.removeCallbacksAndMessages(null);
                     socketManager.closeSocket();
 
-                    Log.d("response", "socket closed");
+                    //Log.d("response", "socket closed");
 
 
                 } catch (IOException e) {
-                    Log.d("response", "socket close error");
+                    //Log.d("response", "socket close error");
                     success = false;
                 }
 

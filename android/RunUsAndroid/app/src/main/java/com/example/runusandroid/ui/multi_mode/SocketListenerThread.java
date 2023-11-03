@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.net.SocketException;
+import java.time.LocalDateTime;
 
 import MultiMode.MultiModeRoom;
 import MultiMode.MultiModeUser;
@@ -107,6 +108,7 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
                                 Bundle bundle = new Bundle();
                                 bundle.putSerializable("room", selectedRoom);
                                 bundle.putSerializable("socketListenerThread", SocketListenerThread.this);
+                                bundle.putSerializable("startTime", LocalDateTime.now());
                                 NavController navController = Navigation.findNavController(waitFragment.requireView());
                                 Log.d("response", "goto play screen");
                                 navController.navigate(R.id.navigation_multi_room_play, bundle);
@@ -138,6 +140,7 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
                             @Override
                             public void run() {
                                 try {
+                                    Log.d("response", "got packet and try to save group history");
                                     playFragment.saveGroupHistoryData(packet.getTop3UserDistance());
                                 } catch (JSONException e) {
                                     throw new RuntimeException(e);

@@ -87,45 +87,26 @@ public class MultiModeResultFragment extends Fragment {
         }
         double goldDistance = 0;
 
-        if (top3UserDistance.length == 1) {
+        if (top3UserDistance.length >= 1) {
             goldNickNameTextView.setText(top3UserDistance[0].getUser().getNickName());
             goldDistance = top3UserDistance[0].getDistance();
             String goldDistanceString = String.format("%.3fkm", goldDistance);
             goldDistanceTextView.setText(goldDistanceString);
 
-            silverNickNameTextView.setText("-");
-            silverDistanceTextView.setText("-");
+            if (top3UserDistance.length >= 2) {
 
-            bronzeNickNameTextView.setText("-");
-            bronzeDistanceTextView.setText("-");
-        } else if (top3UserDistance.length == 2) {
-            goldNickNameTextView.setText(top3UserDistance[0].getUser().getNickName());
-            goldDistance = top3UserDistance[0].getDistance();
-            String goldDistanceString = String.format("%.3fkm", goldDistance);
-            goldDistanceTextView.setText(goldDistanceString);
+                silverNickNameTextView.setText(top3UserDistance[1].getUser().getNickName());
+                double silverDistance = top3UserDistance[1].getDistance();
+                String silverDistanceString = String.format("%.3fkm", silverDistance);
+                silverDistanceTextView.setText(silverDistanceString);
 
-            silverNickNameTextView.setText(top3UserDistance[1].getUser().getNickName());
-            double silverDistance = top3UserDistance[1].getDistance();
-            String silverDistanceString = String.format("%.3fkm", silverDistance);
-            silverDistanceTextView.setText(silverDistanceString);
-
-            bronzeNickNameTextView.setText("-");
-            bronzeDistanceTextView.setText("-");
-        } else {
-            goldNickNameTextView.setText(top3UserDistance[0].getUser().getNickName());
-            goldDistance = top3UserDistance[0].getDistance();
-            String goldDistanceString = String.format("%.3fkm", goldDistance);
-            goldDistanceTextView.setText(goldDistanceString);
-
-            silverNickNameTextView.setText(top3UserDistance[1].getUser().getNickName());
-            double silverDistance = top3UserDistance[1].getDistance();
-            String silverDistanceString = String.format("%.3fkm", silverDistance);
-            silverDistanceTextView.setText(silverDistanceString);
-
-            bronzeNickNameTextView.setText(top3UserDistance[2].getUser().getNickName());
-            double bronzeDistance = top3UserDistance[2].getDistance();
-            String bronzeDistanceString = String.format("%.3fkm", bronzeDistance);
-            bronzeDistanceTextView.setText(bronzeDistanceString);
+                if (top3UserDistance.length >= 3) {
+                    bronzeNickNameTextView.setText(top3UserDistance[2].getUser().getNickName());
+                    double bronzeDistance = top3UserDistance[2].getDistance();
+                    String bronzeDistanceString = String.format("%.3fkm", bronzeDistance);
+                    bronzeDistanceTextView.setText(bronzeDistanceString);
+                }
+            }
         }
 
 
