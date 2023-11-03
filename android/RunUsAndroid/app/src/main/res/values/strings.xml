@@ -5,7 +5,9 @@
     <string name="title_single_mode">SingleMode</string>
     <string name="title_multi_mode">MultiMode</string>
     <string name="title_multi_mode_wait">MultiModeWait</string>
+    <string name="title_multi_mode_play">MultiModePlay</string>
     <string name="title_history">History</string>
     <string name="title_user_setting">UserSetting</string>
     <string name="leaveButtonText">떠나기</string>
+    <string name="title_multi_mode_result" />
 </resources>

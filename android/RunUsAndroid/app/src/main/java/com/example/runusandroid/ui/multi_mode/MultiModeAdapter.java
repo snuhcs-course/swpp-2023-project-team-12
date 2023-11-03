@@ -1,7 +1,6 @@
 package com.example.runusandroid.ui.multi_mode;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.res.ColorStateList;
@@ -18,16 +17,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
-
-import MultiMode.MultiModeRoom;
-import MultiMode.MultiModeUser;
-import MultiMode.Packet;
-import MultiMode.Protocol;
-import MultiMode.RoomCreateInfo;
 
 import com.example.runusandroid.R;
 
@@ -38,28 +30,38 @@ import java.net.Socket;
 import java.util.List;
 import java.util.Random;
 
+import MultiMode.MultiModeRoom;
+import MultiMode.MultiModeUser;
+import MultiMode.Packet;
+import MultiMode.Protocol;
+
 public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.ViewHolder> {
+    private final SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
+    MultiModeUser user = MultiModeFragment.user;
+    MultiModeRoom selectedRoom;
     //MultiMode List 화면에서 각 Room Button과 관련된 Adapter
     private List<MultiModeRoom> roomList;
-    MultiModeRoom selectedRoom;
-    //MultiModeUser user = new MultiModeUser(1, "choco"); // 유저 정보 임시로 더미데이터 활용
-    MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
 
+    public MultiModeAdapter(List<MultiModeRoom> items) {
+        this.roomList = items;
+    }
 
-    private SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
+    private static AppCompatActivity unwrap(Context context) {
+        while (!(context instanceof Activity) && context instanceof ContextWrapper) {
+            context = ((ContextWrapper) context).getBaseContext();
+        }
 
+        return (AppCompatActivity) context;
+    }
 
     void setRoomList(List<MultiModeRoom> roomList) {
         this.roomList = roomList;
         notifyDataSetChanged();
     }
+
     private int getRandomColor() {
         Random rnd = new Random();
         return Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
-    }
-
-    public MultiModeAdapter(List<MultiModeRoom> items) {
-        this.roomList = items;
     }
 
     @NonNull
@@ -94,16 +96,24 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
 
     }
 
-    private static AppCompatActivity unwrap(Context context) {
-        while (!(context instanceof Activity) && context instanceof ContextWrapper) {
-            context = ((ContextWrapper) context).getBaseContext();
-        }
-
-        return (AppCompatActivity) context;
-    }
     @Override
     public int getItemCount() {
         return roomList.size();
+    }
+
+    private void showFullRoomToast(Context context) {
+        Toast.makeText(context, "인원이 초과되었습니다.", Toast.LENGTH_SHORT).show();
+    }
+
+    private void printRoomInfo(MultiModeRoom room) {
+        if (room == null) {
+            Log.d("response", "room is null");
+        } else {
+            List<MultiModeUser> userList = room.getUserList();
+            for (MultiModeUser user : userList) {
+                Log.d("response", "username : " + user.getNickname());
+            }
+        }
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -117,9 +127,9 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
 
     //방 입장시 socket을 통해 서버와 연결
     private class EnterRoomTask extends AsyncTask<Void, Void, Boolean> {
+        private final Context mContext;
+        private final NavController navcon;
         Packet packet;
-        private Context mContext;
-        private NavController navcon;
 
         public EnterRoomTask(Context context, NavController navcon) {
             this.mContext = context;
@@ -154,7 +164,6 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
                 success = false;
-            }finally {
             }
             return success;
         }
@@ -179,22 +188,6 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
             }
         }
 
-    }
-
-    private void showFullRoomToast(Context context) {
-        Toast.makeText(context, "인원이 초과되었습니다.", Toast.LENGTH_SHORT).show();
-    }
-
-    private void printRoomInfo(MultiModeRoom room){
-        if(room == null){
-            Log.d("response", "room is null");
-            return;
-        }else{
-            List<MultiModeUser> userList = room.getUserList();
-            for(MultiModeUser user : userList){
-                Log.d("response", "username : " + user.getNickname());
-            }
-        }
     }
 
 }

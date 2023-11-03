@@ -14,45 +14,44 @@
             android:id="@+id/buttonClose"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:src="@drawable/ic_close"
             android:layout_alignParentEnd="true"
-            android:layout_marginEnd="10dp"
             android:layout_marginTop="10dp"
-            />
+            android:layout_marginEnd="10dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_close" />
         <!-- 그룹명 -->
         <EditText
             android:id="@+id/editTextGroupName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
             android:layout_below="@id/buttonClose"
+            android:layout_marginBottom="10dp"
             android:hint="그룹명"
             android:inputType="text" />
 
         <!-- 거리 -->
-        <EditText
-            android:id="@+id/editTextDistance"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/editTextGroupName"
-            android:hint="거리 (Km)"
-            android:inputType="numberDecimal" />
+        <!--        <EditText-->
+        <!--            android:id="@+id/editTextDistance"-->
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:layout_below="@id/editTextGroupName"-->
+        <!--            android:hint="거리 (Km)"-->
+        <!--            android:inputType="numberDecimal" />-->
 
         <TextView
             android:id="@+id/editStartTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/editTextDistance"
-            android:text="시작 시간"
-            android:layout_marginTop="10dp" />
+            android:layout_below="@id/editTextGroupName"
+            android:layout_marginTop="10dp"
+            android:text="시작 시간" />
 
         <TimePicker
             android:id="@+id/timePicker"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/editStartTime"
-            android:timePickerMode="spinner"/>
+            android:timePickerMode="spinner" />
 
         <!-- 경기 시간 설정 -->
         <TextView
@@ -60,23 +59,23 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/timePicker"
-            android:text="경기 시간"
-            android:layout_marginTop="10dp" />
+            android:layout_marginTop="10dp"
+            android:text="경기 시간" />
 
         <LinearLayout
             android:id="@+id/durationPicker"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:layout_below="@id/durationText"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <!-- 시간 선택 -->
             <NumberPicker
                 android:id="@+id/hourPicker"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:descendantFocusability="blocksDescendants" />
 
             <TextView
@@ -88,8 +87,8 @@
             <NumberPicker
                 android:id="@+id/minutePicker"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:descendantFocusability="blocksDescendants" />
 
             <TextView
@@ -98,31 +97,39 @@
                 android:text="분" />
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/textMembers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/durationPicker"
+            android:layout_marginTop="10dp"
+            android:text="최대 참가 인원" />
+
         <EditText
             android:id="@+id/editTextMembers"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/durationPicker"
+            android:layout_below="@id/textMembers"
             android:hint="인원 (명)"
             android:inputType="number" />
 
         <!-- 태그 -->
-        <EditText
-            android:id="@+id/editTextTag"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            android:layout_below="@id/editTextMembers"
-            android:hint="태그"
-            android:inputType="text" />
+        <!--        <EditText-->
+        <!--            android:id="@+id/editTextTag"-->
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:layout_marginBottom="20dp"-->
+        <!--            android:layout_below="@id/editTextMembers"-->
+        <!--            android:hint="태그"-->
+        <!--            android:inputType="text" />-->
 
         <!-- 완료 버튼 -->
         <Button
             android:id="@+id/buttonComplete"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_below="@id/editTextMembers"
             android:backgroundTint="#4AA570"
-            android:layout_below="@id/editTextTag"
             android:text="완료" />
 
     </RelativeLayout>

@@ -28,7 +28,8 @@ public class MainActivity2 extends AppCompatActivity {
 
     UserActivityTransitionManager activityManager;
     PendingIntent pendingIntent;
-    UserActivityBroadcastReceiver activityReceiver;
+
+    public UserActivityBroadcastReceiver activityReceiver;
     private ActivityMain2Binding binding;
     private FusedLocationProviderClient fusedLocationClient;
 

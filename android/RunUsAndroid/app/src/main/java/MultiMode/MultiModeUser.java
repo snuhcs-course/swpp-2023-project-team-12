@@ -6,28 +6,29 @@ import java.net.Socket;
 public class MultiModeUser implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private int id;
+    private long id;
     private MultiModeRoom room;
     private Socket socket;
     private String nickname;
 
-    public MultiModeUser(String nickName){
+    public MultiModeUser(String nickName) {
         this.nickname = nickname;
     }
 
-    public MultiModeUser(int id, String nickname){
+    public MultiModeUser(int id, String nickname) {
         this.id = id;
         this.nickname = nickname;
     }
 
-    public void enterRoom(MultiModeRoom room){
+    public void enterRoom(MultiModeRoom room) {
         this.room = room;
     }
 
-    public void exitRoom(MultiModeRoom room){
+    public void exitRoom(MultiModeRoom room) {
         this.room = null;
     }
-    public int getId() {
+
+    public long getId() {
         return id;
     }
 
@@ -35,9 +36,11 @@ public class MultiModeUser implements Serializable {
         this.id = id;
     }
 
-    public String getNickname() {return this.nickname; }
+    public String getNickname() {
+        return this.nickname;
+    }
 
-    public void setnickname(String nickname){
+    public void setnickname(String nickname) {
         this.nickname = nickname;
     }
 
@@ -73,6 +76,6 @@ public class MultiModeUser implements Serializable {
 
     @Override
     public int hashCode() {
-        return id;
+        return (int) id;
     }
 }

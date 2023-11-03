@@ -32,8 +32,20 @@
     <fragment
         android:id="@+id/navigation_multi_room_wait"
         android:name="com.example.runusandroid.ui.multi_mode.MultiModeWaitFragment"
-        android:label="@string/title_multi_mode"
+        android:label="@string/title_multi_mode_wait"
         tools:layout="@layout/fragment_multi_room_wait" />
+
+    <fragment
+        android:id="@+id/navigation_multi_room_play"
+        android:name="com.example.runusandroid.ui.multi_mode.MultiModePlayFragment"
+        android:label="@string/title_multi_mode_play"
+        tools:layout="@layout/fragment_multi_room_play" />
+
+    <fragment
+        android:id="@+id/navigation_multi_room_result"
+        android:name="com.example.runusandroid.ui.multi_mode.MultiModeResultFragment"
+        android:label="@string/title_multi_mode_result"
+        tools:layout="@layout/fragment_multi_room_result" />
 
     <fragment
         android:id="@+id/navigation_user_setting"

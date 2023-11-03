@@ -53,6 +53,8 @@ public class SingleModeFragment extends Fragment {
     LocationRequest locationRequest;
     MainActivity2 mainActivity;
 
+    double distance = 0;
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         SingleModeViewModel singleModeViewModel =
@@ -113,6 +115,20 @@ public class SingleModeFragment extends Fragment {
                             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 16));
                         }
                     }
+                    // get distance
+                    if (newPoint != null) {
+                        // first few points might be noisy
+                        if (pathPoints.size() > 5) {
+                            Location lastLocation = new Location("");
+                            lastLocation.setLatitude(pathPoints.get(pathPoints.size() - 2).latitude);
+                            lastLocation.setLongitude(pathPoints.get(pathPoints.size() - 2).longitude);
+                            // unit : meter -> kilometer
+                            distance += location.distanceTo(lastLocation) / (double)1000;
+                            Log.d("test:distance", "Distance:" + distance);
+                        }
+                    }
+                    // update distance text
+                    currentDistanceText.setText(String.format(Locale.getDefault(), "%.1f"+"km", distance));
                 }
             }
         };

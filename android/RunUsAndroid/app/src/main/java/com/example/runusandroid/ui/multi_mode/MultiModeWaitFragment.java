@@ -25,11 +25,8 @@ import com.example.runusandroid.R;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.Socket;
-import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -40,31 +37,99 @@ import MultiMode.Protocol;
 
 public class MultiModeWaitFragment extends Fragment {
 
+
+    private final Handler handler = new Handler(); // 남은 시간 계산 위한 Handler
+    private final int updateTimeInSeconds = 1; // 1초마다 업데이트/
+    MultiModeUser user = MultiModeFragment.user;
+    SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
     private MultiModeRoom selectedRoom; // MultiModeRoom 객체를 저장할 멤버 변수
     private TextView titleTextView;
     private TextView startTimeTextView;
     private TextView timeRemainingTextView;
+    private Duration duration;
+    //남은 시간 계산 로직
+    private final Runnable updateTimeRunnable = new Runnable() {
+        @Override
+        public void run() {
+            // 현재 시간 가져오기
+            LocalDateTime currentDateTime = LocalDateTime.now();
+
+            // startTime 가져오기
+            LocalDateTime startTimeDateTime = selectedRoom.getStartTime();  // startTime을 LocalDateTime 객체로 가정합니다.
+
+            // 남은 시간 계산
+            duration = Duration.between(currentDateTime, startTimeDateTime);
+
+            startGame();
+
+            long secondsRemaining = duration.getSeconds();
+
+            // 시간, 분으로 변환
+            long hours = secondsRemaining / 3600;
+            long minutes = (secondsRemaining % 3600) / 60;
+            long seconds = secondsRemaining % 60;
+
+            // "x시간 x분 남음" 형식으로 문자열 구성
+            String remainingTime;
+            if (hours > 0) {
+                remainingTime = String.format(Locale.getDefault(), "시작까지 %d시간 %d분 남음", hours, minutes);
+            } else if (secondsRemaining >= 0) {
+                remainingTime = String.format(Locale.getDefault(), "시작까지 %d분 %d초 남음", minutes, seconds);
+            } else {
+                remainingTime = "경기가 곧 시작됩니다";
+            }
+
+            // 업데이트된 시간을 텍스트 뷰에 설정
+            timeRemainingTextView.setText(remainingTime);
+
+            // 1초마다 업데이트
+            handler.postDelayed(this, 1000);
+        }
+    };
     private ConstraintLayout waitingListBox;
+    private final Handler updateHandler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+
+            if (msg.obj instanceof Packet) {
+                Packet receivedPacket = (Packet) msg.obj;
+                if (receivedPacket.getProtocol() == Protocol.UPDATE_ROOM) {
+                    selectedRoom.setUserList(receivedPacket.getSelectedRoom().getUserList());
+
+                    waitingListBox.removeAllViews();
+
+                    List<MultiModeUser> updatedUserList = selectedRoom.getUserList();
+                    if (updatedUserList != null && !updatedUserList.isEmpty()) {
+                        for (MultiModeUser user : updatedUserList) {
+                            addUserNameToWaitingList(user.getNickname());
+                        }
+                    }
+                }
+            }
+        }
+    };
     private TextView participantCountTextView;
-
-    //MultiModeUser user = new MultiModeUser(1, "choco"); // 유저 정보 임시로 더미데이터 활용
-    MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
-
-
-
-
-    SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
+    private ObjectInputStream ois;
     private SocketListenerThread socketListenerThread;
-
-
-
-    private final Handler handler = new Handler(); // 남은 시간 계산 위한 Handler
-    private final int updateTimeInSeconds = 1; // 1초마다 업데이트
-
-
     public MultiModeWaitFragment() {
     }
 
+    public TextView getParticipantCountTextView() {
+        return participantCountTextView;
+    }
+
+    void startGame() {
+        // startTime이 현재 시간보다 앞선 경우
+        if (duration.isNegative() || duration.isZero()) {
+            timeRemainingTextView.setText("곧 경기가 시작됩니다");
+            if (selectedRoom.getRoomOwner().getId() == user.getId()) {
+                new StartRoomTask().execute();
+            }
+
+            // Runnable 종료
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -77,6 +142,9 @@ public class MultiModeWaitFragment extends Fragment {
         timeRemainingTextView = view.findViewById(R.id.time_remaining);
 
         waitingListBox = view.findViewById(R.id.waiting_list_box);
+
+        Button testButton = view.findViewById(R.id.testButton);
+
 
         selectedRoom = (MultiModeRoom) getArguments().getSerializable("room");
         // 여기에서 MultiModeRoom 객체(multiModeRoom)를 사용하여 UI에 표현되어야 하는 text 설정
@@ -98,7 +166,7 @@ public class MultiModeWaitFragment extends Fragment {
             }
             handler.postDelayed(updateTimeRunnable, updateTimeInSeconds * 1000);
 
-        }else{
+        } else {
             Log.d("Response", "no multiroom object");
 
         }
@@ -113,13 +181,17 @@ public class MultiModeWaitFragment extends Fragment {
             }
         });
 
+
         return view;
     }
+
     //현재 유저 / 총 유저 보여주는 부분 업데이트 함수
     public void updateParticipantCount(int size, int total) {
         String text = size + "/" + total;
         participantCountTextView.setText(text);
     }
+    //유저가 나갔을 때 패킷을 받아 방 인원 업데이트
+
     // 입장한 유저 이름 보여주는 waiting list
     public void addUserNameToWaitingList(String userName) {
         TextView userNameTextView = new TextView(getContext());
@@ -228,29 +300,32 @@ public class MultiModeWaitFragment extends Fragment {
             set.applyTo(waitingListBox);
         }
     }
-    //유저가 나갔을 때 패킷을 받아 방 인원 업데이트
-    private final Handler updateHandler = new Handler(Looper.getMainLooper()) {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
 
-            if (msg.obj instanceof Packet) {
-                Packet receivedPacket = (Packet) msg.obj;
-                if(receivedPacket.getProtocol() == Protocol.UPDATE_ROOM){
-                    selectedRoom.setUserList(receivedPacket.getSelectedRoom().getUserList());
+    @Override
+    public void onResume() {
+        super.onResume();
+        socketManager = SocketManager.getInstance();
+        ois = socketManager.getOIS();
+        socketListenerThread = new SocketListenerThread(this, updateHandler, selectedRoom, ois);
+        socketListenerThread.start();
+    }
 
-                    waitingListBox.removeAllViews();
-
-                    List<MultiModeUser> updatedUserList = selectedRoom.getUserList();
-                    if (updatedUserList != null && !updatedUserList.isEmpty()) {
-                        for (MultiModeUser user : updatedUserList) {
-                            addUserNameToWaitingList(user.getNickname());
-                        }
-                    }
-                }
-            }
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (socketListenerThread != null) {
+            //socketListenerThread.interrupt();
+            socketListenerThread.pauseListening();
+            Log.d("response", "socketListenerThread interrupted");
         }
-    };
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // 타이머가 더 이상 필요하지 않을 때 핸들러를 제거합니다.
+        handler.removeCallbacks(updateTimeRunnable);
+    }
 
     //방에서 나갈 때 소켓과 연결하여 패킷 송수신
     private class ExitRoomTask extends AsyncTask<Void, Void, Boolean> {
@@ -260,20 +335,11 @@ public class MultiModeWaitFragment extends Fragment {
         protected Boolean doInBackground(Void... voids) {
             boolean success = true;
             try {
-                Log.d("response socketManager", socketManager.toString());
                 ObjectOutputStream oos = socketManager.getOOS();
-                ObjectInputStream ois = socketManager.getOIS();
                 Packet requestPacket = new Packet(Protocol.EXIT_ROOM, user, selectedRoom);
                 oos.writeObject(requestPacket);
                 oos.flush();
-
-                Object receivedObject = ois.readObject();
-                if (receivedObject instanceof Packet) {
-                    packet = (Packet) receivedObject;
-                    selectedRoom.exitUser(user);
-                }
-
-            } catch (IOException | ClassNotFoundException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
                 success = false;
             } finally {
@@ -289,6 +355,7 @@ public class MultiModeWaitFragment extends Fragment {
             }
             return success;
         }
+
         //ExitRoomTask 실행 결과에 따라 수행
         @Override
         protected void onPostExecute(Boolean success) {
@@ -297,72 +364,40 @@ public class MultiModeWaitFragment extends Fragment {
                 Log.d("SendPacket", "Packet sent successfully!");
 
             } else {
-                Log.e("SendPacket", "Failed to send packet!");
+                Log.d("ExitSendPacket", "Failed to send packet!");
             }
         }
 
     }
-    //남은 시간 계산 로직
-    private final Runnable updateTimeRunnable = new Runnable() {
+
+    private class StartRoomTask extends AsyncTask<Void, Void, Boolean> {
+        Packet packet;
+
         @Override
-        public void run() {
-            // 현재 시간 가져오기
-            LocalDateTime currentDateTime = LocalDateTime.now();
-
-            // startTime 가져오기
-            LocalDateTime startTimeDateTime = selectedRoom.getStartTime();  // startTime을 LocalDateTime 객체로 가정합니다.
-
-            // 남은 시간 계산
-            Duration duration = Duration.between(currentDateTime, startTimeDateTime);
-
-            // startTime이 현재 시간보다 앞선 경우
-            if (duration.isNegative() || duration.isZero()) {
-                timeRemainingTextView.setText("시작까지 0분 0초 남음");
-                return;  // Runnable 종료
+        protected Boolean doInBackground(Void... voids) {
+            boolean success = true;
+            try {
+                ObjectOutputStream oos = socketManager.getOOS();
+                Packet requestPacket = new Packet(Protocol.START_GAME, selectedRoom);
+                oos.writeObject(requestPacket);
+                oos.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+                success = false;
             }
+            return success;
+        }
 
-            long secondsRemaining = duration.getSeconds();
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (success) {
+                Log.d("SendPacket", "Start Game Packet sent successfully!");
 
-            // 시간, 분으로 변환
-            long hours = secondsRemaining / 3600;
-            long minutes = (secondsRemaining % 3600) / 60;
-            long seconds = secondsRemaining % 60;
-
-            // "x시간 x분 남음" 형식으로 문자열 구성
-            String remainingTime;
-            if (hours > 0) {
-                remainingTime = String.format(Locale.getDefault(), "시작까지 %d시간 %d분 남음", hours, minutes);
             } else {
-                remainingTime = String.format(Locale.getDefault(), "시작까지 %d분 %d초 남음", minutes, seconds);
+                Log.d("ExitSendPacket", "Failed to send Start Game packet!");
             }
-
-            // 업데이트된 시간을 텍스트 뷰에 설정
-            timeRemainingTextView.setText(remainingTime);
-
-            // 1초마다 업데이트
-            handler.postDelayed(this, 1000);
         }
-    };
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        socketListenerThread = new SocketListenerThread(this, updateHandler, selectedRoom);
-        socketListenerThread.start();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (socketListenerThread != null) {
-            socketListenerThread.interrupt();
-        }
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        // 타이머가 더 이상 필요하지 않을 때 핸들러를 제거합니다.
-        handler.removeCallbacks(updateTimeRunnable);
     }
 }
