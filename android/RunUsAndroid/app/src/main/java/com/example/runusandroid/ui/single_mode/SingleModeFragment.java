@@ -411,7 +411,7 @@ public class SingleModeFragment extends Fragment {
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", MODE_PRIVATE);
 
         int gender = sharedPreferences.getInt("gender", 0) - 1;
-        Call<ResponseBody> call = historyApi.getRecentHistoryData(sharedPreferences.getString("username", ""));
+        Call<ResponseBody> call = historyApi.getRecentHistoryData(sharedPreferences.getLong("user_id", 0L));
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
