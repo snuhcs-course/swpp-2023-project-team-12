@@ -36,9 +36,9 @@ class HistoryDetail(APIView):
 
 
 class RecentHistory(APIView):
-  def get(self, request, username):
+  def get(self, request, user_id):
     try:
-      user_history = history.objects.filter(description__icontains=username).order_by('-timestamp')[:5]
+      user_history = history.objects.filter(description__icontains=user_id).order_by('-start_time')[:5]
       serializer = RecentHistorySerializer(user_history, many=True)
 
       return Response(serializer.data, status=status.HTTP_200_OK)
