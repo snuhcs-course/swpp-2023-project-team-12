@@ -2,6 +2,8 @@ package com.example.runusandroid.ui.single_mode;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.TimeZone;
@@ -22,8 +24,11 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.runusandroid.HistoryApi;
+import com.example.runusandroid.HistoryData;
 import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
+import com.example.runusandroid.RetrofitClient;
 import com.example.runusandroid.databinding.FragmentSingleModeBinding;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -34,33 +39,50 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 
+import org.json.JSONException;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class SingleModeFragment extends Fragment {
 
     private final List<LatLng> pathPoints = new ArrayList<>();
+    private final List<Float> speedList = new ArrayList<>(); // 매 km 마다 속력 (km/h)
     Chronometer currentTimeText;
     SimpleDateFormat dateFormat;
     FusedLocationProviderClient fusedLocationClient;
     LocationCallback locationCallback;
     LocationRequest locationRequest;
     MainActivity2 mainActivity;
+    LocalDateTime gameStartTime;
+    LocalDateTime iterationStartTime;
+    float calories = 0; //TODO: 칼로리 계산
     double distance = 0;
+    private HistoryApi historyApi;
     private FragmentSingleModeBinding binding;
     private GoogleMap mMap;
     private Location lastLocation = null;
-    private float totalDistance = 0;
+    private float minSpeed;
+    private float maxSpeed;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         SingleModeViewModel singleModeViewModel =
                 new ViewModelProvider(this).get(SingleModeViewModel.class);
 
+        historyApi = RetrofitClient.getClient().create(HistoryApi.class);
         binding = FragmentSingleModeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-
         mainActivity = (MainActivity2) getActivity();
         Button showMissionButton = binding.showMissionButton;
         Button quitButton = binding.quitButton;
@@ -73,7 +95,8 @@ public class SingleModeFragment extends Fragment {
         TextView goalDistanceText = binding.goalDistanceText;
         TextView goalTimeStaticText = binding.goalTimeStaticText;
         TextView goalTimeText = binding.goalTimeText;
-
+        maxSpeed = 0;
+        minSpeed = 999;
         MissionButton.setOnClickListener(new View.OnClickListener() {
             //TODO: 미션 생성 함수에서 받은 값으로 업데이트 해주어야 함
             @Override
@@ -93,8 +116,9 @@ public class SingleModeFragment extends Fragment {
             public void onClick(View v) {
                 startButton.setVisibility(View.GONE);
                 quitButton.setVisibility(View.VISIBLE);
+                gameStartTime = LocalDateTime.now();
                 lastLocation = null;
-                totalDistance = 0;
+                distance = 0;
                 currentDistanceText.setText("0.00 km");
                 currentTimeText.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
                     public void onChronometerTick(Chronometer chronometer) {
@@ -145,10 +169,19 @@ public class SingleModeFragment extends Fragment {
                     @Override
                     public void onClick(View v) {
                         dialog.dismiss();
+                        lastLocation = null;
+                        distance = 0;
+                        currentDistanceText.setText("0.00 km");
+                        currentTimeText.setBase(SystemClock.elapsedRealtime());
                     }
                 });
                 dialog.show();
-                // TODO: 1. 미션 성공 여부 확인 2. DB에 러닝 데이터 저장 3. 미션 성공 or 실패 모달 꾸미기
+                try {
+                    saveHistoryDataOnSingleMode();
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+                // TODO: 1. 미션 성공 여부 확인 2. 미션 성공 or 실패 모달 꾸미기
             }
         });
 
@@ -169,6 +202,8 @@ public class SingleModeFragment extends Fragment {
                     LatLng newPoint = new LatLng(location.getLatitude(), location.getLongitude());
                     pathPoints.add(newPoint);
 
+                    int lastDistanceInt = (int) distance;
+
                     // get distance
                     if (newPoint != null) {
                         // first few points might be noisy
@@ -178,17 +213,23 @@ public class SingleModeFragment extends Fragment {
                             lastLocation.setLongitude(pathPoints.get(pathPoints.size() - 2).longitude);
                             // unit : meter -> kilometer
                             distance += location.distanceTo(lastLocation) / (double) 1000;
+                            if ((int) distance != lastDistanceInt) {
+                                LocalDateTime currentTime = LocalDateTime.now();
+                                Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
+                                long secondsDuration = iterationDuration.getSeconds();
+                                float newPace = (float) (1.0 / (secondsDuration / 3600.0));
+                                if (newPace > maxSpeed) maxSpeed = newPace;
+                                if (newPace < minSpeed) minSpeed = newPace;
+                                speedList.add(newPace);
+                                iterationStartTime = currentTime;
+
+                            }
                             Log.d("test:distance", "Distance:" + distance);
                         }
                     }
                     // update distance text
-                    currentDistanceText.setText(String.format(Locale.getDefault(), "%.1f" + "km", distance));
+                    currentDistanceText.setText(String.format(Locale.getDefault(), "%.2f " + "km", distance));
 
-                    if (lastLocation != null) {
-                        totalDistance += lastLocation.distanceTo(location);
-                        // Update DistanceTextView
-                        currentDistanceText.setText(String.format("%.2f km", totalDistance / 1000));
-                    }
                     lastLocation = location;
                 }
             }
@@ -246,4 +287,48 @@ public class SingleModeFragment extends Fragment {
         super.onPause();
         fusedLocationClient.removeLocationUpdates(locationCallback);
     }
+
+    void saveHistoryDataOnSingleMode() throws JSONException {
+        if ((int) minSpeed == 999) minSpeed = 0;
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+        Long userId = sharedPreferences.getLong("userid", -1);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        String startTimeString = gameStartTime.format(formatter);
+        String finishTimeString = LocalDateTime.now().format(formatter);
+        long durationInSeconds = Duration.between(gameStartTime, LocalDateTime.now()).getSeconds();
+        HistoryData requestData = new HistoryData(userId, (float) distance, durationInSeconds,
+                true, startTimeString, finishTimeString, calories, false, maxSpeed, minSpeed, calculateMedian(speedList), speedList, -1);
+
+        historyApi.postHistoryData(requestData).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Log.d("response", "Send History Success");
+                } else {
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            }
+        });
+
+    }
+
+    public float calculateMedian(List<Float> numbers) {
+        Collections.sort(numbers);
+
+        int size = numbers.size();
+        if (size == 0) return 0;
+
+        if (size % 2 == 1) {
+            return numbers.get(size / 2);
+        } else {
+            double middle1 = numbers.get((size - 1) / 2);
+            double middle2 = numbers.get(size / 2);
+            return (float) ((float) (middle1 + middle2) / 2.0);
+        }
+    }
 }
+
