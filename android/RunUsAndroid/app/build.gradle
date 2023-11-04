@@ -59,6 +59,8 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
     implementation files('libs/MultiModeLibrary-1.0-SNAPSHOT.jar')
     implementation 'com.google.code.gson:gson:2.8.8'
+    implementation 'org.tensorflow:tensorflow-lite:2.13.0'
+    implementation 'org.tensorflow:tensorflow-lite-support:0.4.4'
 }
 
 checkstyle {

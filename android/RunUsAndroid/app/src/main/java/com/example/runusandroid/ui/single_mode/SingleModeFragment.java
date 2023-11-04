@@ -1,8 +1,9 @@
 package com.example.runusandroid.ui.single_mode;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.Manifest;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.icu.text.SimpleDateFormat;
@@ -39,12 +40,19 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
+import org.tensorflow.lite.Interpreter;
+import org.tensorflow.lite.support.common.FileUtil;
 
+import java.io.IOException;
+import java.nio.MappedByteBuffer;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -75,6 +83,19 @@ public class SingleModeFragment extends Fragment {
     private float minSpeed;
     private float maxSpeed;
 
+    private float goalDistance;
+    private float goalTime;
+
+    private boolean runningNow;
+
+    private Interpreter tflite;
+    private MappedByteBuffer tfliteModel;
+    private List<String> labels;
+
+    private float[][] modelInput = new float[5][3];
+    private float[] modelOutput = new float[2];
+
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         SingleModeViewModel singleModeViewModel =
@@ -97,14 +118,49 @@ public class SingleModeFragment extends Fragment {
         maxSpeed = 0;
         minSpeed = 999;
 
+        try {
+            tfliteModel = FileUtil.loadMappedFile(mainActivity, "231103_model.tflite");
+            tflite = new Interpreter(tfliteModel);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        Arrays.stream(modelInput).forEach(row -> Arrays.fill(row, 0.0f));
+        getMission();
+
         MissionButton.setOnClickListener(new View.OnClickListener() {
             //TODO: 미션 생성 함수에서 받은 값으로 업데이트 해주어야 함
             @Override
             public void onClick(View v) {
+                boolean enoughHistory = modelInput[4][2] == 0 ? false : true;
+                if (!enoughHistory) {
+                    float[][] standard = {{2.41f, 2.38f, 2.32f, 2.21f}, {2.04f, 1.96f, 1.88f, 1.79f}};
+                    SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", MODE_PRIVATE);
+                    int gender = sharedPreferences.getInt("gender", 0) - 1;
+                    int age = sharedPreferences.getInt("age", 0) / 10;
+
+                    float height = sharedPreferences.getFloat("height", 0.0f);
+                    float weight = sharedPreferences.getFloat("weight", 0.0f);
+                    float bmi = height / (weight * weight);
+                    if (bmi >= 25) {
+                        age += 1;
+                    }
+                    if (age == 0) {
+                        age += 2;
+                    } else if (age == 1) {
+                        age += 1;
+                    }
+                    age = age > 5 ? 3 : age - 2;
+                    goalDistance = standard[gender][age];
+                    goalTime = 12.0f / 60.0f;
+                } else {
+                    goalDistance = modelOutput[0];
+                    goalTime = modelOutput[1];
+                }
                 goalDistanceStaticText.setText("목표 거리");
-                goalDistanceText.setText("5km");
+                goalDistanceText.setText(String.valueOf(goalDistance) + " km");
                 goalTimeStaticText.setText("목표 시간");
-                goalTimeText.setText("01:00:00");
+                goalTimeText.setText(String.valueOf(goalTime * 60) + " 분");
             }
         });
 
@@ -120,6 +176,7 @@ public class SingleModeFragment extends Fragment {
                 lastLocation = null;
                 distance = 0;
                 currentDistanceText.setText("0.00 km");
+                runningNow = true;
                 currentTimeText.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
                     public void onChronometerTick(Chronometer chronometer) {
                         long time = SystemClock.elapsedRealtime() - chronometer.getBase();
@@ -134,13 +191,19 @@ public class SingleModeFragment extends Fragment {
         quitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                runningNow = false;
                 quitButton.setVisibility(View.GONE);
                 startButton.setVisibility(View.VISIBLE);
                 mainActivity.getLastLocation();
                 currentTimeText.stop();
                 View dialogView;
                 Button confirmButton;
-                boolean missionCompleted = true; // TODO: 변수명은 받아와야 함
+                boolean missionCompleted = false;
+                float wholeDistance = Float.valueOf((String) currentDistanceText.getText().subSequence(0,currentDistanceText.getText().length()-2));
+                float wholeTime = (float) Duration.between(gameStartTime, LocalDateTime.now()).getSeconds() / 60;
+                if(wholeDistance>=goalDistance && wholeTime/3600 >= goalTime){
+                    missionCompleted = true;
+                }
 
                 LayoutInflater inflater = requireActivity().getLayoutInflater();
                 if (missionCompleted) {
@@ -153,7 +216,7 @@ public class SingleModeFragment extends Fragment {
                 } else {
                     dialogView = inflater.inflate(R.layout.dialog_mission_failure, null);
                     confirmButton = dialogView.findViewById(R.id.buttonConfirmFailure);
-                    TextView elapsedTimeTextView = dialogView.findViewById(R.id.textViewElapsedTimeonSuccess);
+                    TextView elapsedTimeTextView = dialogView.findViewById(R.id.textViewElapsedTimeonFailure);
                     TextView distanceTextView = dialogView.findViewById(R.id.textViewDistanceonFailure);
                     elapsedTimeTextView.setText("달린 시간: " + currentTimeText.getText());
                     distanceTextView.setText("달린 거리: " + currentDistanceText.getText());
@@ -181,7 +244,7 @@ public class SingleModeFragment extends Fragment {
                 } catch (JSONException e) {
                     throw new RuntimeException(e);
                 }
-                // TODO: 1. 미션 성공 여부 확인 2. 미션 성공 or 실패 모달 꾸미기
+                getMission();
             }
         });
 
@@ -195,7 +258,7 @@ public class SingleModeFragment extends Fragment {
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
-                if (locationResult != null) {
+                if (locationResult != null && runningNow) {
                     Location location = locationResult.getLastLocation();
                     Log.d("test:location", "Location:" + location.getLatitude() + ", " + location.getLongitude());
 
@@ -269,7 +332,6 @@ public class SingleModeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         fusedLocationClient.removeLocationUpdates(locationCallback);
-
         if (ActivityCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1000);
@@ -278,19 +340,19 @@ public class SingleModeFragment extends Fragment {
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1000);
         }
-
         fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
     }
 
     @Override
     public void onPause() {
         super.onPause();
+
         fusedLocationClient.removeLocationUpdates(locationCallback);
     }
 
     void saveHistoryDataOnSingleMode() throws JSONException {
         if ((int) minSpeed == 999) minSpeed = 0;
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", MODE_PRIVATE);
         Long userId = sharedPreferences.getLong("userid", -1); //TODO: -1이면 안되긴하는데, catch해야 함.
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         String startTimeString = gameStartTime.format(formatter);
@@ -329,6 +391,67 @@ public class SingleModeFragment extends Fragment {
             double middle1 = numbers.get((size - 1) / 2);
             double middle2 = numbers.get(size / 2);
             return (float) ((float) (middle1 + middle2) / 2.0);
+        }
+    }
+
+    private String convertArrayToString(float[][] array) {
+        StringBuilder result = new StringBuilder();
+
+        for (float[] row : array) {
+            for (float value : row) {
+                result.append(value).append(" ");
+            }
+            result.append("\n");
+        }
+
+        return result.toString();
+    }
+
+    private void getMission(){
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", MODE_PRIVATE);
+
+        int gender = sharedPreferences.getInt("gender", 0) - 1;
+        Call<ResponseBody> call = historyApi.getRecentHistoryData(sharedPreferences.getString("username", ""));
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    try {
+                        String responseData = response.body().string();
+
+                        JSONArray jsonArray = new JSONArray(responseData);
+
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            JSONObject historyObject = jsonArray.getJSONObject(i);
+
+                            float recentDistance = (float) historyObject.getDouble("distance");
+                            float recentDuration = (float) historyObject.getDouble("duration");
+
+                            modelInput[i][0] = (gender - 0.9111115f) / 0.3117750f;
+                            modelInput[i][1] = (recentDistance - 1.207809e+01f) / 7.019781e+00f;
+                            modelInput[i][2] = (recentDuration - 1.156572e+00f) / (6.457635e-01f * 3600);
+
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    Log.e("MainActivity", "Error: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e("MainActivity", "Error: " + t.getMessage());
+            }
+        });
+
+        try {
+            String arrayString = convertArrayToString(modelInput);
+            Log.d("modelinput", arrayString);
+            tflite.run(modelInput, modelOutput);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
