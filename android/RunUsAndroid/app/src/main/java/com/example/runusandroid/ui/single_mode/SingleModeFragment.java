@@ -84,7 +84,6 @@ public class SingleModeFragment extends Fragment {
         binding = FragmentSingleModeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         mainActivity = (MainActivity2) getActivity();
-        Button showMissionButton = binding.showMissionButton;
         Button quitButton = binding.quitButton;
         Button startButton = binding.startButton;
         Button MissionButton = binding.showMissionButton;
@@ -97,6 +96,7 @@ public class SingleModeFragment extends Fragment {
         TextView goalTimeText = binding.goalTimeText;
         maxSpeed = 0;
         minSpeed = 999;
+
         MissionButton.setOnClickListener(new View.OnClickListener() {
             //TODO: 미션 생성 함수에서 받은 값으로 업데이트 해주어야 함
             @Override
@@ -136,7 +136,7 @@ public class SingleModeFragment extends Fragment {
             public void onClick(View v) {
                 quitButton.setVisibility(View.GONE);
                 startButton.setVisibility(View.VISIBLE);
-                mainActivity.getLastLocation(); // ?
+                mainActivity.getLastLocation();
                 currentTimeText.stop();
                 View dialogView;
                 Button confirmButton;
@@ -291,11 +291,12 @@ public class SingleModeFragment extends Fragment {
     void saveHistoryDataOnSingleMode() throws JSONException {
         if ((int) minSpeed == 999) minSpeed = 0;
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
-        Long userId = sharedPreferences.getLong("userid", -1);
+        Long userId = sharedPreferences.getLong("userid", -1); //TODO: -1이면 안되긴하는데, catch해야 함.
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         String startTimeString = gameStartTime.format(formatter);
         String finishTimeString = LocalDateTime.now().format(formatter);
         long durationInSeconds = Duration.between(gameStartTime, LocalDateTime.now()).getSeconds();
+        //NOTE: group_history_id에 null을 넣을 수 없어 싱글모드인 경우 -1로 관리
         HistoryData requestData = new HistoryData(userId, (float) distance, durationInSeconds,
                 true, startTimeString, finishTimeString, calories, false, maxSpeed, minSpeed, calculateMedian(speedList), speedList, -1);
 
