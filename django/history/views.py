@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .serializers import HistorySerializer, GroupHistorySerializer
+from .serializers import HistorySerializer, GroupHistorySerializer, RecentHistorySerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
@@ -33,6 +33,18 @@ class HistoryDetail(APIView):
     serializer = HistorySerializer(history_instance)
     print(serializer.data)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class RecentHistory(APIView):
+  def get(self, request, username):
+    try:
+      user_history = history.objects.filter(description__icontains=username).order_by('-timestamp')[:5]
+      serializer = RecentHistorySerializer(user_history, many=True)
+
+      return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+      return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class GroupHistoryDetail(APIView):
   def post(self, request):
