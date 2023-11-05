@@ -2,6 +2,7 @@ package com.example.runusandroid;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -84,6 +85,7 @@ public class SignUpStep4Activity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
                         Toast.makeText(SignUpStep4Activity.this, "Network Error", Toast.LENGTH_SHORT).show();
+                        Log.e("Retrofit", "Error: " + t.getMessage());
                     }
                 });
             }
