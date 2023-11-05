@@ -157,9 +157,11 @@ public class SingleModeFragment extends Fragment {
                     goalTime = 12.0f;
                 }
                 goalDistanceStaticText.setText("목표 거리");
-                goalDistanceText.setText(String.valueOf(goalDistance) + " km");
+                String formattedDistance = String.format("%.2f", goalDistance);
+                goalDistanceText.setText(String.valueOf(formattedDistance) + " km");
                 goalTimeStaticText.setText("목표 시간");
-                goalTimeText.setText(String.valueOf(goalTime) + " 분");
+                int roundedGoalTime = Math.round(goalTime);
+                goalTimeText.setText(String.valueOf(roundedGoalTime) + " 분");
             }
         });
 
