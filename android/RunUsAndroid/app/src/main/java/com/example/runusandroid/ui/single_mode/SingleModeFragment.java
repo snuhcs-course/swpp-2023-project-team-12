@@ -48,12 +48,14 @@ import org.tensorflow.lite.support.common.FileUtil;
 
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
+import java.text.ParseException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -93,7 +95,7 @@ public class SingleModeFragment extends Fragment {
     private List<String> labels;
 
     private float[][] modelInput = new float[5][3];
-    private float[] modelOutput = new float[2];
+    private float[][] modelOutput = new float[1][2];
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -101,10 +103,12 @@ public class SingleModeFragment extends Fragment {
         SingleModeViewModel singleModeViewModel =
                 new ViewModelProvider(this).get(SingleModeViewModel.class);
 
-        historyApi = RetrofitClient.getClient().create(HistoryApi.class);
         binding = FragmentSingleModeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+
         mainActivity = (MainActivity2) getActivity();
+        historyApi = RetrofitClient.getClient().create(HistoryApi.class);
+
         Button quitButton = binding.quitButton;
         Button startButton = binding.startButton;
         Button MissionButton = binding.showMissionButton;
@@ -117,6 +121,7 @@ public class SingleModeFragment extends Fragment {
         TextView goalTimeText = binding.goalTimeText;
         maxSpeed = 0;
         minSpeed = 999;
+        runningNow = false;
 
         try {
             tfliteModel = FileUtil.loadMappedFile(mainActivity, "231103_model.tflite");
@@ -152,15 +157,12 @@ public class SingleModeFragment extends Fragment {
                     }
                     age = age > 5 ? 3 : age - 2;
                     goalDistance = standard[gender][age];
-                    goalTime = 12.0f / 60.0f;
-                } else {
-                    goalDistance = modelOutput[0];
-                    goalTime = modelOutput[1];
+                    goalTime = 12.0f;
                 }
                 goalDistanceStaticText.setText("목표 거리");
                 goalDistanceText.setText(String.valueOf(goalDistance) + " km");
                 goalTimeStaticText.setText("목표 시간");
-                goalTimeText.setText(String.valueOf(goalTime * 60) + " 분");
+                goalTimeText.setText(String.valueOf(goalTime) + " 분");
             }
         });
 
@@ -346,7 +348,6 @@ public class SingleModeFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-
         fusedLocationClient.removeLocationUpdates(locationCallback);
     }
 
@@ -357,8 +358,10 @@ public class SingleModeFragment extends Fragment {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         String startTimeString = gameStartTime.format(formatter);
         String finishTimeString = LocalDateTime.now().format(formatter);
-        long durationInSeconds = Duration.between(gameStartTime, LocalDateTime.now()).getSeconds();
-        //NOTE: group_history_id에 null을 넣을 수 없어 싱글모드인 경우 -1로 관리
+        // long durationInSeconds = Duration.between(gameStartTime, LocalDateTime.now()).getSeconds();
+        long durationInSeconds = 3600L;
+        distance = 5.2;
+                //NOTE: group_history_id에 null을 넣을 수 없어 싱글모드인 경우 -1로 관리
         HistoryData requestData = new HistoryData(userId, (float) distance, durationInSeconds,
                 true, startTimeString, finishTimeString, calories, false, maxSpeed, minSpeed, calculateMedian(speedList), speedList, -1);
 
@@ -397,8 +400,8 @@ public class SingleModeFragment extends Fragment {
     private String convertArrayToString(float[][] array) {
         StringBuilder result = new StringBuilder();
 
-        for (float[] row : array) {
-            for (float value : row) {
+        for (float [] row : array) {
+            for (float value : row){
                 result.append(value).append(" ");
             }
             result.append("\n");
@@ -411,7 +414,7 @@ public class SingleModeFragment extends Fragment {
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", MODE_PRIVATE);
 
         int gender = sharedPreferences.getInt("gender", 0) - 1;
-        Call<ResponseBody> call = historyApi.getRecentHistoryData(sharedPreferences.getLong("user_id", 0L));
+        Call<ResponseBody> call = historyApi.getRecentHistoryData(sharedPreferences.getLong("userid", 0L));
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -420,19 +423,40 @@ public class SingleModeFragment extends Fragment {
                         String responseData = response.body().string();
 
                         JSONArray jsonArray = new JSONArray(responseData);
+                        float wholeDistance = 0f;
+                        float wholeTime = 0f;
 
                         for (int i = 0; i < jsonArray.length(); i++) {
                             JSONObject historyObject = jsonArray.getJSONObject(i);
 
                             float recentDistance = (float) historyObject.getDouble("distance");
-                            float recentDuration = (float) historyObject.getDouble("duration");
+                            float recentDuration = (float) convertTimetoHour(historyObject.getString("duration")) ;
 
                             modelInput[i][0] = (gender - 0.9111115f) / 0.3117750f;
                             modelInput[i][1] = (recentDistance - 1.207809e+01f) / 7.019781e+00f;
-                            modelInput[i][2] = (recentDuration - 1.156572e+00f) / (6.457635e-01f * 3600);
+                            modelInput[i][2] = (recentDuration - 1.156572e+00f) / 6.457635e-01f;
+                            wholeDistance +=recentDistance;
+                            wholeTime += recentDuration;
 
                         }
+                        wholeTime /= 5;
+                        wholeDistance /= 5;
+
+                        String inputString = convertArrayToString(modelInput);
+                        tflite.run(modelInput, modelOutput);
+                        goalDistance = modelOutput[0][0] * 7.019781e+00f + 1.207809e+01f;
+                        goalTime = (modelOutput[0][1] * 6.457635e-01f +  1.156572e+00f);
+
+                        if (goalDistance/goalTime >= 1.3*wholeDistance/wholeTime){
+                            goalDistance = goalTime* 1.3f*wholeDistance/wholeTime;
+                        }
+                        if (goalDistance >= 1.3f * wholeDistance){
+                            goalDistance /= 1.3f;
+                            goalTime /= 1.3f;
+                        }
+                        goalTime *= 60;
                     } catch (Exception e) {
+                        Log.e("modeloutput error", e.toString());
                         e.printStackTrace();
                     }
                 } else {
@@ -446,13 +470,19 @@ public class SingleModeFragment extends Fragment {
             }
         });
 
+    }
+
+    public static long convertTimetoHour(String timeString) {
         try {
-            String arrayString = convertArrayToString(modelInput);
-            Log.d("modelinput", arrayString);
-            tflite.run(modelInput, modelOutput);
-        } catch (Exception e) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+            Date date = dateFormat.parse(timeString);
+            return date.getTime() / (1000*3600);
+
+        } catch (ParseException e) {
             e.printStackTrace();
+            return -1;
         }
     }
+
 }
 
