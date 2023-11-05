@@ -90,11 +90,12 @@ public class MultiModePlayFragment extends Fragment {
     TextView distancePresentContentTextView; //API 사용해서 구한 나의 현재 이동 거리
     TextView pacePresentContentTextView; //API 사용해서 구한 나의 현재 페이스
     Button playLeaveButton;
-    SocketListenerThread socketListenerThread = null;
+    SocketListenerThread socketListenerThread = MultiModeWaitFragment.socketListenerThread;
     Handler timeHandler;
     Runnable timeRunnable;
     Handler sendDataHandler;
     Runnable sendDataRunnable;
+    UserDistance[] userDistances;
     private float minSpeed;
     private float maxSpeed;
     private float medianSpeed;
@@ -107,6 +108,8 @@ public class MultiModePlayFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        socketListenerThread.addPlayFragment(this);
+        socketListenerThread.resumeListening();
         gameStartTime = (LocalDateTime) getArguments().getSerializable("startTime");
         Log.d("currentTime", gameStartTime + "");
         //경과 시간 업데이트
@@ -134,6 +137,7 @@ public class MultiModePlayFragment extends Fragment {
                         String formattedTime = String.format(Locale.getDefault(), "%02d:%02d:%02d",
                                 hours, minutes, seconds);
                         timePresentContentTextView.setText(formattedTime);
+                        Log.d("response", formattedTime);
 
                     }
                 }
@@ -141,6 +145,7 @@ public class MultiModePlayFragment extends Fragment {
                     // 1초마다 Runnable 실행
                     timeHandler.postDelayed(this, 1000);
                 } else {
+                    Log.d("response", "finished time count");
                     Packet requestPacket = new Packet(Protocol.FINISH_GAME, user, selectedRoom);
                     new SendFinishedTask().execute(requestPacket);
                 }
@@ -227,6 +232,17 @@ public class MultiModePlayFragment extends Fragment {
                             lastLocation.setLatitude(pathPoints.get(pathPoints.size() - 2).latitude);
                             lastLocation.setLongitude(pathPoints.get(pathPoints.size() - 2).longitude);
                             // unit : meter -> kilometer
+                            if (location.distanceTo(lastLocation) != 0) {
+                                int paceMinute = (int) (1 / ((location.distanceTo(lastLocation) / (double) 1000) / 5)) / 60;
+                                int paceSecond = (int) (1 / ((location.distanceTo(lastLocation) / (double) 1000) / 5)) % 60;
+                                String paceString = String.format("%02d:%02d", paceMinute, paceSecond);
+                                pacePresentContentTextView.setText(paceString);
+                            } else {
+                                String paceString = "--:--";
+                                pacePresentContentTextView.setText(paceString);
+                            }
+
+
                             distance += location.distanceTo(lastLocation) / (double) 1000;
                             Log.d("test:distance", "Distance:" + distance);
                             // update pace if new iteration started (every 1km)
@@ -324,9 +340,9 @@ public class MultiModePlayFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        socketListenerThread = (SocketListenerThread) getArguments().getSerializable("socketListenerThread"); //waitFragment의 socketListenrThread객체 가져와서 이어서 사용
-        socketListenerThread.addPlayFragment(this);
-        socketListenerThread.resumeListening();
+        transitionToRusultFragment();
+//        socketListenerThread = (SocketListenerThread) getArguments().getSerializable("socketListenerThread"); //waitFragment의 socketListenrThread객체 가져와서 이어서 사용
+
         Log.d("response", "start play screen");
         //top3UpdateHandler.postDelayed(sendDataRunnable, 5000);
 
@@ -348,9 +364,9 @@ public class MultiModePlayFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        if (socketListenerThread != null) {
-            socketListenerThread.interrupt();
-        }
+//        if (socketListenerThread != null) {
+//            socketListenerThread.interrupt();
+//        }
         fusedLocationClient.removeLocationUpdates(locationCallback);
     }
 
@@ -375,6 +391,13 @@ public class MultiModePlayFragment extends Fragment {
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
                     Log.d("response", "Send History Success");
+                    try {
+                        socketManager.closeSocket();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    transitionToRusultFragment();
+                    Log.d("response", "really go to result screen");
                 } else {
                 }
 
@@ -473,6 +496,17 @@ public class MultiModePlayFragment extends Fragment {
 
     public void setSendDataHandler(Handler sendDataHandler) {
         this.sendDataHandler = sendDataHandler;
+    }
+
+    private void transitionToRusultFragment() {
+        if (userDistances != null) {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("room", selectedRoom);
+            bundle.putSerializable("top3UserDistance", userDistances);
+            bundle.putSerializable("userDistance", distance);
+            NavController navController = Navigation.findNavController(requireView());
+            navController.navigate(R.id.navigation_multi_room_result, bundle);
+        }
     }
 
     public class SendDistanceTask extends AsyncTask<Packet, Void, Boolean> { // 서버에 업데이트할 거리 정보 전송

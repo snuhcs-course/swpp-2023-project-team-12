@@ -64,7 +64,9 @@ public class Server {
                         if (((Packet) data).getProtocol() == Protocol.ROOM_LIST) {
                             Packet roomListPacket = new Packet(Protocol.ROOM_LIST, RoomManager.getRoomList());
                             System.out.println("RoomList size is "  + RoomManager.getRoomList().size());
-                            broadcastPacketToAllUsers(roomListPacket);  // 모든 사용자에게 패킷을 보내는 부분
+                            oos.writeObject(roomListPacket);
+                            oos.flush();
+                            //broadcastPacketToAllUsers(roomListPacket);  // 모든 사용자에게 패킷을 보내는 부분
                         } else if (((Packet) data).getProtocol() == Protocol.CREATE_ROOM) {
                             System.out.println("create_room request came");
                             RoomCreateInfo roomCreateInfo = ((Packet) data).getRoomCreateInfo();
