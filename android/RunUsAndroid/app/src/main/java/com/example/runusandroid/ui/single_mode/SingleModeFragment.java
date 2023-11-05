@@ -48,14 +48,13 @@ import org.tensorflow.lite.support.common.FileUtil;
 
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
-import java.text.ParseException;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -92,8 +91,6 @@ public class SingleModeFragment extends Fragment {
 
     private Interpreter tflite;
     private MappedByteBuffer tfliteModel;
-    private List<String> labels;
-
     private float[][] modelInput = new float[5][3];
     private float[][] modelOutput = new float[1][2];
 
@@ -430,7 +427,7 @@ public class SingleModeFragment extends Fragment {
                             JSONObject historyObject = jsonArray.getJSONObject(i);
 
                             float recentDistance = (float) historyObject.getDouble("distance");
-                            float recentDuration = (float) convertTimetoHour(historyObject.getString("duration")) ;
+                            float recentDuration = convertTimetoHour(historyObject.getString("duration")) ;
 
                             modelInput[i][0] = (gender - 0.9111115f) / 0.3117750f;
                             modelInput[i][1] = (recentDistance - 1.207809e+01f) / 7.019781e+00f;
@@ -472,16 +469,9 @@ public class SingleModeFragment extends Fragment {
 
     }
 
-    public static long convertTimetoHour(String timeString) {
-        try {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-            Date date = dateFormat.parse(timeString);
-            return date.getTime() / (1000*3600);
-
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return -1;
-        }
+    public float convertTimetoHour(String timeString) {
+        LocalTime localTime = LocalTime.parse(timeString);
+        return localTime.getHour() + (float) localTime.getMinute() / 60;
     }
 
 }
