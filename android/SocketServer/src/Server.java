@@ -94,7 +94,7 @@ public class Server {
                             oos.flush();
                             broadcastToRoomUsers(exitRoom, new Packet(Protocol.EXIT_ROOM, user, exitRoom));
                         } else if(((Packet) data).getProtocol() == Protocol.UPDATE_USER_DISTANCE){
-                            MultiModeRoom updateRoom = RoomManager.getRoom(user.getRoom().getId());
+                            MultiModeRoom updateRoom = RoomManager.getInGameRoom(user.getRoom().getId());
                             Float distance = ((Packet) data).getDistance();
                             System.out.println("user " + ((Packet) data).getUser().getNickName() + "'s update distance is " + distance);
                             updateRoom.updateDistance(new UserDistance(user, distance));
@@ -107,14 +107,15 @@ public class Server {
                         } else if (((Packet) data).getProtocol() == Protocol.START_GAME) {
                             MultiModeRoom enteredRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
                             enteredRoom.startGame();
+                            RoomManager.startRoom(enteredRoom);
                             broadcastToRoomUsers(enteredRoom, new Packet(Protocol.START_GAME, enteredRoom));
                         }else if(((Packet) data).getProtocol() == Protocol.EXIT_GAME){
-                            MultiModeRoom exitRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
+                            MultiModeRoom exitRoom = RoomManager.getInGameRoom(((Packet) data).getSelectedRoom().getId());
                             System.out.println("EXIT_GAME packet received from " + user.getId() + user.getNickName() + "\n\n\n\n");
                             int index = exitRoom.exitUser(user);
                             if(index != -1) exitRoom.removeOutputStream(index);
                         }else if(((Packet) data).getProtocol() == Protocol.FINISH_GAME){
-                            MultiModeRoom finishRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
+                            MultiModeRoom finishRoom = RoomManager.getInGameRoom(((Packet) data).getSelectedRoom().getId());
                             System.out.println("!!!!!!!!FINISH_GAME packet received from " + user.getId() + user.getNickName() + "\n\n\n\n");
                             finishRoom.addFinishCount(user);
                             if(finishRoom.checkGameFinished()){
@@ -123,10 +124,10 @@ public class Server {
                                 sendResultToRoomOwner(Protocol.SAVE_GROUP_HISTORY, finishRoom);
                             }
                         }else if(((Packet) data).getProtocol() == Protocol.SAVE_GROUP_HISTORY){
-                            MultiModeRoom finishRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
+                            MultiModeRoom finishRoom = RoomManager.getInGameRoom(((Packet) data).getSelectedRoom().getId());
                             System.out.println("!!!!!!!!got saved group history packet " + user.getId() + user.getNickName() + "\n\n\n\n");
                             sendResultTop3Users(Protocol.CLOSE_GAME, finishRoom, ((Packet) data).getGroupHistoryId());
-                            RoomManager.removeRoom(finishRoom);
+                            RoomManager.removeInGameRoom(finishRoom);
                         }
                     }
 

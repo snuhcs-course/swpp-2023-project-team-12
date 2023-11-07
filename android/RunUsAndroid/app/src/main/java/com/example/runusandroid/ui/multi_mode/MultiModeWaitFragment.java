@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.content.ContextCompat;
@@ -136,6 +138,19 @@ public class MultiModeWaitFragment extends Fragment {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                new ExitRoomTask().execute();
+                NavController navController = Navigation.findNavController(requireView());
+                navController.navigate(R.id.navigation_multi_mode);
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
+}
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // XML 레이아웃 파일을 inflate
@@ -148,9 +163,6 @@ public class MultiModeWaitFragment extends Fragment {
         timeRemainingTextView = view.findViewById(R.id.time_remaining);
 
         waitingListBox = view.findViewById(R.id.waiting_list_box);
-
-        Button testButton = view.findViewById(R.id.testButton);
-
 
         selectedRoom = (MultiModeRoom) getArguments().getSerializable("room");
         // 여기에서 MultiModeRoom 객체(multiModeRoom)를 사용하여 UI에 표현되어야 하는 text 설정
@@ -186,8 +198,6 @@ public class MultiModeWaitFragment extends Fragment {
                 navController.navigate(R.id.navigation_multi_mode);
             }
         });
-
-
         return view;
     }
 
