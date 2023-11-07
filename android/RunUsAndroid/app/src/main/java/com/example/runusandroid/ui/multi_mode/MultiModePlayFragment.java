@@ -104,6 +104,7 @@ public class MultiModePlayFragment extends Fragment {
     private int isFinished = 0;
     private ObjectInputStream ois;
     private int groupHistoryId = 999;
+    private SendFinishedTask finishedTask;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -147,7 +148,8 @@ public class MultiModePlayFragment extends Fragment {
                 } else {
                     Log.d("response", "finished time count");
                     Packet requestPacket = new Packet(Protocol.FINISH_GAME, user, selectedRoom);
-                    new SendFinishedTask().execute(requestPacket);
+                    finishedTask = new SendFinishedTask();
+                    finishedTask.execute();
                 }
             }
         };
@@ -203,6 +205,7 @@ public class MultiModePlayFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Packet requestPacket = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
+                finishedTask.cancel(true);
                 new ExitGameTask().execute(requestPacket);
                 NavController navController = Navigation.findNavController(v);
                 navController.navigate(R.id.navigation_multi_mode);
@@ -557,7 +560,6 @@ public class MultiModePlayFragment extends Fragment {
             try {
                 if (packets.length > 0) {
                     Packet requestPacket = packets[0];
-
                     ObjectOutputStream oos = socketManager.getOOS();
                     oos.writeObject(requestPacket);
                     oos.flush();
@@ -569,8 +571,8 @@ public class MultiModePlayFragment extends Fragment {
                 e.printStackTrace();
                 success = false;
             } finally {
-                timeHandler.removeCallbacksAndMessages(null);
-                sendDataHandler.removeCallbacksAndMessages(null);
+                //timeHandler.removeCallbacksAndMessages(null);
+                //sendDataHandler.removeCallbacksAndMessages(null);
             }
             return success;
         }
