@@ -43,7 +43,7 @@ public class MultiModeResultFragment extends Fragment {
     TextView bronzeNickNameTextView;
     ProgressBar progressBar;
     Button playLeaveButton;
-    SocketListenerThread socketListenerThread = null;
+    SocketListenerThread socketListenerThread = MultiModeWaitFragment.socketListenerThread;
 
     @Nullable
     @Override
@@ -117,7 +117,7 @@ public class MultiModeResultFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        socketListenerThread = (SocketListenerThread) getArguments().getSerializable("socketListenerThread"); //waitFragment의 socketListenrThread객체 가져와서 이어서 사용
+        //socketListenerThread = (SocketListenerThread) getArguments().getSerializable("socketListenerThread"); //waitFragment의 socketListenrThread객체 가져와서 이어서 사용
         socketListenerThread.addResultFragment(this);
         socketListenerThread.resumeListening();
         UserDistance[] top3UserDistance = (UserDistance[]) getArguments().getSerializable("top3UserDistance");

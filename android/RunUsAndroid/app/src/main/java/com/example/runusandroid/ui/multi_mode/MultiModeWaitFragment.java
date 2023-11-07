@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.content.ContextCompat;
@@ -20,7 +22,9 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -38,6 +42,7 @@ import MultiMode.Protocol;
 public class MultiModeWaitFragment extends Fragment {
 
 
+    public static SocketListenerThread socketListenerThread;
     private final Handler handler = new Handler(); // 남은 시간 계산 위한 Handler
     private final int updateTimeInSeconds = 1; // 1초마다 업데이트/
     MultiModeUser user = MultiModeFragment.user;
@@ -86,6 +91,7 @@ public class MultiModeWaitFragment extends Fragment {
             handler.postDelayed(this, 1000);
         }
     };
+    private MainActivity2 mainActivity2;
     private ConstraintLayout waitingListBox;
     private final Handler updateHandler = new Handler(Looper.getMainLooper()) {
         @Override
@@ -111,7 +117,7 @@ public class MultiModeWaitFragment extends Fragment {
     };
     private TextView participantCountTextView;
     private ObjectInputStream ois;
-    private SocketListenerThread socketListenerThread;
+
     public MultiModeWaitFragment() {
     }
 
@@ -132,19 +138,31 @@ public class MultiModeWaitFragment extends Fragment {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                new ExitRoomTask().execute();
+                NavController navController = Navigation.findNavController(requireView());
+                navController.navigate(R.id.navigation_multi_mode);
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
+}
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // XML 레이아웃 파일을 inflate
-
+        mainActivity2 = (MainActivity2) getActivity();
+        BottomNavigationView navView = mainActivity2.findViewById(R.id.nav_view);
+        navView.setVisibility(View.GONE);
         View view = inflater.inflate(R.layout.fragment_multi_room_wait, container, false);
         titleTextView = view.findViewById(R.id.multi_room_wait_title);
         startTimeTextView = view.findViewById(R.id.multi_room_wait_start_time);
         timeRemainingTextView = view.findViewById(R.id.time_remaining);
 
         waitingListBox = view.findViewById(R.id.waiting_list_box);
-
-        Button testButton = view.findViewById(R.id.testButton);
-
 
         selectedRoom = (MultiModeRoom) getArguments().getSerializable("room");
         // 여기에서 MultiModeRoom 객체(multiModeRoom)를 사용하여 UI에 표현되어야 하는 text 설정
@@ -180,8 +198,6 @@ public class MultiModeWaitFragment extends Fragment {
                 navController.navigate(R.id.navigation_multi_mode);
             }
         });
-
-
         return view;
     }
 
@@ -313,11 +329,11 @@ public class MultiModeWaitFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        if (socketListenerThread != null) {
-            //socketListenerThread.interrupt();
-            socketListenerThread.pauseListening();
-            Log.d("response", "socketListenerThread interrupted");
-        }
+//        if (socketListenerThread != null) {
+//            //socketListenerThread.interrupt();
+//            socketListenerThread.pauseListening();
+//            Log.d("response", "socketListenerThread interrupted");
+//        }
     }
 
     @Override

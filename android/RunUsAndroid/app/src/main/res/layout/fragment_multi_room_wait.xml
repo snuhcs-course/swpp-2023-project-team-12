@@ -6,16 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".ui.multi_mode.MultiModeWaitFragment">
 
-    <Button
-        android:id="@+id/testButton"
-        android:layout_width="112dp"
-        android:layout_height="39dp"
-        android:layout_marginRight="32dp"
-        android:fontFamily="@font/pretendardregular"
-        android:text="경기 시작"
-        app:layout_constraintBottom_toTopOf="@id/leaveButton"
-        app:layout_constraintRight_toRightOf="parent" />
-
     <TextView
         android:id="@+id/multi_room_wait_distance"
         android:layout_width="102dp"
