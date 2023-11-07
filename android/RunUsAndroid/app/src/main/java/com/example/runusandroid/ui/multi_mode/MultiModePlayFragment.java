@@ -101,7 +101,7 @@ public class MultiModePlayFragment extends Fragment {
     private float medianSpeed;
     private HistoryApi historyApi;
     private TextView timePresentContentTextView;
-    private int isFinished = 0;
+    private int isFinished;
     private ObjectInputStream ois;
     private int groupHistoryId = 999;
     private SendFinishedTask finishedTask;
@@ -117,10 +117,11 @@ public class MultiModePlayFragment extends Fragment {
         timeHandler = new Handler(Looper.getMainLooper());
 
         // Runnable을 사용하여 매 초마다 시간 업데이트
+        isFinished = 0;
         timeRunnable = new Runnable() {
             @Override
             public void run() {
-                if (selectedRoom != null) {
+                if (selectedRoom != null && isFinished==0) {
                     LocalDateTime currentTime = LocalDateTime.now();
                     //Duration present = Duration.between(selectedRoom.getStartTime(), currentTime);
                     Duration present = Duration.between(gameStartTime, currentTime);
@@ -132,7 +133,6 @@ public class MultiModePlayFragment extends Fragment {
                     long seconds = secondsElapsed % 60;
 
                     if (present.getSeconds() > selectedRoom.getDuration().getSeconds()) {
-                        timeHandler.removeCallbacks(timeRunnable);
                         isFinished = 1;
                     } else {
                         String formattedTime = String.format(Locale.getDefault(), "%02d:%02d:%02d",
@@ -145,12 +145,14 @@ public class MultiModePlayFragment extends Fragment {
                 if (isFinished == 0) {
                     // 1초마다 Runnable 실행
                     timeHandler.postDelayed(this, 1000);
-                } else {
+                } else if(isFinished == 1){
                     Log.d("response", "finished time count");
                     Packet requestPacket = new Packet(Protocol.FINISH_GAME, user, selectedRoom);
                     finishedTask = new SendFinishedTask();
                     finishedTask.execute(requestPacket);
+                    isFinished = 2;
                 }
+
             }
         };
         timeHandler.post(timeRunnable);
@@ -202,10 +204,10 @@ public class MultiModePlayFragment extends Fragment {
         }
 
         playLeaveButton.setOnClickListener(new View.OnClickListener() {
+            //not executed
             @Override
             public void onClick(View v) {
                 Packet requestPacket = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
-                finishedTask.cancel(true);
                 new ExitGameTask().execute(requestPacket);
                 NavController navController = Navigation.findNavController(v);
                 navController.navigate(R.id.navigation_multi_mode);
@@ -343,6 +345,7 @@ public class MultiModePlayFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        //아래 코드에서 resume때 result fragment로 가는 이유?
         transitionToRusultFragment();
 //        socketListenerThread = (SocketListenerThread) getArguments().getSerializable("socketListenerThread"); //waitFragment의 socketListenrThread객체 가져와서 이어서 사용
 
@@ -371,6 +374,7 @@ public class MultiModePlayFragment extends Fragment {
 //            socketListenerThread.interrupt();
 //        }
         fusedLocationClient.removeLocationUpdates(locationCallback);
+        finishedTask.cancel(true);
     }
 
     @Override
@@ -378,6 +382,7 @@ public class MultiModePlayFragment extends Fragment {
         super.onDestroyView();
         // 타이머가 더 이상 필요하지 않을 때 핸들러를 제거합니다.
         timeHandler.removeCallbacks(timeRunnable);
+        sendDataHandler.removeCallbacks(sendDataRunnable);
     }
 
     void saveHistoryData(long groupHistoryId) throws JSONException {
@@ -444,7 +449,7 @@ public class MultiModePlayFragment extends Fragment {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    Log.d("response", "Send History Success");
+                    Log.d("response", "Send group History Success");
                     JSONObject responseBody = null;
                     String responseBodyString = null;
                     try {
@@ -562,8 +567,14 @@ public class MultiModePlayFragment extends Fragment {
                     Log.d("SendfinishedPacket", "Packet is bigger than 0");
                     Packet requestPacket = packets[0];
                     ObjectOutputStream oos = socketManager.getOOS();
-                    oos.writeObject(requestPacket);
-                    oos.flush();
+                    if(!isCancelled() && oos!=null) {
+                        oos.writeObject(requestPacket);
+                        oos.flush();
+                    }
+                    else {
+                        success = false;
+                        Log.d("Sendfinishedpacket", "task is cancelled");
+                    }
                 } else {
                     Log.d("SendfinishedPacket", "Packet is 0");
                     success = false;
@@ -632,6 +643,8 @@ public class MultiModePlayFragment extends Fragment {
 
     public class ExitGameTask extends AsyncTask<Packet, Void, Boolean> {
         Packet packet;
+        //play fragment에서 leave button의 onclick에 등록하고, 바로 result fragment로 가므로
+        //leave button을 눌러도 exitgametask는 실행 안됨
 
         @Override
         public Boolean doInBackground(Packet... packets) {
@@ -651,8 +664,8 @@ public class MultiModePlayFragment extends Fragment {
             } finally {
                 try {
 
-                    timeHandler.removeCallbacksAndMessages(null);
-                    sendDataHandler.removeCallbacksAndMessages(null);
+                    //timeHandler.removeCallbacksAndMessages(null);
+                    //sendDataHandler.removeCallbacksAndMessages(null);
                     socketManager.closeSocket();
                     //Log.d("response", "socket closed");
                 } catch (IOException e) {
