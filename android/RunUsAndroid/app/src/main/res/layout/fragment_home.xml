@@ -11,7 +11,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="50dp"
-        android:text="{userName}님 RunUs에 오신 것을 환영해요!"
+        android:fontFamily="@font/pretendardregular"
+        android:text="RunUs에 오신 것을 환영해요!"
         android:textAlignment="center"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -26,6 +27,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginTop="40dp"
+        android:fontFamily="@font/pretendardregular"
         android:text="공지사항"
         android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@id/viewPager"
@@ -45,6 +47,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
+        android:fontFamily="@font/pretendardregular"
         android:textColor="@color/black"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="@id/viewPager"
@@ -63,6 +66,7 @@
             android:id="@+id/todayRunningHistoryTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/pretendardregular"
             android:padding="16dp"
             android:text="오늘의 달리기 기록" />
 
