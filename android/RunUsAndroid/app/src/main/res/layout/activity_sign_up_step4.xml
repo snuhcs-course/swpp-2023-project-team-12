@@ -11,6 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
+        android:fontFamily="@font/pretendardregular"
         android:text="신체 정보"
         android:textSize="25sp"
         android:textStyle="bold"
@@ -20,11 +21,14 @@
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/SignUpHeightInput"
-        android:layout_width="375dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
         android:layout_marginTop="30dp"
+        android:layout_marginRight="15dp"
         android:background="@drawable/round_shape_for_field"
-        android:hint=" 키"
+        android:fontFamily="@font/pretendardregular"
+        android:hint="키"
         android:inputType="text"
         android:paddingLeft="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -33,11 +37,14 @@
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/SignUpWeightInput"
-        android:layout_width="375dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
         android:layout_marginTop="30dp"
+        android:layout_marginRight="15dp"
         android:background="@drawable/round_shape_for_field"
-        android:hint=" 체중"
+        android:fontFamily="@font/pretendardregular"
+        android:hint="체중"
         android:inputType="text"
         android:paddingLeft="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -46,10 +53,13 @@
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/SignUpAgeInput"
-        android:layout_width="375dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
         android:layout_marginTop="30dp"
+        android:layout_marginRight="15dp"
         android:background="@drawable/round_shape_for_field"
+        android:fontFamily="@font/pretendardregular"
         android:hint=" 나이"
         android:inputType="text"
         android:paddingLeft="10dp"
@@ -77,6 +87,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:fontFamily="@font/pretendardregular"
             android:text="남성" />
 
         <LinearLayout
@@ -89,6 +100,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:fontFamily="@font/pretendardregular"
             android:text="여성" />
 
         <LinearLayout
@@ -100,10 +112,13 @@
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/nextButton2"
-        android:layout_width="375dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
         android:layout_marginTop="200dp"
+        android:layout_marginRight="15dp"
         android:background="@drawable/round_shape_green"
+        android:fontFamily="@font/pretendardregular"
         android:text="가입 완료"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"

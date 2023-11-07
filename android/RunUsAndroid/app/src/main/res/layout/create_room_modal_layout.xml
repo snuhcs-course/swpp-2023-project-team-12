@@ -26,17 +26,9 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/buttonClose"
             android:layout_marginBottom="10dp"
+            android:fontFamily="@font/pretendardregular"
             android:hint="그룹명"
             android:inputType="text" />
-
-        <!-- 거리 -->
-        <!--        <EditText-->
-        <!--            android:id="@+id/editTextDistance"-->
-        <!--            android:layout_width="match_parent"-->
-        <!--            android:layout_height="wrap_content"-->
-        <!--            android:layout_below="@id/editTextGroupName"-->
-        <!--            android:hint="거리 (Km)"-->
-        <!--            android:inputType="numberDecimal" />-->
 
         <TextView
             android:id="@+id/editStartTime"
@@ -44,6 +36,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/editTextGroupName"
             android:layout_marginTop="10dp"
+            android:fontFamily="@font/pretendardregular"
             android:text="시작 시간" />
 
         <TimePicker
@@ -60,6 +53,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/timePicker"
             android:layout_marginTop="10dp"
+            android:fontFamily="@font/pretendardregular"
             android:text="경기 시간" />
 
         <LinearLayout
@@ -81,6 +75,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/pretendardregular"
                 android:text="시간" />
 
             <!-- 분 선택 -->
@@ -94,6 +89,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/pretendardregular"
                 android:text="분" />
         </LinearLayout>
 
@@ -103,6 +99,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/durationPicker"
             android:layout_marginTop="10dp"
+            android:fontFamily="@font/pretendardregular"
             android:text="최대 참가 인원" />
 
         <EditText
@@ -110,18 +107,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/textMembers"
+            android:fontFamily="@font/pretendardregular"
             android:hint="인원 (명)"
             android:inputType="number" />
-
-        <!-- 태그 -->
-        <!--        <EditText-->
-        <!--            android:id="@+id/editTextTag"-->
-        <!--            android:layout_width="match_parent"-->
-        <!--            android:layout_height="wrap_content"-->
-        <!--            android:layout_marginBottom="20dp"-->
-        <!--            android:layout_below="@id/editTextMembers"-->
-        <!--            android:hint="태그"-->
-        <!--            android:inputType="text" />-->
 
         <!-- 완료 버튼 -->
         <Button
@@ -130,6 +118,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/editTextMembers"
             android:backgroundTint="#4AA570"
+            android:fontFamily="@font/pretendardregular"
             android:text="완료" />
 
     </RelativeLayout>

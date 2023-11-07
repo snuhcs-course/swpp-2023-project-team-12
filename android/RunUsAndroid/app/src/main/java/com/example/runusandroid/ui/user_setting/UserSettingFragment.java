@@ -27,11 +27,13 @@ public class UserSettingFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
         UserSettingViewModel userSettingViewModel =
                 new ViewModelProvider(this).get(UserSettingViewModel.class);
-
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
+        String userName = sharedPreferences.getString("username", "");
         binding = FragmentUserSettingBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
         final TextView textView = binding.textUserSetting;
+        userSettingViewModel.setText(userName + "님 환영해요!");
         userSettingViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
 
         AppCompatButton logoutButton = root.findViewById(R.id.LogoutBtn);

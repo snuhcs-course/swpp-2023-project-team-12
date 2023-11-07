@@ -29,6 +29,7 @@
                 android:id="@+id/pace_present_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/pretendardregular"
                 android:gravity="center_horizontal"
                 android:text="현재 페이스"
                 android:textAppearance="@style/multi_room_play_goal" />
@@ -37,6 +38,7 @@
                 android:id="@+id/pace_present_content"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/pretendardregular"
                 android:gravity="center_horizontal"
                 android:text="--:--"
                 android:textAppearance="@style/multi_room_play_goal" />
@@ -56,6 +58,7 @@
                 android:id="@+id/time_goal_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/pretendardregular"
                 android:gravity="center_horizontal"
                 android:text="목표 시간"
                 android:textAppearance="@style/multi_room_play_goal" />
@@ -64,6 +67,7 @@
                 android:id="@+id/time_goal_content"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/pretendardregular"
                 android:gravity="center_horizontal"
                 android:text="00:00:00"
                 android:textAppearance="@style/multi_room_play_goal" />
@@ -119,6 +123,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical|start"
                 android:layout_marginLeft="100dp"
+                android:fontFamily="@font/pretendardregular"
                 android:text="-"
                 android:textColor="#FFFFFF" />
 
@@ -128,6 +133,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical|end"
                 android:layout_marginRight="50dp"
+                android:fontFamily="@font/pretendardregular"
                 android:text="-"
                 android:textColor="#FFFFFF" />
         </FrameLayout>
@@ -149,6 +155,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical|start"
                 android:layout_marginLeft="100dp"
+                android:fontFamily="@font/pretendardregular"
                 android:text="-"
                 android:textColor="#FFFFFF" />
 
@@ -158,6 +165,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical|end"
                 android:layout_marginRight="50dp"
+                android:fontFamily="@font/pretendardregular"
                 android:text="-"
                 android:textColor="#FFFFFF" />
         </FrameLayout>
@@ -178,6 +186,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical|start"
                 android:layout_marginLeft="100dp"
+                android:fontFamily="@font/pretendardregular"
                 android:text="-"
                 android:textColor="#FFFFFF" />
 
@@ -187,6 +196,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical|end"
                 android:layout_marginRight="50dp"
+                android:fontFamily="@font/pretendardregular"
                 android:text="-"
                 android:textColor="#FFFFFF" />
         </FrameLayout>
@@ -218,6 +228,7 @@
                 android:id="@+id/distance_present_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/pretendardregular"
                 android:gravity="center_horizontal"
                 android:text="거리"
                 android:textAppearance="@style/multi_room_play_present" />
@@ -226,6 +237,7 @@
                 android:id="@+id/distance_present_content"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/pretendardregular"
                 android:gravity="center_horizontal"
                 android:text="0.0km"
                 android:textAppearance="@style/multi_room_play_present" />
@@ -245,6 +257,7 @@
                 android:id="@+id/time_present_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/pretendardregular"
                 android:gravity="center_horizontal"
                 android:text="경과 시간"
                 android:textAppearance="@style/multi_room_play_present" />
@@ -253,6 +266,7 @@
                 android:id="@+id/time_present_content"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/pretendardregular"
                 android:gravity="center_horizontal"
                 android:text="00:00:00"
                 android:textAppearance="@style/multi_room_play_present" />
@@ -264,6 +278,7 @@
         android:layout_width="112dp"
         android:layout_height="39dp"
         android:background="@drawable/leave_button"
+        android:fontFamily="@font/pretendardregular"
         android:gravity="center"
         android:text="나가기"
         android:textColor="#FFFFFF"

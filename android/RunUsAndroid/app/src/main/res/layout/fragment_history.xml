@@ -9,6 +9,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:fontFamily="@font/pretendardregular"
         android:padding="15dp"
         android:text="월별 요약"
         android:textSize="30sp"
@@ -38,6 +39,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:fontFamily="@font/pretendardregular"
                 android:gravity="center"
                 android:text=""
                 android:textSize="16sp" />
@@ -47,6 +49,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:fontFamily="@font/pretendardregular"
                 android:gravity="center"
                 android:text=""
                 android:textSize="16sp" />
@@ -56,6 +59,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:fontFamily="@font/pretendardregular"
                 android:gravity="center"
                 android:text=""
                 android:textSize="16sp" />
@@ -90,6 +94,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:fontFamily="@font/pretendardregular"
                 android:gravity="center"
                 android:text=""
                 android:textSize="16sp" />
@@ -99,6 +104,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:fontFamily="@font/pretendardregular"
                 android:gravity="center"
                 android:text=""
                 android:textSize="16sp" />
@@ -108,6 +114,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:fontFamily="@font/pretendardregular"
                 android:gravity="center"
                 android:text=""
                 android:textSize="16sp" />
