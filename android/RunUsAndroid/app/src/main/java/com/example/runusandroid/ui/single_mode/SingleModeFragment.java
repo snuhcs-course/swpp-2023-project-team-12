@@ -91,8 +91,8 @@ public class SingleModeFragment extends Fragment {
 
     private Interpreter tflite;
     private MappedByteBuffer tfliteModel;
-    private float[][] modelInput = new float[5][3];
-    private float[][] modelOutput = new float[1][2];
+    private final float[][] modelInput = new float[5][3];
+    private final float[][] modelOutput = new float[1][2];
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -134,7 +134,7 @@ public class SingleModeFragment extends Fragment {
             //TODO: 미션 생성 함수에서 받은 값으로 업데이트 해주어야 함
             @Override
             public void onClick(View v) {
-                boolean enoughHistory = modelInput[4][2] == 0 ? false : true;
+                boolean enoughHistory = modelInput[4][2] != 0;
                 if (!enoughHistory) {
                     float[][] standard = {{2.41f, 2.38f, 2.32f, 2.21f}, {2.04f, 1.96f, 1.88f, 1.79f}};
                     SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", MODE_PRIVATE);
@@ -158,10 +158,10 @@ public class SingleModeFragment extends Fragment {
                 }
                 goalDistanceStaticText.setText("목표 거리");
                 String formattedDistance = String.format("%.2f", goalDistance);
-                goalDistanceText.setText(String.valueOf(formattedDistance) + " km");
+                goalDistanceText.setText(formattedDistance + " km");
                 goalTimeStaticText.setText("목표 시간");
                 int roundedGoalTime = Math.round(goalTime);
-                goalTimeText.setText(String.valueOf(roundedGoalTime) + " 분");
+                goalTimeText.setText(roundedGoalTime + " 분");
             }
         });
 
@@ -200,9 +200,9 @@ public class SingleModeFragment extends Fragment {
                 View dialogView;
                 Button confirmButton;
                 boolean missionCompleted = false;
-                float wholeDistance = Float.valueOf((String) currentDistanceText.getText().subSequence(0,currentDistanceText.getText().length()-2));
+                float wholeDistance = Float.valueOf((String) currentDistanceText.getText().subSequence(0, currentDistanceText.getText().length() - 2));
                 float wholeTime = (float) Duration.between(gameStartTime, LocalDateTime.now()).getSeconds() / 60;
-                if(wholeDistance>=goalDistance && wholeTime/3600 >= goalTime){
+                if (wholeDistance >= goalDistance && wholeTime / 3600 >= goalTime) {
                     missionCompleted = true;
                 }
 
@@ -357,10 +357,8 @@ public class SingleModeFragment extends Fragment {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         String startTimeString = gameStartTime.format(formatter);
         String finishTimeString = LocalDateTime.now().format(formatter);
-        // long durationInSeconds = Duration.between(gameStartTime, LocalDateTime.now()).getSeconds();
-        long durationInSeconds = 3600L;
-        distance = 5.2;
-                //NOTE: group_history_id에 null을 넣을 수 없어 싱글모드인 경우 -1로 관리
+        long durationInSeconds = Duration.between(gameStartTime, LocalDateTime.now()).getSeconds();
+        //NOTE: group_history_id에 null을 넣을 수 없어 싱글모드인 경우 -1로 관리
         HistoryData requestData = new HistoryData(userId, (float) distance, durationInSeconds,
                 true, startTimeString, finishTimeString, calories, false, maxSpeed, minSpeed, calculateMedian(speedList), speedList, -1);
 
@@ -399,8 +397,8 @@ public class SingleModeFragment extends Fragment {
     private String convertArrayToString(float[][] array) {
         StringBuilder result = new StringBuilder();
 
-        for (float [] row : array) {
-            for (float value : row){
+        for (float[] row : array) {
+            for (float value : row) {
                 result.append(value).append(" ");
             }
             result.append("\n");
@@ -409,7 +407,7 @@ public class SingleModeFragment extends Fragment {
         return result.toString();
     }
 
-    private void getMission(){
+    private void getMission() {
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", MODE_PRIVATE);
 
         int gender = sharedPreferences.getInt("gender", 0) - 1;
@@ -429,12 +427,12 @@ public class SingleModeFragment extends Fragment {
                             JSONObject historyObject = jsonArray.getJSONObject(i);
 
                             float recentDistance = (float) historyObject.getDouble("distance");
-                            float recentDuration = convertTimetoHour(historyObject.getString("duration")) ;
+                            float recentDuration = convertTimetoHour(historyObject.getString("duration"));
 
                             modelInput[i][0] = (gender - 0.9111115f) / 0.3117750f;
                             modelInput[i][1] = (recentDistance - 1.207809e+01f) / 7.019781e+00f;
                             modelInput[i][2] = (recentDuration - 1.156572e+00f) / 6.457635e-01f;
-                            wholeDistance +=recentDistance;
+                            wholeDistance += recentDistance;
                             wholeTime += recentDuration;
 
                         }
@@ -444,12 +442,12 @@ public class SingleModeFragment extends Fragment {
                         String inputString = convertArrayToString(modelInput);
                         tflite.run(modelInput, modelOutput);
                         goalDistance = modelOutput[0][0] * 7.019781e+00f + 1.207809e+01f;
-                        goalTime = (modelOutput[0][1] * 6.457635e-01f +  1.156572e+00f);
+                        goalTime = (modelOutput[0][1] * 6.457635e-01f + 1.156572e+00f);
 
-                        if (goalDistance/goalTime >= 1.3*wholeDistance/wholeTime){
-                            goalDistance = goalTime* 1.3f*wholeDistance/wholeTime;
+                        if (goalDistance / goalTime >= 1.3 * wholeDistance / wholeTime) {
+                            goalDistance = goalTime * 1.3f * wholeDistance / wholeTime;
                         }
-                        if (goalDistance >= 1.3f * wholeDistance){
+                        if (goalDistance >= 1.3f * wholeDistance) {
                             goalDistance /= 1.3f;
                             goalTime /= 1.3f;
                         }
