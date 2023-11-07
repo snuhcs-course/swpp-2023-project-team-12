@@ -17,11 +17,13 @@
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/IdInput"
-        android:layout_width="375dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
         android:layout_marginBottom="50dp"
         android:background="@drawable/round_shape_for_field"
-        android:hint=" 아이디를 입력해 주세요."
+        android:hint="아이디를 입력해 주세요."
         android:inputType="text"
         android:paddingLeft="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -40,10 +42,12 @@
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/PasswordInput"
-        android:layout_width="375dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
         android:background="@drawable/round_shape_for_field"
-        android:hint=" 비밀번호를 입력해 주세요."
+        android:hint="비밀번호를 입력해 주세요."
         android:inputType="textPassword"
         android:paddingLeft="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -52,9 +56,11 @@
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/LoginBtn"
-        android:layout_width="375dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
         android:layout_marginTop="85dp"
+        android:layout_marginRight="15dp"
         android:background="@drawable/round_shape_green"
         android:text="로그인"
         app:layout_constraintLeft_toLeftOf="parent"
