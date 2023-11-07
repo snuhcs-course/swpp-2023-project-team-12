@@ -18,6 +18,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Chronometer;
+import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -94,6 +97,8 @@ public class SingleModeFragment extends Fragment {
     private float[][] modelInput = new float[5][3];
     private float[][] modelOutput = new float[1][2];
 
+    private float[][] standard = {{2.41f, 2.38f, 2.32f, 2.21f}, {2.04f, 1.96f, 1.88f, 1.79f}};
+
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -108,7 +113,6 @@ public class SingleModeFragment extends Fragment {
 
         Button quitButton = binding.quitButton;
         Button startButton = binding.startButton;
-        Button MissionButton = binding.showMissionButton;
         TextView currentDistanceText = binding.currentDistanceText;
         currentTimeText = binding.currentTimeText;
         currentTimeText.setBase(SystemClock.elapsedRealtime());
@@ -130,40 +134,6 @@ public class SingleModeFragment extends Fragment {
         Arrays.stream(modelInput).forEach(row -> Arrays.fill(row, 0.0f));
         getMission();
 
-        MissionButton.setOnClickListener(new View.OnClickListener() {
-            //TODO: 미션 생성 함수에서 받은 값으로 업데이트 해주어야 함
-            @Override
-            public void onClick(View v) {
-                boolean enoughHistory = modelInput[4][2] == 0 ? false : true;
-                if (!enoughHistory) {
-                    float[][] standard = {{2.41f, 2.38f, 2.32f, 2.21f}, {2.04f, 1.96f, 1.88f, 1.79f}};
-                    SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", MODE_PRIVATE);
-                    int gender = sharedPreferences.getInt("gender", 0) - 1;
-                    int age = sharedPreferences.getInt("age", 0) / 10;
-
-                    float height = sharedPreferences.getFloat("height", 0.0f);
-                    float weight = sharedPreferences.getFloat("weight", 0.0f);
-                    float bmi = height / (weight * weight);
-                    if (bmi >= 25) {
-                        age += 1;
-                    }
-                    if (age == 0) {
-                        age += 2;
-                    } else if (age == 1) {
-                        age += 1;
-                    }
-                    age = age > 5 ? 3 : age - 2;
-                    goalDistance = standard[gender][age];
-                    goalTime = 12.0f;
-                }
-                goalDistanceStaticText.setText("목표 거리");
-                String formattedDistance = String.format("%.2f", goalDistance);
-                goalDistanceText.setText(String.valueOf(formattedDistance) + " km");
-                goalTimeStaticText.setText("목표 시간");
-                int roundedGoalTime = Math.round(goalTime);
-                goalTimeText.setText(String.valueOf(roundedGoalTime) + " 분");
-            }
-        });
 
         dateFormat = new SimpleDateFormat("HH:mm:ss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -172,20 +142,106 @@ public class SingleModeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 startButton.setVisibility(View.GONE);
-                quitButton.setVisibility(View.VISIBLE);
-                gameStartTime = LocalDateTime.now();
-                lastLocation = null;
-                distance = 0;
-                currentDistanceText.setText("0.00 km");
-                runningNow = true;
-                currentTimeText.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
-                    public void onChronometerTick(Chronometer chronometer) {
-                        long time = SystemClock.elapsedRealtime() - chronometer.getBase();
-                        chronometer.setText(dateFormat.format(time));
+
+                boolean enoughHistory = modelInput[4][2] == 0 ? false : true;
+                if (!enoughHistory) {
+                    setStandard();
+                }
+
+
+                View dialogView = getLayoutInflater().inflate(R.layout.dialog_mission_start, null);
+                AlertDialog dialog = new AlertDialog.Builder(getActivity()).create();
+                dialog.setView(dialogView);
+                dialog.show();
+
+                Button buttonConfirm = dialogView.findViewById(R.id.buttonConfirm);
+                Button buttonCancel = dialogView.findViewById(R.id.buttonCancel);
+
+                SeekBar distanceSeekBar =  dialogView.findViewById(R.id.distanceSeekBar);
+                TextView distanceTextView = dialogView.findViewById(R.id.textViewGoalDistance);
+
+                distanceSeekBar.setProgress((int) (goalDistance*100));
+
+                String formattedDistance = String.format("%.2f", goalDistance);
+                distanceTextView.setText(String.valueOf(formattedDistance) + " km");
+
+                SeekBar timeSeekBar =  dialogView.findViewById(R.id.timeSeekBar);
+                TextView timeTextView = dialogView.findViewById(R.id.textViewGoalTime);
+
+                timeSeekBar.setProgress((int) goalTime);
+                timeTextView.setText(String.valueOf((int) goalTime)+" 분");
+                distanceSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        distanceTextView.setText(String.valueOf(progress / 100.0f)+"km");
+                        goalDistance = progress / 100.0f;
+
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+
                     }
                 });
-                currentTimeText.setBase(SystemClock.elapsedRealtime());
-                currentTimeText.start();
+
+                timeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        timeTextView.setText(String.valueOf(progress) +"분");
+                        goalTime = progress;
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+
+                    }
+                });
+
+                buttonConfirm.setOnClickListener(new Button.OnClickListener(){
+                    public void onClick(View v){
+                        goalDistanceStaticText.setText("목표 거리");
+                        String formattedDistance = String.format("%.2f", goalDistance);
+                        goalDistanceText.setText(String.valueOf(formattedDistance) + " km");
+                        goalTimeStaticText.setText("목표 시간");
+                        int roundedGoalTime = Math.round(goalTime);
+                        goalTimeText.setText(String.valueOf(roundedGoalTime) + " 분");
+
+                        gameStartTime = LocalDateTime.now();
+                        lastLocation = null;
+                        distance = 0;
+                        currentDistanceText.setText("0.00 km");
+                        runningNow = true;
+                        currentTimeText.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+                            public void onChronometerTick(Chronometer chronometer) {
+                                long time = SystemClock.elapsedRealtime() - chronometer.getBase();
+                                chronometer.setText(dateFormat.format(time));
+                            }
+                        });
+                        currentTimeText.setBase(SystemClock.elapsedRealtime());
+                        currentTimeText.start();
+
+                        dialog.dismiss();
+                    }
+                });
+
+                buttonCancel.setOnClickListener(new Button.OnClickListener(){
+                    public void onClick(View v){
+                        dialog.dismiss();
+                    }
+                });
+
+
+
             }
         });
 
@@ -322,6 +378,28 @@ public class SingleModeFragment extends Fragment {
         return root;
     }
 
+    private void setStandard() {
+
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", MODE_PRIVATE);
+        int gender = sharedPreferences.getInt("gender", 0) - 1;
+        int age = sharedPreferences.getInt("age", 0) / 10;
+
+        float height = sharedPreferences.getFloat("height", 0.0f);
+        float weight = sharedPreferences.getFloat("weight", 0.0f);
+        float bmi = height / (weight * weight);
+        if (bmi >= 25) {
+            age += 1;
+        }
+        if (age == 0) {
+            age += 2;
+        } else if (age == 1) {
+            age += 1;
+        }
+        age = age > 5 ? 3 : age - 2;
+        goalDistance = standard[gender][age];
+        goalTime = 12.0f;
+    }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -454,6 +532,7 @@ public class SingleModeFragment extends Fragment {
                             goalTime /= 1.3f;
                         }
                         goalTime *= 60;
+                        Log.e("mission", String.valueOf(goalDistance)+ " "+String.valueOf(goalTime));
                     } catch (Exception e) {
                         Log.e("modeloutput error", e.toString());
                         e.printStackTrace();
