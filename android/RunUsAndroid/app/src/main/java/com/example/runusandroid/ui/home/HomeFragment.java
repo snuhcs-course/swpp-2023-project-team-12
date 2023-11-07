@@ -81,7 +81,7 @@ public class HomeFragment extends Fragment {
         historyApi = RetrofitClient.getClient().create(HistoryApi.class);
 
         // NOTE: 디폴트로 오늘 날짜 보여주기 위함
-        historyApi.getMonthlyData(year, month + 1, userId).enqueue(new Callback<HistoryDataforRendering>() {
+        historyApi.getDailyData(year, month + 1, dayOfMonth, userId).enqueue(new Callback<HistoryDataforRendering>() {
             @Override
             public void onResponse(Call<HistoryDataforRendering> call, Response<HistoryDataforRendering> response) {
                 if (response.isSuccessful()) {
