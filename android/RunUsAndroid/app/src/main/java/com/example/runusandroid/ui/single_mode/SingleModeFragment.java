@@ -196,8 +196,7 @@ public class SingleModeFragment extends Fragment {
                 View dialogView;
                 Button confirmButton;
                 boolean missionCompleted = false;
-                float wholeDistance = Float.valueOf((String) currentDistanceText.getText().subSequence(0,
-                        currentDistanceText.getText().length() - 2));
+                float wholeDistance = Float.valueOf((String) currentDistanceText.getText().subSequence(0, currentDistanceText.getText().length() - 2));
                 float wholeTime = (float) Duration.between(gameStartTime, LocalDateTime.now()).getSeconds() / 60;
                 if (wholeDistance >= goalDistance && wholeTime / 3600 >= goalTime) {
                     missionCompleted = true;
@@ -359,9 +358,9 @@ public class SingleModeFragment extends Fragment {
         String startTimeString = gameStartTime.format(formatter);
         String finishTimeString = LocalDateTime.now().format(formatter);
         long durationInSeconds = Duration.between(gameStartTime, LocalDateTime.now()).getSeconds();
-        Log.d("Debug", startTimeString + finishTimeString);
-        distance = 5.2;
-        // NOTE: group_history_id에 null을 넣을 수 없어 싱글모드인 경우 -1로 관리
+      
+        //NOTE: group_history_id에 null을 넣을 수 없어 싱글모드인 경우 -1로 관리
+
         HistoryData requestData = new HistoryData(userId, (float) distance, durationInSeconds,
                 true, startTimeString, finishTimeString, calories, false, maxSpeed, minSpeed,
                 calculateMedian(speedList), speedList, -1);
