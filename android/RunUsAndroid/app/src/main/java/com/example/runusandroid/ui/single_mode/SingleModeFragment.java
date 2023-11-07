@@ -170,11 +170,11 @@ public class SingleModeFragment extends Fragment {
 
                 timeSeekBar.setProgress((int) goalTime);
                 timeTextView.setText(String.valueOf((int) goalTime)+" 분");
+
                 distanceSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                         distanceTextView.setText(String.valueOf(progress / 100.0f)+"km");
-                        goalDistance = progress / 100.0f;
 
                     }
 
@@ -193,7 +193,6 @@ public class SingleModeFragment extends Fragment {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                         timeTextView.setText(String.valueOf(progress) +"분");
-                        goalTime = progress;
                     }
 
                     @Override
@@ -210,6 +209,8 @@ public class SingleModeFragment extends Fragment {
                 buttonConfirm.setOnClickListener(new Button.OnClickListener(){
                     public void onClick(View v){
                         goalDistanceStaticText.setText("목표 거리");
+                        goalDistance = distanceSeekBar.getProgress()/100.0f;
+                        goalTime = timeSeekBar.getProgress();
                         String formattedDistance = String.format("%.2f", goalDistance);
                         goalDistanceText.setText(String.valueOf(formattedDistance) + " km");
                         goalTimeStaticText.setText("목표 시간");
@@ -238,6 +239,8 @@ public class SingleModeFragment extends Fragment {
 
                 buttonCancel.setOnClickListener(new Button.OnClickListener(){
                     public void onClick(View v){
+
+                        startButton.setVisibility(View.VISIBLE);
                         dialog.dismiss();
                     }
                 });
@@ -528,6 +531,10 @@ public class SingleModeFragment extends Fragment {
                         goalDistance = modelOutput[0][0] * 7.019781e+00f + 1.207809e+01f;
                         goalTime = (modelOutput[0][1] * 6.457635e-01f +  1.156572e+00f);
 
+
+                        Log.e("mission", convertArrayToString(modelInput));
+                        Log.e("mission", "original : "+String.valueOf(goalDistance)+ " "+String.valueOf(goalTime));
+
                         if (goalDistance/goalTime >= 1.3*wholeDistance/wholeTime){
                             goalDistance = goalTime* 1.3f*wholeDistance/wholeTime;
                         }
@@ -536,7 +543,7 @@ public class SingleModeFragment extends Fragment {
                             goalTime /= 1.3f;
                         }
                         goalTime *= 60;
-                        Log.e("mission", String.valueOf(goalDistance)+ " "+String.valueOf(goalTime));
+                        Log.e("mission", "Revised : "+String.valueOf(goalDistance)+ " "+String.valueOf(goalTime));
                     } catch (Exception e) {
                         Log.e("modeloutput error", e.toString());
                         e.printStackTrace();
