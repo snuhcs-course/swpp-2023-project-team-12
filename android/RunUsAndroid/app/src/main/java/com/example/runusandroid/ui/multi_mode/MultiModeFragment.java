@@ -24,7 +24,9 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -55,6 +57,8 @@ public class MultiModeFragment extends Fragment {
     private RecyclerView recyclerView;
     private MultiModeAdapter adapter;
     private List<MultiModeRoom> roomList = new ArrayList<>();
+
+    private MainActivity2 mainActivity2;
 
 
     public MultiModeFragment() {
@@ -108,8 +112,8 @@ public class MultiModeFragment extends Fragment {
                 int timePickerCurrentHour = time_picker.getCurrentHour();
                 int timePickerCurrentMinute = time_picker.getCurrentMinute();
 
-                //Duration duration = Duration.ofHours(numberPickerHour.getValue()).plusMinutes(numberPickerMinute.getValue());
-                Duration duration = Duration.ofHours(0).plusMinutes(0).plusSeconds(8);
+                Duration duration = Duration.ofHours(numberPickerHour.getValue()).plusMinutes(numberPickerMinute.getValue());
+                //Duration duration = Duration.ofHours(0).plusMinutes(0).plusSeconds(8);
                 LocalDate today = LocalDate.now();
                 LocalDateTime startTime = LocalDateTime.of(today, LocalTime.of(timePickerCurrentHour, timePickerCurrentMinute));
                 // 현재 시간보다 선택한 시간이 느린 경우 하루 뒤로 설정
@@ -117,8 +121,8 @@ public class MultiModeFragment extends Fragment {
                 if (startTime.isBefore(now)) {
                     startTime = startTime.plusDays(1);
                 }
-                RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, 0, LocalDateTime.now().plusSeconds(5), numRunners, duration);
-                //RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, 0, startTime, numRunners, duration);
+                //RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, 0, LocalDateTime.now().plusSeconds(5), numRunners, duration);
+                RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, 0, startTime, numRunners, duration);
                 new SendRoomInfoTask().execute(roomInfo); //소켓에 연결하여 패킷 전송
 
             }
@@ -138,6 +142,9 @@ public class MultiModeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
+        mainActivity2 = (MainActivity2) getActivity();
+        BottomNavigationView navView = mainActivity2.findViewById(R.id.nav_view);
+        navView.setVisibility(View.VISIBLE);
         user = new MultiModeUser((int) sharedPreferences.getLong("userid", 99999), sharedPreferences.getString("nickname", "guest"));
         View view = inflater.inflate(R.layout.fragment_multi_mode, container, false);
 

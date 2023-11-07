@@ -27,9 +27,9 @@ public class SocketListenerThread extends Thread implements Serializable { // �
     private final Handler handler;
     private final ObjectInputStream ois;
     private final MultiModeRoom selectedRoom;
-    private MultiModeWaitFragment waitFragment = null;
-    private MultiModePlayFragment playFragment = null;
-    private MultiModeResultFragment resultFragment = null;
+    private transient MultiModeWaitFragment waitFragment = null;
+    private transient MultiModePlayFragment playFragment = null;
+    private transient MultiModeResultFragment resultFragment = null;
     private boolean isPaused = false; // 일시 중지 상태 관리 플래그
 
     public SocketListenerThread(MultiModeWaitFragment waitFragment, Handler handler, MultiModeRoom selectedRoom, ObjectInputStream ois) {
@@ -107,7 +107,7 @@ public class SocketListenerThread extends Thread implements Serializable { // �
                             public void run() {
                                 Bundle bundle = new Bundle();
                                 bundle.putSerializable("room", selectedRoom);
-                                bundle.putSerializable("socketListenerThread", SocketListenerThread.this);
+                                //bundle.putSerializable("socketListenerThread", SocketListenerThread.this);
                                 bundle.putSerializable("startTime", LocalDateTime.now());
                                 NavController navController = Navigation.findNavController(waitFragment.requireView());
                                 Log.d("response", "goto play screen");
@@ -158,26 +158,22 @@ public class SocketListenerThread extends Thread implements Serializable { // �
                                 playFragment.sendDataHandler.removeCallbacks(playFragment.sendDataRunnable);
                                 Bundle bundle = new Bundle();
                                 bundle.putSerializable("room", selectedRoom);
-                                bundle.putSerializable("socketListenerThread", SocketListenerThread.this);
-                                bundle.putSerializable("top3UserDistance", packet.getTop3UserDistance());
-                                bundle.putSerializable("userDistance", playFragment.distance);
+                                //bundle.putSerializable("socketListenerThread", SocketListenerThread.this);
+                                playFragment.userDistances = packet.getTop3UserDistance();
+//                                bundle.putSerializable("top3UserDistance", packet.getTop3UserDistance());
+//                                bundle.putSerializable("userDistance", playFragment.distance);
                                 Log.d("response", "go to room result screen");
                                 try {
                                     playFragment.saveHistoryData(packet.getGroupHistoryId());
                                 } catch (JSONException e) {
                                     throw new RuntimeException(e);
                                 }
-                                NavController navController = Navigation.findNavController(playFragment.requireView());
-                                navController.navigate(R.id.navigation_multi_room_result, bundle);
+//                                NavController navController = Navigation.findNavController(playFragment.requireView());
+//                                navController.navigate(R.id.navigation_multi_room_result, bundle);
                                 Log.d("response", packet.getTop3UserDistance() + " ");
                                 Log.d("response", resultFragment + "");
 
 //                                resultFragment.updateTop3UserDistance(packet.getTop3UserDistance());
-                                try {
-                                    playFragment.socketManager.closeSocket();
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
-                                }
                             }
                         });
                     }
