@@ -6,6 +6,8 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.TimeZone;
 import android.location.Location;
@@ -16,8 +18,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Chronometer;
+import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -91,6 +99,13 @@ public class SingleModeFragment extends Fragment {
     private Interpreter tflite;
     private MappedByteBuffer tfliteModel;
 
+    private boolean timeLimitLess = true;
+
+    private float[][] standard = {{2.41f, 2.38f, 2.32f, 2.21f}, {2.04f, 1.96f, 1.88f, 1.79f}};
+
+
+
+
     public View onCreateView(@NonNull LayoutInflater inflater,
             ViewGroup container, Bundle savedInstanceState) {
         SingleModeViewModel singleModeViewModel = new ViewModelProvider(this).get(SingleModeViewModel.class);
@@ -103,7 +118,6 @@ public class SingleModeFragment extends Fragment {
 
         Button quitButton = binding.quitButton;
         Button startButton = binding.startButton;
-        Button MissionButton = binding.showMissionButton;
         TextView currentDistanceText = binding.currentDistanceText;
         currentTimeText = binding.currentTimeText;
         currentTimeText.setBase(SystemClock.elapsedRealtime());
@@ -125,42 +139,6 @@ public class SingleModeFragment extends Fragment {
         Arrays.stream(modelInput).forEach(row -> Arrays.fill(row, 0.0f));
         getMission();
 
-        MissionButton.setOnClickListener(new View.OnClickListener() {
-            // TODO: 미션 생성 함수에서 받은 값으로 업데이트 해주어야 함
-            @Override
-            public void onClick(View v) {
-                boolean enoughHistory = modelInput[4][2] != 0;
-                if (!enoughHistory) {
-                    float[][] standard = { { 2.41f, 2.38f, 2.32f, 2.21f }, { 2.04f, 1.96f, 1.88f, 1.79f } };
-                    SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs",
-                            MODE_PRIVATE);
-                    int gender = sharedPreferences.getInt("gender", 0) - 1;
-                    int age = sharedPreferences.getInt("age", 0) / 10;
-
-                    float height = sharedPreferences.getFloat("height", 0.0f);
-                    float weight = sharedPreferences.getFloat("weight", 0.0f);
-                    float bmi = height / (weight * weight);
-                    if (bmi >= 25) {
-                        age += 1;
-                    }
-                    if (age == 0) {
-                        age += 2;
-                    } else if (age == 1) {
-                        age += 1;
-                    }
-                    age = age > 5 ? 3 : age - 2;
-                    goalDistance = standard[gender][age];
-                    goalTime = 12.0f;
-                }
-                goalDistanceStaticText.setText("목표 거리");
-                String formattedDistance = String.format("%.2f", goalDistance);
-                goalDistanceText.setText(formattedDistance + " km");
-                goalTimeStaticText.setText("목표 시간");
-                int roundedGoalTime = Math.round(goalTime);
-                goalTimeText.setText(roundedGoalTime + " 분");
-            }
-        });
-
         dateFormat = new SimpleDateFormat("HH:mm:ss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 
@@ -168,20 +146,146 @@ public class SingleModeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 startButton.setVisibility(View.GONE);
-                quitButton.setVisibility(View.VISIBLE);
-                gameStartTime = LocalDateTime.now();
-                lastLocation = null;
-                distance = 0;
-                currentDistanceText.setText("0.00 km");
-                runningNow = true;
-                currentTimeText.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
-                    public void onChronometerTick(Chronometer chronometer) {
-                        long time = SystemClock.elapsedRealtime() - chronometer.getBase();
-                        chronometer.setText(dateFormat.format(time));
+
+                boolean enoughHistory = modelInput[4][2] == 0 ? false : true;
+                if (!enoughHistory) {
+                    setStandard();
+                }
+
+
+                View dialogView = getLayoutInflater().inflate(R.layout.dialog_mission_start, null);
+                AlertDialog dialog = new AlertDialog.Builder(getActivity()).create();
+                dialog.setView(dialogView);
+                dialog.show();
+
+                Button buttonConfirm = dialogView.findViewById(R.id.buttonConfirm);
+                Button buttonCancel = dialogView.findViewById(R.id.buttonCancel);
+
+                SeekBar distanceSeekBar =  dialogView.findViewById(R.id.distanceSeekBar);
+                TextView distanceTextView = dialogView.findViewById(R.id.textViewGoalDistance);
+
+                distanceSeekBar.setProgress((int) (goalDistance*10));
+
+                String formattedDistance = String.format("%.1f", goalDistance);
+                distanceTextView.setText(String.valueOf(formattedDistance) + " km");
+
+                SeekBar timeSeekBar =  dialogView.findViewById(R.id.timeSeekBar);
+                TextView timeTextView = dialogView.findViewById(R.id.textViewGoalTime);
+
+                timeSeekBar.setProgress((int) goalTime);
+                timeTextView.setText(String.valueOf((int) goalTime)+" 분");
+
+                Button buttonLess = dialogView.findViewById(R.id.buttonLess);
+
+                Button buttonGreater = dialogView.findViewById(R.id.buttonGreater);
+
+                buttonLess.setOnClickListener(new Button.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        ColorStateList myColorStateList = ColorStateList.valueOf(Color.parseColor("#4AA570"));
+
+                        ColorStateList otherColorStateList = ColorStateList.valueOf(Color.parseColor("#A3A3A3"));
+
+                        // 뷰의 backgroundTint 변경
+                        buttonLess.setBackgroundTintList(myColorStateList);
+                        buttonGreater.setBackgroundTintList(otherColorStateList);
+                        timeLimitLess = true;
                     }
                 });
-                currentTimeText.setBase(SystemClock.elapsedRealtime());
-                currentTimeText.start();
+
+                buttonGreater.setOnClickListener(new Button.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        ColorStateList myColorStateList = ColorStateList.valueOf(Color.parseColor("#4AA570"));
+
+                        ColorStateList otherColorStateList = ColorStateList.valueOf(Color.parseColor("#A3A3A3"));
+
+                        // 뷰의 backgroundTint 변경
+                        buttonGreater.setBackgroundTintList(myColorStateList);
+                        buttonLess.setBackgroundTintList(otherColorStateList);
+                        timeLimitLess = false;
+                    }
+                });
+
+
+
+
+                distanceSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        distanceTextView.setText(String.valueOf(progress / 10.0f)+"km");
+
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+
+                    }
+                });
+
+                timeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        timeTextView.setText(String.valueOf(progress) +"분");
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+
+                    }
+                });
+
+                buttonConfirm.setOnClickListener(new Button.OnClickListener(){
+                    public void onClick(View v){
+                        goalDistanceStaticText.setText("목표 거리");
+                        goalDistance = distanceSeekBar.getProgress()/100.0f;
+                        goalTime = timeSeekBar.getProgress();
+                        String formattedDistance = String.format("%.1f", goalDistance);
+                        goalDistanceText.setText(String.valueOf(formattedDistance) + " km");
+                        goalTimeStaticText.setText("목표 시간");
+                        int roundedGoalTime = Math.round(goalTime);
+                        goalTimeText.setText(String.valueOf(roundedGoalTime) + " 분");
+
+                        gameStartTime = LocalDateTime.now();
+                        lastLocation = null;
+                        distance = 0;
+                        currentDistanceText.setText("0.00 km");
+                        runningNow = true;
+                        currentTimeText.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+                            public void onChronometerTick(Chronometer chronometer) {
+                                long time = SystemClock.elapsedRealtime() - chronometer.getBase();
+                                chronometer.setText(dateFormat.format(time));
+                            }
+                        });
+                        currentTimeText.setBase(SystemClock.elapsedRealtime());
+                        currentTimeText.start();
+
+                        quitButton.setVisibility(View.VISIBLE);
+
+                        dialog.dismiss();
+                    }
+                });
+
+                buttonCancel.setOnClickListener(new Button.OnClickListener(){
+                    public void onClick(View v){
+
+                        startButton.setVisibility(View.VISIBLE);
+                        dialog.dismiss();
+                    }
+                });
+
+
+
             }
         });
 
@@ -196,11 +300,25 @@ public class SingleModeFragment extends Fragment {
                 View dialogView;
                 Button confirmButton;
                 boolean missionCompleted = false;
-                float wholeDistance = Float.valueOf((String) currentDistanceText.getText().subSequence(0, currentDistanceText.getText().length() - 2));
-                float wholeTime = (float) Duration.between(gameStartTime, LocalDateTime.now()).getSeconds() / 60;
-                if (wholeDistance >= goalDistance && wholeTime / 3600 >= goalTime) {
-                    missionCompleted = true;
+                float wholeDistance = Float.valueOf((String) currentDistanceText.getText().subSequence(0,currentDistanceText.getText().length()-2));
+                float wholeTime = (float) Duration.between(gameStartTime, LocalDateTime.now()).getSeconds();
+                if (timeLimitLess){
+                    if(wholeDistance>=goalDistance && wholeTime < goalTime*60) {
+                        missionCompleted = true;
+                    }
                 }
+                else{
+                    if(wholeDistance>=goalDistance && wholeTime >= goalTime*60){
+                        missionCompleted = true;
+                    }
+                }
+
+
+
+                goalDistanceStaticText.setText("");
+                goalDistanceText.setText("");
+                goalTimeStaticText.setText("");
+                goalTimeText.setText("");
 
                 LayoutInflater inflater = requireActivity().getLayoutInflater();
                 if (missionCompleted) {
@@ -317,6 +435,30 @@ public class SingleModeFragment extends Fragment {
         singleModeViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
 
         return root;
+    }
+
+    private void setStandard() {
+
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", MODE_PRIVATE);
+        int gender = sharedPreferences.getInt("gender", 0) - 1;
+
+        if (gender<0) gender =0;
+        int age = sharedPreferences.getInt("age", 0) / 10;
+
+        float height = sharedPreferences.getFloat("height", 0.0f);
+        float weight = sharedPreferences.getFloat("weight", 0.0f);
+        float bmi = height / (weight * weight);
+        if (bmi >= 25) {
+            age += 1;
+        }
+        if (age == 0) {
+            age += 2;
+        } else if (age == 1) {
+            age += 1;
+        }
+        age = age > 5 ? 3 : age - 2;
+        goalDistance = standard[gender][age];
+        goalTime = 12.0f;
     }
 
     @Override
@@ -448,14 +590,20 @@ public class SingleModeFragment extends Fragment {
                         goalDistance = modelOutput[0][0] * 7.019781e+00f + 1.207809e+01f;
                         goalTime = (modelOutput[0][1] * 6.457635e-01f + 1.156572e+00f);
 
-                        if (goalDistance / goalTime >= 1.3 * wholeDistance / wholeTime) {
-                            goalDistance = goalTime * 1.3f * wholeDistance / wholeTime;
+
+
+                        Log.e("mission", convertArrayToString(modelInput));
+                        Log.e("mission", "original : "+String.valueOf(goalDistance)+ " "+String.valueOf(goalTime));
+
+                        if (goalDistance/goalTime >= 1.3*wholeDistance/wholeTime){
+                            goalDistance = goalTime* 1.3f*wholeDistance/wholeTime;
                         }
                         if (goalDistance >= 1.3f * wholeDistance) {
                             goalDistance /= 1.3f;
                             goalTime /= 1.3f;
                         }
                         goalTime *= 60;
+                        Log.e("mission", "Revised : "+String.valueOf(goalDistance)+ " "+String.valueOf(goalTime));
                     } catch (Exception e) {
                         Log.e("modeloutput error", e.toString());
                         e.printStackTrace();

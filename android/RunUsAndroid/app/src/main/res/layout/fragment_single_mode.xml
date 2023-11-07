@@ -42,6 +42,21 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.5" />
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelinecl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.4" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelinecr"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.6" />
+
+
     <TextView
         android:id="@+id/goalDistanceStaticText"
         android:layout_width="wrap_content"
@@ -99,7 +114,7 @@
         android:layout_height="wrap_content"
         android:paddingTop="30dp"
         android:text="거리"
-        app:layout_constraintEnd_toStartOf="@id/guidelineCenter"
+        app:layout_constraintEnd_toStartOf="@id/guidelinecl"
         app:layout_constraintStart_toStartOf="@id/guidelineLeft"
         app:layout_constraintTop_toBottomOf="@id/map" />
 
@@ -110,7 +125,7 @@
         android:paddingTop="2dp"
         android:paddingBottom="30dp"
         android:text="0.0km"
-        app:layout_constraintEnd_toStartOf="@id/guidelineCenter"
+        app:layout_constraintEnd_toStartOf="@id/guidelinecl"
         app:layout_constraintStart_toStartOf="@id/guidelineLeft"
         app:layout_constraintTop_toBottomOf="@id/currentDistanceStaticText" />
 
@@ -121,7 +136,7 @@
         android:paddingTop="30dp"
         android:text="시간"
         app:layout_constraintEnd_toStartOf="@id/guidelineRight"
-        app:layout_constraintStart_toStartOf="@id/guidelineCenter"
+        app:layout_constraintStart_toStartOf="@id/guidelinecr"
         app:layout_constraintTop_toBottomOf="@id/map" />
 
     <Chronometer
@@ -133,46 +148,38 @@
         android:paddingBottom="15dp"
         android:text="00:00:00"
         app:layout_constraintEnd_toStartOf="@id/guidelineRight"
-        app:layout_constraintStart_toStartOf="@id/guidelineCenter"
+        app:layout_constraintStart_toStartOf="@id/guidelinecr"
         app:layout_constraintTop_toBottomOf="@id/currentTimeStaticText" />
-
-
-    <Button
-        android:id="@+id/showMissionButton"
-        android:layout_width="150dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:backgroundTint="#9EA3B2"
-        android:text="미션 보기"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toStartOf="@+id/guidelineRight"
-        app:layout_constraintStart_toStartOf="@+id/guidelineLeft"
-        app:layout_constraintTop_toBottomOf="@id/currentTimeText" />
 
     <Button
         android:id="@+id/startButton"
-        android:layout_width="150dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="3dp"
+        android:layout_width="130dp"
+        android:layout_height="130dp"
         android:backgroundTint="#4AA570"
+        android:shape='oval'
         android:text="시작"
         android:textStyle="bold"
+        android:textSize="25dp"
         android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/map"
         app:layout_constraintEnd_toStartOf="@+id/guidelineRight"
         app:layout_constraintStart_toStartOf="@+id/guidelineLeft"
-        app:layout_constraintTop_toBottomOf="@+id/showMissionButton" />
+        tools:layout_editor_absoluteY="541dp" />
 
     <Button
         android:id="@+id/quitButton"
-        android:layout_width="150dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="3dp"
+        android:layout_width="130dp"
+        android:layout_height="130dp"
         android:backgroundTint="#E94334"
+        android:shape='oval'
         android:text="종료"
         android:textStyle="bold"
+        android:textSize="25dp"
         android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/map"
         app:layout_constraintEnd_toStartOf="@+id/guidelineRight"
-        app:layout_constraintStart_toStartOf="@+id/guidelineLeft"
-        app:layout_constraintTop_toBottomOf="@+id/showMissionButton" />
+        app:layout_constraintStart_toStartOf="@+id/guidelineLeft" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
