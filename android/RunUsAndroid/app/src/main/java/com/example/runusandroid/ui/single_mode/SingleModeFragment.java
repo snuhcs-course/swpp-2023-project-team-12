@@ -6,6 +6,8 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.TimeZone;
 import android.location.Location;
@@ -16,11 +18,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -97,6 +102,8 @@ public class SingleModeFragment extends Fragment {
     private float[][] modelInput = new float[5][3];
     private float[][] modelOutput = new float[1][2];
 
+    private boolean timeLimitLess = true;
+
     private float[][] standard = {{2.41f, 2.38f, 2.32f, 2.21f}, {2.04f, 1.96f, 1.88f, 1.79f}};
 
 
@@ -160,9 +167,9 @@ public class SingleModeFragment extends Fragment {
                 SeekBar distanceSeekBar =  dialogView.findViewById(R.id.distanceSeekBar);
                 TextView distanceTextView = dialogView.findViewById(R.id.textViewGoalDistance);
 
-                distanceSeekBar.setProgress((int) (goalDistance*100));
+                distanceSeekBar.setProgress((int) (goalDistance*10));
 
-                String formattedDistance = String.format("%.2f", goalDistance);
+                String formattedDistance = String.format("%.1f", goalDistance);
                 distanceTextView.setText(String.valueOf(formattedDistance) + " km");
 
                 SeekBar timeSeekBar =  dialogView.findViewById(R.id.timeSeekBar);
@@ -171,10 +178,45 @@ public class SingleModeFragment extends Fragment {
                 timeSeekBar.setProgress((int) goalTime);
                 timeTextView.setText(String.valueOf((int) goalTime)+" 분");
 
+                Button buttonLess = dialogView.findViewById(R.id.buttonLess);
+
+                Button buttonGreater = dialogView.findViewById(R.id.buttonGreater);
+
+                buttonLess.setOnClickListener(new Button.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        ColorStateList myColorStateList = ColorStateList.valueOf(Color.parseColor("#4AA570"));
+
+                        ColorStateList otherColorStateList = ColorStateList.valueOf(Color.parseColor("#A3A3A3"));
+
+                        // 뷰의 backgroundTint 변경
+                        buttonLess.setBackgroundTintList(myColorStateList);
+                        buttonGreater.setBackgroundTintList(otherColorStateList);
+                        timeLimitLess = true;
+                    }
+                });
+
+                buttonGreater.setOnClickListener(new Button.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        ColorStateList myColorStateList = ColorStateList.valueOf(Color.parseColor("#4AA570"));
+
+                        ColorStateList otherColorStateList = ColorStateList.valueOf(Color.parseColor("#A3A3A3"));
+
+                        // 뷰의 backgroundTint 변경
+                        buttonGreater.setBackgroundTintList(myColorStateList);
+                        buttonLess.setBackgroundTintList(otherColorStateList);
+                        timeLimitLess = false;
+                    }
+                });
+
+
+
+
                 distanceSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        distanceTextView.setText(String.valueOf(progress / 100.0f)+"km");
+                        distanceTextView.setText(String.valueOf(progress / 10.0f)+"km");
 
                     }
 
@@ -211,7 +253,7 @@ public class SingleModeFragment extends Fragment {
                         goalDistanceStaticText.setText("목표 거리");
                         goalDistance = distanceSeekBar.getProgress()/100.0f;
                         goalTime = timeSeekBar.getProgress();
-                        String formattedDistance = String.format("%.2f", goalDistance);
+                        String formattedDistance = String.format("%.1f", goalDistance);
                         goalDistanceText.setText(String.valueOf(formattedDistance) + " km");
                         goalTimeStaticText.setText("목표 시간");
                         int roundedGoalTime = Math.round(goalTime);
@@ -262,10 +304,18 @@ public class SingleModeFragment extends Fragment {
                 Button confirmButton;
                 boolean missionCompleted = false;
                 float wholeDistance = Float.valueOf((String) currentDistanceText.getText().subSequence(0,currentDistanceText.getText().length()-2));
-                float wholeTime = (float) Duration.between(gameStartTime, LocalDateTime.now()).getSeconds() / 60;
-                if(wholeDistance>=goalDistance && wholeTime/3600 >= goalTime){
-                    missionCompleted = true;
+                float wholeTime = (float) Duration.between(gameStartTime, LocalDateTime.now()).getSeconds();
+                if (timeLimitLess){
+                    if(wholeDistance>=goalDistance && wholeTime < goalTime*60) {
+                        missionCompleted = true;
+                    }
                 }
+                else{
+                    if(wholeDistance>=goalDistance && wholeTime >= goalTime*60){
+                        missionCompleted = true;
+                    }
+                }
+
 
 
                 goalDistanceStaticText.setText("");
