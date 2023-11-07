@@ -31,11 +31,9 @@ public class HistoryFragment extends Fragment {
     private FragmentHistoryBinding binding;
     private HistoryApi historyApi;
 
-
     public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
-        HistoryViewModel historyViewModel =
-                new ViewModelProvider(this).get(HistoryViewModel.class);
+            ViewGroup container, Bundle savedInstanceState) {
+        HistoryViewModel historyViewModel = new ViewModelProvider(this).get(HistoryViewModel.class);
 
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
         long userId = sharedPreferences.getLong("userid", -1);
@@ -55,10 +53,10 @@ public class HistoryFragment extends Fragment {
 
         Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH) + 1;
+        int month = calendar.get(Calendar.MONTH);
         int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
 
-        //NOTE: 디폴트로 오늘 날짜 보여주기 위함
+        // NOTE: 디폴트로 오늘 날짜 보여주기 위함
         historyApi.getMonthlyData(year, month + 1, userId).enqueue(new Callback<HistoryDataforRendering>() {
             @Override
             public void onResponse(Call<HistoryDataforRendering> call, Response<HistoryDataforRendering> response) {
@@ -78,7 +76,7 @@ public class HistoryFragment extends Fragment {
             }
         });
 
-        //NOTE: 디폴트로 오늘 날짜 보여주기 위함
+        // NOTE: 디폴트로 오늘 날짜 보여주기 위함
         historyApi.getDailyData(year, month + 1, dayOfMonth, userId).enqueue(new Callback<HistoryDataforRendering>() {
             @Override
             public void onResponse(Call<HistoryDataforRendering> call, Response<HistoryDataforRendering> response) {
@@ -105,7 +103,8 @@ public class HistoryFragment extends Fragment {
                 // 월별 데이터 요청
                 historyApi.getMonthlyData(year, month + 1, userId).enqueue(new Callback<HistoryDataforRendering>() {
                     @Override
-                    public void onResponse(Call<HistoryDataforRendering> call, Response<HistoryDataforRendering> response) {
+                    public void onResponse(Call<HistoryDataforRendering> call,
+                            Response<HistoryDataforRendering> response) {
                         if (response.isSuccessful()) {
                             Log.d("HistoryApi", "Response Success");
                             HistoryDataforRendering data = response.body();
@@ -123,27 +122,28 @@ public class HistoryFragment extends Fragment {
                 });
 
                 // 일별 데이터 요청
-                historyApi.getDailyData(year, month + 1, dayOfMonth, userId).enqueue(new Callback<HistoryDataforRendering>() {
-                    @Override
-                    public void onResponse(Call<HistoryDataforRendering> call, Response<HistoryDataforRendering> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            Log.d("HistoryAPI", "Response received");
-                            HistoryDataforRendering data = response.body();
-                            dailyDistance.setText("거리\n" + data.getDistance() + " km");
-                            dailyTime.setText("시간\n" + data.getTime());
-                            dailyKcal.setText("칼로리\n" + data.getCalories() + " kcal");
-                        }
-                    }
+                historyApi.getDailyData(year, month + 1, dayOfMonth, userId)
+                        .enqueue(new Callback<HistoryDataforRendering>() {
+                            @Override
+                            public void onResponse(Call<HistoryDataforRendering> call,
+                                    Response<HistoryDataforRendering> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    Log.d("HistoryAPI", "Response received");
+                                    HistoryDataforRendering data = response.body();
+                                    dailyDistance.setText("거리\n" + data.getDistance() + " km");
+                                    dailyTime.setText("시간\n" + data.getTime());
+                                    dailyKcal.setText("칼로리\n" + data.getCalories() + " kcal");
+                                }
+                            }
 
-                    @Override
-                    public void onFailure(Call<HistoryDataforRendering> call, Throwable t) {
-                        Log.d("HistoryAPI", "Response Failed");
-                        // 오류 처리
-                    }
-                });
+                            @Override
+                            public void onFailure(Call<HistoryDataforRendering> call, Throwable t) {
+                                Log.d("HistoryAPI", "Response Failed");
+                                // 오류 처리
+                            }
+                        });
             }
         });
-
 
         return root;
     }

@@ -9,11 +9,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from .models import history, group_history
-from datetime import timedelta
-import datetime
+from datetime import datetime, timedelta
 from django.utils import timezone
 from django.http import JsonResponse
-from .models import history
 from django.db.models import Sum
 
 
@@ -109,11 +107,11 @@ class GroupHistoryDetail(APIView):
 
 class MonthlyDataView(APIView):
     def get(self, request, year, month, user_id):
-        start_date = datetime.date(year, month, 1)
+        start_date = datetime(year, month, 1).date()
         end_date = (
-            datetime.date(year, month + 1, 1)
+            datetime(year, month + 1, 1).date()
             if month < 12
-            else datetime.date(year + 1, 1, 1)
+            else datetime(year + 1, 1, 1).date()
         )
         data = history.objects.filter(
             user_id=user_id, start_time__range=[start_date, end_date]
