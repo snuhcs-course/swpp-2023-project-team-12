@@ -67,6 +67,8 @@ public class SingleModeFragment extends Fragment {
 
     private final List<LatLng> pathPoints = new ArrayList<>();
     private final List<Float> speedList = new ArrayList<>(); // 매 km 마다 속력 (km/h)
+    private final float[][] modelInput = new float[5][3];
+    private final float[][] modelOutput = new float[1][2];
     Chronometer currentTimeText;
     SimpleDateFormat dateFormat;
     FusedLocationProviderClient fusedLocationClient;
@@ -75,7 +77,7 @@ public class SingleModeFragment extends Fragment {
     MainActivity2 mainActivity;
     LocalDateTime gameStartTime;
     LocalDateTime iterationStartTime;
-    float calories = 0; //TODO: 칼로리 계산
+    float calories = 0; // TODO: 칼로리 계산
     double distance = 0;
     private HistoryApi historyApi;
     private FragmentSingleModeBinding binding;
@@ -83,22 +85,15 @@ public class SingleModeFragment extends Fragment {
     private Location lastLocation = null;
     private float minSpeed;
     private float maxSpeed;
-
     private float goalDistance;
     private float goalTime;
-
     private boolean runningNow;
-
     private Interpreter tflite;
     private MappedByteBuffer tfliteModel;
-    private float[][] modelInput = new float[5][3];
-    private float[][] modelOutput = new float[1][2];
-
 
     public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
-        SingleModeViewModel singleModeViewModel =
-                new ViewModelProvider(this).get(SingleModeViewModel.class);
+            ViewGroup container, Bundle savedInstanceState) {
+        SingleModeViewModel singleModeViewModel = new ViewModelProvider(this).get(SingleModeViewModel.class);
 
         binding = FragmentSingleModeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
@@ -131,13 +126,14 @@ public class SingleModeFragment extends Fragment {
         getMission();
 
         MissionButton.setOnClickListener(new View.OnClickListener() {
-            //TODO: 미션 생성 함수에서 받은 값으로 업데이트 해주어야 함
+            // TODO: 미션 생성 함수에서 받은 값으로 업데이트 해주어야 함
             @Override
             public void onClick(View v) {
-                boolean enoughHistory = modelInput[4][2] == 0 ? false : true;
+                boolean enoughHistory = modelInput[4][2] != 0;
                 if (!enoughHistory) {
-                    float[][] standard = {{2.41f, 2.38f, 2.32f, 2.21f}, {2.04f, 1.96f, 1.88f, 1.79f}};
-                    SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", MODE_PRIVATE);
+                    float[][] standard = { { 2.41f, 2.38f, 2.32f, 2.21f }, { 2.04f, 1.96f, 1.88f, 1.79f } };
+                    SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs",
+                            MODE_PRIVATE);
                     int gender = sharedPreferences.getInt("gender", 0) - 1;
                     int age = sharedPreferences.getInt("age", 0) / 10;
 
@@ -158,10 +154,10 @@ public class SingleModeFragment extends Fragment {
                 }
                 goalDistanceStaticText.setText("목표 거리");
                 String formattedDistance = String.format("%.2f", goalDistance);
-                goalDistanceText.setText(String.valueOf(formattedDistance) + " km");
+                goalDistanceText.setText(formattedDistance + " km");
                 goalTimeStaticText.setText("목표 시간");
                 int roundedGoalTime = Math.round(goalTime);
-                goalTimeText.setText(String.valueOf(roundedGoalTime) + " 분");
+                goalTimeText.setText(roundedGoalTime + " 분");
             }
         });
 
@@ -200,9 +196,10 @@ public class SingleModeFragment extends Fragment {
                 View dialogView;
                 Button confirmButton;
                 boolean missionCompleted = false;
-                float wholeDistance = Float.valueOf((String) currentDistanceText.getText().subSequence(0,currentDistanceText.getText().length()-2));
+                float wholeDistance = Float.valueOf((String) currentDistanceText.getText().subSequence(0,
+                        currentDistanceText.getText().length() - 2));
                 float wholeTime = (float) Duration.between(gameStartTime, LocalDateTime.now()).getSeconds() / 60;
-                if(wholeDistance>=goalDistance && wholeTime/3600 >= goalTime){
+                if (wholeDistance >= goalDistance && wholeTime / 3600 >= goalTime) {
                     missionCompleted = true;
                 }
 
@@ -222,7 +219,6 @@ public class SingleModeFragment extends Fragment {
                     elapsedTimeTextView.setText("달린 시간: " + currentTimeText.getText());
                     distanceTextView.setText("달린 거리: " + currentDistanceText.getText());
                 }
-
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 builder.setView(dialogView);
@@ -253,9 +249,10 @@ public class SingleModeFragment extends Fragment {
         locationRequest.setInterval(5000); // Update interval in milliseconds
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-        //TODO: only draw lines if running is started
-        //TODO: doesn't update location when app is in background -> straight lines are drawn from the last location when app is opened again
-        //TODO: lines are ugly and noisy -> need to filter out some points or smoothed
+        // TODO: only draw lines if running is started
+        // TODO: doesn't update location when app is in background -> straight lines are
+        // drawn from the last location when app is opened again
+        // TODO: lines are ugly and noisy -> need to filter out some points or smoothed
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
@@ -282,8 +279,10 @@ public class SingleModeFragment extends Fragment {
                                 Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
                                 long secondsDuration = iterationDuration.getSeconds();
                                 float newPace = (float) (1.0 / (secondsDuration / 3600.0));
-                                if (newPace > maxSpeed) maxSpeed = newPace;
-                                if (newPace < minSpeed) minSpeed = newPace;
+                                if (newPace > maxSpeed)
+                                    maxSpeed = newPace;
+                                if (newPace < minSpeed)
+                                    minSpeed = newPace;
                                 speedList.add(newPace);
                                 iterationStartTime = currentTime;
 
@@ -301,21 +300,20 @@ public class SingleModeFragment extends Fragment {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(mainActivity);
 
-
         // Finding the visual component displaying the map
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         // Initialize the map
         mapFragment.getMapAsync(googleMap -> {
             mMap = googleMap;
             // Check the permission and enable the location marker
-            if (ActivityCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_FINE_LOCATION)
-                    == PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.checkSelfPermission(mainActivity,
+                    Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 mMap.setMyLocationEnabled(true);
             }
         });
 
-
-        // Viewmodel contains status, and when status changes (observe), the text will change
+        // Viewmodel contains status, and when status changes (observe), the text will
+        // change
         final TextView textView = binding.textSingleMode;
         singleModeViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
 
@@ -333,13 +331,15 @@ public class SingleModeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         fusedLocationClient.removeLocationUpdates(locationCallback);
-        if (ActivityCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1000);
+        if (ActivityCompat.checkSelfPermission(mainActivity,
+                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(mainActivity, new String[] { Manifest.permission.ACCESS_COARSE_LOCATION },
+                    1000);
         }
-        if (ActivityCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1000);
+        if (ActivityCompat.checkSelfPermission(mainActivity,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(mainActivity, new String[] { Manifest.permission.ACCESS_FINE_LOCATION },
+                    1000);
         }
         fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
     }
@@ -351,18 +351,20 @@ public class SingleModeFragment extends Fragment {
     }
 
     void saveHistoryDataOnSingleMode() throws JSONException {
-        if ((int) minSpeed == 999) minSpeed = 0;
+        if ((int) minSpeed == 999)
+            minSpeed = 0;
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", MODE_PRIVATE);
-        Long userId = sharedPreferences.getLong("userid", -1); //TODO: -1이면 안되긴하는데, catch해야 함.
+        Long userId = sharedPreferences.getLong("userid", -1); // TODO: -1이면 안되긴하는데, catch해야 함.
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         String startTimeString = gameStartTime.format(formatter);
         String finishTimeString = LocalDateTime.now().format(formatter);
-        // long durationInSeconds = Duration.between(gameStartTime, LocalDateTime.now()).getSeconds();
-        long durationInSeconds = 3600L;
+        long durationInSeconds = Duration.between(gameStartTime, LocalDateTime.now()).getSeconds();
+        Log.d("Debug", startTimeString + finishTimeString);
         distance = 5.2;
-                //NOTE: group_history_id에 null을 넣을 수 없어 싱글모드인 경우 -1로 관리
+        // NOTE: group_history_id에 null을 넣을 수 없어 싱글모드인 경우 -1로 관리
         HistoryData requestData = new HistoryData(userId, (float) distance, durationInSeconds,
-                true, startTimeString, finishTimeString, calories, false, maxSpeed, minSpeed, calculateMedian(speedList), speedList, -1);
+                true, startTimeString, finishTimeString, calories, false, maxSpeed, minSpeed,
+                calculateMedian(speedList), speedList, -1);
 
         historyApi.postHistoryData(requestData).enqueue(new Callback<ResponseBody>() {
             @Override
@@ -385,7 +387,8 @@ public class SingleModeFragment extends Fragment {
         Collections.sort(numbers);
 
         int size = numbers.size();
-        if (size == 0) return 0;
+        if (size == 0)
+            return 0;
 
         if (size % 2 == 1) {
             return numbers.get(size / 2);
@@ -399,8 +402,8 @@ public class SingleModeFragment extends Fragment {
     private String convertArrayToString(float[][] array) {
         StringBuilder result = new StringBuilder();
 
-        for (float [] row : array) {
-            for (float value : row){
+        for (float[] row : array) {
+            for (float value : row) {
                 result.append(value).append(" ");
             }
             result.append("\n");
@@ -409,7 +412,7 @@ public class SingleModeFragment extends Fragment {
         return result.toString();
     }
 
-    private void getMission(){
+    private void getMission() {
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", MODE_PRIVATE);
 
         int gender = sharedPreferences.getInt("gender", 0) - 1;
@@ -429,12 +432,12 @@ public class SingleModeFragment extends Fragment {
                             JSONObject historyObject = jsonArray.getJSONObject(i);
 
                             float recentDistance = (float) historyObject.getDouble("distance");
-                            float recentDuration = convertTimetoHour(historyObject.getString("duration")) ;
+                            float recentDuration = convertTimetoHour(historyObject.getString("duration"));
 
                             modelInput[i][0] = (gender - 0.9111115f) / 0.3117750f;
                             modelInput[i][1] = (recentDistance - 1.207809e+01f) / 7.019781e+00f;
                             modelInput[i][2] = (recentDuration - 1.156572e+00f) / 6.457635e-01f;
-                            wholeDistance +=recentDistance;
+                            wholeDistance += recentDistance;
                             wholeTime += recentDuration;
 
                         }
@@ -444,12 +447,12 @@ public class SingleModeFragment extends Fragment {
                         String inputString = convertArrayToString(modelInput);
                         tflite.run(modelInput, modelOutput);
                         goalDistance = modelOutput[0][0] * 7.019781e+00f + 1.207809e+01f;
-                        goalTime = (modelOutput[0][1] * 6.457635e-01f +  1.156572e+00f);
+                        goalTime = (modelOutput[0][1] * 6.457635e-01f + 1.156572e+00f);
 
-                        if (goalDistance/goalTime >= 1.3*wholeDistance/wholeTime){
-                            goalDistance = goalTime* 1.3f*wholeDistance/wholeTime;
+                        if (goalDistance / goalTime >= 1.3 * wholeDistance / wholeTime) {
+                            goalDistance = goalTime * 1.3f * wholeDistance / wholeTime;
                         }
-                        if (goalDistance >= 1.3f * wholeDistance){
+                        if (goalDistance >= 1.3f * wholeDistance) {
                             goalDistance /= 1.3f;
                             goalTime /= 1.3f;
                         }
@@ -477,4 +480,3 @@ public class SingleModeFragment extends Fragment {
     }
 
 }
-
