@@ -15,11 +15,13 @@
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/SignUpIdInput"
-        android:layout_width="375dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
         android:layout_marginTop="70dp"
+        android:layout_marginRight="15dp"
         android:background="@drawable/round_shape_for_field"
-        android:hint=" 아이디"
+        android:hint="아이디"
         android:inputType="text"
         android:paddingLeft="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -35,11 +37,13 @@
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/SignUpPasswordInput"
-        android:layout_width="375dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
         android:layout_marginTop="60dp"
+        android:layout_marginRight="15dp"
         android:background="@drawable/round_shape_for_field"
-        android:hint=" 비밀번호"
+        android:hint="비밀번호"
         android:inputType="textPassword"
         android:paddingLeft="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -55,9 +59,11 @@
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/SignUpEmailInput"
-        android:layout_width="375dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
         android:layout_marginTop="60dp"
+        android:layout_marginRight="15dp"
         android:background="@drawable/round_shape_for_field"
         android:hint=" 이메일"
         android:inputType="textEmailAddress"
@@ -68,9 +74,11 @@
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/nextButton1"
-        android:layout_width="375dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
         android:layout_marginTop="250dp"
+        android:layout_marginRight="15dp"
         android:background="@drawable/round_shape_green"
         android:text="다음"
         app:layout_constraintLeft_toLeftOf="parent"

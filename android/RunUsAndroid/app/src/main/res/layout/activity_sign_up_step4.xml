@@ -20,11 +20,13 @@
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/SignUpHeightInput"
-        android:layout_width="375dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
         android:layout_marginTop="30dp"
+        android:layout_marginRight="15dp"
         android:background="@drawable/round_shape_for_field"
-        android:hint=" 키"
+        android:hint="키"
         android:inputType="text"
         android:paddingLeft="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -33,11 +35,13 @@
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/SignUpWeightInput"
-        android:layout_width="375dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
         android:layout_marginTop="30dp"
+        android:layout_marginRight="15dp"
         android:background="@drawable/round_shape_for_field"
-        android:hint=" 체중"
+        android:hint="체중"
         android:inputType="text"
         android:paddingLeft="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -46,9 +50,11 @@
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/SignUpAgeInput"
-        android:layout_width="375dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
         android:layout_marginTop="30dp"
+        android:layout_marginRight="15dp"
         android:background="@drawable/round_shape_for_field"
         android:hint=" 나이"
         android:inputType="text"
@@ -100,9 +106,11 @@
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/nextButton2"
-        android:layout_width="375dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
         android:layout_marginTop="200dp"
+        android:layout_marginRight="15dp"
         android:background="@drawable/round_shape_green"
         android:text="가입 완료"
         app:layout_constraintLeft_toLeftOf="parent"
