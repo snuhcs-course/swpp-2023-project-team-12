@@ -112,7 +112,7 @@ public class MultiModePlayFragment extends Fragment {
         socketListenerThread.addPlayFragment(this);
         socketListenerThread.resumeListening();
         gameStartTime = (LocalDateTime) getArguments().getSerializable("startTime");
-        Log.d("currentTime", gameStartTime + "");
+        //Log.d("currentTime", gameStartTime + "");
         //경과 시간 업데이트
         timeHandler = new Handler(Looper.getMainLooper());
 
@@ -138,7 +138,7 @@ public class MultiModePlayFragment extends Fragment {
                         String formattedTime = String.format(Locale.getDefault(), "%02d:%02d:%02d",
                                 hours, minutes, seconds);
                         timePresentContentTextView.setText(formattedTime);
-                        Log.d("response", formattedTime);
+                        //Log.d("response", formattedTime);
 
                     }
                 }
@@ -149,7 +149,7 @@ public class MultiModePlayFragment extends Fragment {
                     Log.d("response", "finished time count");
                     Packet requestPacket = new Packet(Protocol.FINISH_GAME, user, selectedRoom);
                     finishedTask = new SendFinishedTask();
-                    finishedTask.execute();
+                    finishedTask.execute(requestPacket);
                 }
             }
         };
@@ -220,7 +220,7 @@ public class MultiModePlayFragment extends Fragment {
             public void onLocationResult(LocationResult locationResult) {
                 if (locationResult != null) {
                     Location location = locationResult.getLastLocation();
-                    Log.d("test:location", "Location:" + location.getLatitude() + ", " + location.getLongitude());
+                    //Log.d("test:location", "Location:" + location.getLatitude() + ", " + location.getLongitude());
 
                     LatLng newPoint = new LatLng(location.getLatitude(), location.getLongitude());
                     pathPoints.add(newPoint);
@@ -247,7 +247,7 @@ public class MultiModePlayFragment extends Fragment {
 
 
                             distance += location.distanceTo(lastLocation) / (double) 1000;
-                            Log.d("test:distance", "Distance:" + distance);
+                            //Log.d("test:distance", "Distance:" + distance);
                             // update pace if new iteration started (every 1km)
                             if ((int) distance != lastDistanceInt) {
                                 LocalDateTime currentTime = LocalDateTime.now();
@@ -303,8 +303,8 @@ public class MultiModePlayFragment extends Fragment {
         UserDistance[] top3UserDistance = userDistances;
         for (int i = 0; i < userDistances.length; i++) {
 
-            Log.d("response", "In updateTop3UserDistance, top3user " + i + " : " + top3UserDistance[0].getUser().getNickName() + " , distance : " + userDistances[0].getDistance());
-            Log.d("response", "In updateTop3UserDistance, user " + i + " : " + userDistances[0].getUser().getNickName() + " , distance : " + userDistances[0].getDistance());
+            //Log.d("response", "In updateTop3UserDistance, top3user " + i + " : " + top3UserDistance[0].getUser().getNickName() + " , distance : " + userDistances[0].getDistance());
+            //Log.d("response", "In updateTop3UserDistance, user " + i + " : " + userDistances[0].getUser().getNickName() + " , distance : " + userDistances[0].getDistance());
 
         }
         double goldDistance = 0;
@@ -543,9 +543,9 @@ public class MultiModePlayFragment extends Fragment {
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (success) {
-                Log.d("SendPacket", "Packet sent successfully! distance : " + distance);
+                //Log.d("SendPacket", "Packet sent successfully! distance : " + distance);
             } else {
-                Log.d("SendPacket", "Failed to send packet! distance : " + distance);
+                //Log.d("SendPacket", "Failed to send packet! distance : " + distance);
             }
         }
     }
@@ -559,11 +559,13 @@ public class MultiModePlayFragment extends Fragment {
             boolean success = true;
             try {
                 if (packets.length > 0) {
+                    Log.d("SendfinishedPacket", "Packet is bigger than 0");
                     Packet requestPacket = packets[0];
                     ObjectOutputStream oos = socketManager.getOOS();
                     oos.writeObject(requestPacket);
                     oos.flush();
                 } else {
+                    Log.d("SendfinishedPacket", "Packet is 0");
                     success = false;
                 }
 
@@ -582,10 +584,10 @@ public class MultiModePlayFragment extends Fragment {
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (success) {
-                Log.d("SendPacket", "Packet sent successfully!");
+                Log.d("SendfinishedPacket", "Packet sent successfully!");
 
             } else {
-                Log.d("ExitSendPacket", "Failed to send packet!");
+                Log.d("SendfinishedPacket", "Failed to send packet!");
             }
         }
 
@@ -619,10 +621,10 @@ public class MultiModePlayFragment extends Fragment {
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (success) {
-                Log.d("SendPacket", "Packet  savegroupinfo sent successfully!");
+                Log.d("SavePacket", "Packet  savegroupinfo sent successfully!");
 
             } else {
-                Log.d("ExitSendPacket", "Failed to send packet!");
+                Log.d("SavePacket", "Failed to send packet!");
             }
         }
 
@@ -652,15 +654,11 @@ public class MultiModePlayFragment extends Fragment {
                     timeHandler.removeCallbacksAndMessages(null);
                     sendDataHandler.removeCallbacksAndMessages(null);
                     socketManager.closeSocket();
-
                     //Log.d("response", "socket closed");
-
-
                 } catch (IOException e) {
                     //Log.d("response", "socket close error");
                     success = false;
                 }
-
             }
             return success;
         }
@@ -670,7 +668,7 @@ public class MultiModePlayFragment extends Fragment {
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (success) {
-                Log.d("SendPacket", "Packet sent successfully!");
+                Log.d("ExitSendPacket", "Packet sent successfully!");
 
             } else {
                 Log.d("ExitSendPacket", "Failed to send packet!");
