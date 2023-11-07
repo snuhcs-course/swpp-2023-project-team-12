@@ -4,11 +4,11 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
-//    private final static String BASE_URL = "http://ec2-43-201-102-185.ap-northeast-2.compute.amazonaws.com:8080/"; // Replace EC2 endpoint with yours
 
-    //private final static String BASE_URL = "http://192.168.56.1:8000/"; // Replace EC2 endpoint with yours
-//
-    private final static String BASE_URL = "http://ec2-3-36-116-64.ap-northeast-2.compute.amazonaws.com:3000/";
+    // 아래 코드를 수정 후 커밋하지 마시오!!
+    private final static String BASE_URL = "http://ec2-3-36-116-64.ap-northeast-2.compute.amazonaws.com:3000";
+    // 위 코드를 수정 후 커밋하지 마시오!!
+
     private static Retrofit retrofit = null;
 
     private RetrofitClient() {
@@ -23,4 +23,5 @@ public class RetrofitClient {
         }
         return retrofit;
     }
+
 }

@@ -8,10 +8,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class RoomManager implements Serializable {
     private static List<MultiModeRoom> roomList; // 방의 리스트
+    private static List<MultiModeRoom> inGameRoomList;
     private static AtomicInteger atomicInteger; //방 ID 만들기 위한 AtomicInteger
 
     static {
-        roomList = new ArrayList();
+        roomList = new ArrayList<MultiModeRoom>();
+        inGameRoomList = new ArrayList<MultiModeRoom>();
         atomicInteger = new AtomicInteger();
     }
     public RoomManager(){
@@ -48,6 +50,25 @@ public class RoomManager implements Serializable {
         }
         return null;
     }
+
+    public static MultiModeRoom getInGameRoom(MultiModeRoom room) {
+        for (MultiModeRoom r : inGameRoomList) {
+            if (r.getId() == room.getId()) {
+                return r;
+            }
+        }
+        return null;
+    }
+
+    public static MultiModeRoom getInGameRoom(int id) {
+        for (MultiModeRoom r : inGameRoomList) {
+            if (r.getId() == id) {
+                return r;
+            }
+        }
+        return null;
+    }
+
     public static void updateRoom(MultiModeRoom room){
         for(MultiModeRoom mroom : roomList){
             if(mroom.getId() == room.getId()){
@@ -69,6 +90,29 @@ public class RoomManager implements Serializable {
         }
         roomList.remove(removeRoom);
         System.out.println("Room Deleted");
+    }
+
+    public static void removeInGameRoom(MultiModeRoom room){
+        room.close();
+        MultiModeRoom removeRoom = null;
+        for(MultiModeRoom mroom : inGameRoomList){
+            if(mroom.getId() == room.getId()){
+                removeRoom = mroom;
+            }
+        }
+        roomList.remove(removeRoom);
+        System.out.println("Room Deleted");
+    }
+
+    public static void startRoom(MultiModeRoom room){
+        MultiModeRoom removeRoom = null;
+        for(MultiModeRoom mroom : roomList){
+            if(mroom.getId() == room.getId()){
+                removeRoom = mroom;
+            }
+        }
+        roomList.remove(removeRoom);
+        inGameRoomList.add(removeRoom);
     }
 
     public static int roomCount(){
