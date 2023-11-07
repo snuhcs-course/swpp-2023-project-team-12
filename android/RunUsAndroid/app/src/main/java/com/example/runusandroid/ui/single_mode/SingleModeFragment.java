@@ -230,6 +230,8 @@ public class SingleModeFragment extends Fragment {
                         currentTimeText.setBase(SystemClock.elapsedRealtime());
                         currentTimeText.start();
 
+                        quitButton.setVisibility(View.VISIBLE);
+
                         dialog.dismiss();
                     }
                 });
@@ -382,6 +384,8 @@ public class SingleModeFragment extends Fragment {
 
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", MODE_PRIVATE);
         int gender = sharedPreferences.getInt("gender", 0) - 1;
+
+        if (gender<0) gender =0;
         int age = sharedPreferences.getInt("age", 0) / 10;
 
         float height = sharedPreferences.getFloat("height", 0.0f);
