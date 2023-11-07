@@ -112,4 +112,14 @@ public class SignUpStep4Activity extends AppCompatActivity {
             }
         });
     }
+
+    //NOTE: Method for Test
+    public String getSelectedGenderText() {
+        int selectedId = radioGroupGender.getCheckedRadioButtonId();
+        if (selectedId != -1) {
+            RadioButton selectedButton = findViewById(selectedId);
+            return selectedButton.getText().toString();
+        }
+        return "";
+    }
 }
