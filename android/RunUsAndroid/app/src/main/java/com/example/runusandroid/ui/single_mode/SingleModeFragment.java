@@ -267,6 +267,12 @@ public class SingleModeFragment extends Fragment {
                     missionCompleted = true;
                 }
 
+
+                goalDistanceStaticText.setText("");
+                goalDistanceText.setText("");
+                goalTimeStaticText.setText("");
+                goalTimeText.setText("");
+
                 LayoutInflater inflater = requireActivity().getLayoutInflater();
                 if (missionCompleted) {
                     dialogView = inflater.inflate(R.layout.dialog_mission_success, null);
