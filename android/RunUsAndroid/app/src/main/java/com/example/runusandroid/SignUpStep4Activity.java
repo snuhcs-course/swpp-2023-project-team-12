@@ -2,9 +2,12 @@ package com.example.runusandroid;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,9 +21,11 @@ public class SignUpStep4Activity extends AppCompatActivity {
     private EditText signUpHeightInput;
     private EditText signUpWeightInput;
     private EditText signUpAgeInput;
-    private EditText signUpGenderInput;
+    private RadioGroup radioGroupGender;
     private Button completeButton;
     private AccountApi accountApi;
+
+    private String selectedGender = "남성"; //NOTE: Set default value to male
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +36,8 @@ public class SignUpStep4Activity extends AppCompatActivity {
         signUpHeightInput = findViewById(R.id.SignUpHeightInput);
         signUpWeightInput = findViewById(R.id.SignUpWeightInput);
         signUpAgeInput = findViewById(R.id.SignUpAgeInput);
-        signUpGenderInput = findViewById(R.id.SignUpGenderInput);
+        radioGroupGender = findViewById(R.id.radioGroupGender);
+        radioGroupGender.check(R.id.radioButtonMale); //NOTE: Set default value to male
         completeButton = findViewById(R.id.nextButton2);
 
         // Get passed data from previous steps
@@ -44,6 +50,15 @@ public class SignUpStep4Activity extends AppCompatActivity {
 
         accountApi = RetrofitClient.getClient().create(AccountApi.class);
 
+        radioGroupGender.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                int selectedGenderId = radioGroupGender.getCheckedRadioButtonId();
+                RadioButton selectedGenderButton = findViewById(selectedGenderId);
+                selectedGender = selectedGenderButton.getText().toString();
+            }
+        });
+
         completeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -51,7 +66,14 @@ public class SignUpStep4Activity extends AppCompatActivity {
                 float height = Float.parseFloat(signUpHeightInput.getText().toString());
                 float weight = Float.parseFloat(signUpWeightInput.getText().toString());
                 int age = Integer.parseInt(signUpAgeInput.getText().toString());
-                int gender = Integer.parseInt(signUpGenderInput.getText().toString());
+                int gender;
+                if (selectedGender.equals("남성")) {
+                    gender = 1;
+                } else if (selectedGender.equals("여성")) {
+                    gender = 2;
+                } else {
+                    gender = 1; // FIXME: 예상치 못한 값에는 에러는 우선 남성으로 대처
+                }
 
                 // Create sign up data object
                 SignUpData requestData = new SignUpData(
@@ -84,9 +106,20 @@ public class SignUpStep4Activity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
                         Toast.makeText(SignUpStep4Activity.this, "Network Error", Toast.LENGTH_SHORT).show();
+                        Log.e("Retrofit", "Error: " + t.getMessage());
                     }
                 });
             }
         });
+    }
+
+    //NOTE: Method for Test
+    public String getSelectedGenderText() {
+        int selectedId = radioGroupGender.getCheckedRadioButtonId();
+        if (selectedId != -1) {
+            RadioButton selectedButton = findViewById(selectedId);
+            return selectedButton.getText().toString();
+        }
+        return "";
     }
 }

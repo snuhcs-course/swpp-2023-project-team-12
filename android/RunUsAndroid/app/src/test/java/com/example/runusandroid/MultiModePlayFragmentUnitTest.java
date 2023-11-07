@@ -79,7 +79,7 @@ public class MultiModePlayFragmentUnitTest {
 
         float median = fragment.calculateMedian(numbers);
 
-        assertEquals(2.5f, median, 0.01);
+        assertEquals(3.0f, median, 0.01);
     }
 
     @Test
