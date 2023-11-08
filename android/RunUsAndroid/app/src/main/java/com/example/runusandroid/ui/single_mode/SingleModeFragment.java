@@ -49,6 +49,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -153,6 +155,7 @@ public class SingleModeFragment extends Fragment {
                 if (!enoughHistory) {
                     setStandard();
                 }
+
 
 
                 View dialogView = getLayoutInflater().inflate(R.layout.dialog_mission_start, null);
@@ -273,6 +276,7 @@ public class SingleModeFragment extends Fragment {
                         currentTimeText.start();
 
                         quitButton.setVisibility(View.VISIBLE);
+                        hideBottomNavigation(true);
 
                         dialog.dismiss();
                     }
@@ -361,6 +365,7 @@ public class SingleModeFragment extends Fragment {
                     throw new RuntimeException(e);
                 }
                 getMission();
+                hideBottomNavigation(false);
             }
         });
 
@@ -632,6 +637,14 @@ public class SingleModeFragment extends Fragment {
     public float convertTimetoHour(String timeString) {
         LocalTime localTime = LocalTime.parse(timeString);
         return localTime.getHour() + (float) localTime.getMinute() / 60;
+    }
+
+    public void hideBottomNavigation(Boolean hide) {
+        BottomNavigationView nav_view = getActivity().findViewById(R.id.nav_view);
+        if (hide)
+            nav_view.setVisibility(View.GONE);
+        else
+            nav_view.setVisibility(View.VISIBLE);
     }
 
 }
