@@ -101,7 +101,7 @@ public class MultiModePlayFragment extends Fragment {
     private float medianSpeed;
     private HistoryApi historyApi;
     private TextView timePresentContentTextView;
-    private int isFinished = 0;
+    private int isFinished;
     private ObjectInputStream ois;
     private int groupHistoryId = 999;
     private SendFinishedTask finishedTask;
@@ -117,12 +117,12 @@ public class MultiModePlayFragment extends Fragment {
         timeHandler = new Handler(Looper.getMainLooper());
 
         // Runnable을 사용하여 매 초마다 시간 업데이트
+        isFinished = 0;
         timeRunnable = new Runnable() {
             @Override
             public void run() {
-                if (selectedRoom != null) {
+                if (selectedRoom != null && isFinished==0) {
                     LocalDateTime currentTime = LocalDateTime.now();
-                    //Duration present = Duration.between(selectedRoom.getStartTime(), currentTime);
                     Duration present = Duration.between(gameStartTime, currentTime);
                     long secondsElapsed = present.getSeconds();
 
@@ -132,25 +132,22 @@ public class MultiModePlayFragment extends Fragment {
                     long seconds = secondsElapsed % 60;
 
                     if (present.getSeconds() > selectedRoom.getDuration().getSeconds()) {
-                        timeHandler.removeCallbacks(timeRunnable);
                         isFinished = 1;
                     } else {
                         String formattedTime = String.format(Locale.getDefault(), "%02d:%02d:%02d",
                                 hours, minutes, seconds);
                         timePresentContentTextView.setText(formattedTime);
-                        //Log.d("response", formattedTime);
-
                     }
                 }
                 if (isFinished == 0) {
-                    // 1초마다 Runnable 실행
                     timeHandler.postDelayed(this, 1000);
-                } else {
-                    Log.d("response", "finished time count");
+                } else if(isFinished == 1){
                     Packet requestPacket = new Packet(Protocol.FINISH_GAME, user, selectedRoom);
                     finishedTask = new SendFinishedTask();
                     finishedTask.execute(requestPacket);
+                    isFinished = 2;
                 }
+
             }
         };
         timeHandler.post(timeRunnable);
@@ -205,7 +202,6 @@ public class MultiModePlayFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Packet requestPacket = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
-                finishedTask.cancel(true);
                 new ExitGameTask().execute(requestPacket);
                 NavController navController = Navigation.findNavController(v);
                 navController.navigate(R.id.navigation_multi_mode);
@@ -220,13 +216,10 @@ public class MultiModePlayFragment extends Fragment {
             public void onLocationResult(LocationResult locationResult) {
                 if (locationResult != null) {
                     Location location = locationResult.getLastLocation();
-                    //Log.d("test:location", "Location:" + location.getLatitude() + ", " + location.getLongitude());
-
                     LatLng newPoint = new LatLng(location.getLatitude(), location.getLongitude());
                     pathPoints.add(newPoint);
 
                     int lastDistanceInt = (int) distance;
-
                     // TODO: check calculate distance
                     if (newPoint != null) {
                         // first few points might be noisy && while activity is running (or walking)
@@ -247,8 +240,6 @@ public class MultiModePlayFragment extends Fragment {
 
 
                             distance += location.distanceTo(lastLocation) / (double) 1000;
-                            //Log.d("test:distance", "Distance:" + distance);
-                            // update pace if new iteration started (every 1km)
                             if ((int) distance != lastDistanceInt) {
                                 LocalDateTime currentTime = LocalDateTime.now();
                                 Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
@@ -277,7 +268,6 @@ public class MultiModePlayFragment extends Fragment {
             @Override
             public void run() {
                 Packet requestPacket = new Packet(Protocol.UPDATE_USER_DISTANCE, user, distance);
-                //distance += 1;
                 new SendDistanceTask().execute(requestPacket);
                 if (isFinished == 0) {
                     // 1초마다 Runnable 실행
@@ -302,10 +292,8 @@ public class MultiModePlayFragment extends Fragment {
     public void updateTop3UserDistance(UserDistance[] userDistances) { // 화면에 표시되는 top3 유저 정보 업데이트. socketListenerThread에서 사용
         UserDistance[] top3UserDistance = userDistances;
         for (int i = 0; i < userDistances.length; i++) {
-
             //Log.d("response", "In updateTop3UserDistance, top3user " + i + " : " + top3UserDistance[0].getUser().getNickName() + " , distance : " + userDistances[0].getDistance());
             //Log.d("response", "In updateTop3UserDistance, user " + i + " : " + userDistances[0].getUser().getNickName() + " , distance : " + userDistances[0].getDistance());
-
         }
         double goldDistance = 0;
 
@@ -343,6 +331,7 @@ public class MultiModePlayFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        //아래 코드에서 resume때 result fragment로 가는 이유?
         transitionToRusultFragment();
 //        socketListenerThread = (SocketListenerThread) getArguments().getSerializable("socketListenerThread"); //waitFragment의 socketListenrThread객체 가져와서 이어서 사용
 
@@ -371,6 +360,7 @@ public class MultiModePlayFragment extends Fragment {
 //            socketListenerThread.interrupt();
 //        }
         fusedLocationClient.removeLocationUpdates(locationCallback);
+        finishedTask.cancel(true);
     }
 
     @Override
@@ -378,6 +368,7 @@ public class MultiModePlayFragment extends Fragment {
         super.onDestroyView();
         // 타이머가 더 이상 필요하지 않을 때 핸들러를 제거합니다.
         timeHandler.removeCallbacks(timeRunnable);
+        sendDataHandler.removeCallbacks(sendDataRunnable);
     }
 
     void saveHistoryData(long groupHistoryId) throws JSONException {
@@ -400,8 +391,6 @@ public class MultiModePlayFragment extends Fragment {
                         throw new RuntimeException(e);
                     }
                     transitionToRusultFragment();
-                    Log.d("response", "really go to result screen");
-                } else {
                 }
 
             }
@@ -444,7 +433,7 @@ public class MultiModePlayFragment extends Fragment {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    Log.d("response", "Send History Success");
+                    Log.d("response", "Send group History Success");
                     JSONObject responseBody = null;
                     String responseBodyString = null;
                     try {
@@ -454,17 +443,12 @@ public class MultiModePlayFragment extends Fragment {
                         groupHistoryId = (int) responseBody.getLong("id");
                         Packet requestPacket = new Packet(Protocol.SAVE_GROUP_HISTORY, user, selectedRoom, groupHistoryId);
                         new SendSavedInfoTask().execute(requestPacket);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    } catch (JSONException e) {
+                    } catch (IOException | JSONException e) {
                         throw new RuntimeException(e);
                     }
-
-                } else {
                 }
 
             }
-
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
             }
@@ -559,22 +543,23 @@ public class MultiModePlayFragment extends Fragment {
             boolean success = true;
             try {
                 if (packets.length > 0) {
-                    Log.d("SendfinishedPacket", "Packet is bigger than 0");
                     Packet requestPacket = packets[0];
                     ObjectOutputStream oos = socketManager.getOOS();
-                    oos.writeObject(requestPacket);
-                    oos.flush();
+                    if(!isCancelled() && oos!=null) {
+                        oos.writeObject(requestPacket);
+                        oos.flush();
+                    }
+                    else {
+                        success = false;
+                        Log.d("Sendfinishedpacket", "task is cancelled or oos is null");
+                    }
                 } else {
-                    Log.d("SendfinishedPacket", "Packet is 0");
                     success = false;
                 }
 
             } catch (IOException e) {
                 e.printStackTrace();
                 success = false;
-            } finally {
-                //timeHandler.removeCallbacksAndMessages(null);
-                //sendDataHandler.removeCallbacksAndMessages(null);
             }
             return success;
         }
@@ -632,7 +617,6 @@ public class MultiModePlayFragment extends Fragment {
 
     public class ExitGameTask extends AsyncTask<Packet, Void, Boolean> {
         Packet packet;
-
         @Override
         public Boolean doInBackground(Packet... packets) {
             boolean success = true;
@@ -650,13 +634,8 @@ public class MultiModePlayFragment extends Fragment {
                 success = false;
             } finally {
                 try {
-
-                    timeHandler.removeCallbacksAndMessages(null);
-                    sendDataHandler.removeCallbacksAndMessages(null);
                     socketManager.closeSocket();
-                    //Log.d("response", "socket closed");
                 } catch (IOException e) {
-                    //Log.d("response", "socket close error");
                     success = false;
                 }
             }
