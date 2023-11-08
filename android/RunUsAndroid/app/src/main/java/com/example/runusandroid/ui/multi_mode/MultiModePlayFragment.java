@@ -76,7 +76,6 @@ public class MultiModePlayFragment extends Fragment {
     FusedLocationProviderClient fusedLocationClient;
     LocationCallback locationCallback;
     LocationRequest locationRequest;
-    TextView paceGoalContentTextView;
     MainActivity2 mainActivity;
     TextView timeGoalContentTextView;
     TextView goldDistanceTextView;
@@ -166,7 +165,7 @@ public class MultiModePlayFragment extends Fragment {
         mainActivity = (MainActivity2) getActivity();
         locationRequest = LocationRequest.create();
         // TODO: let's find out which interval has best tradeoff
-        locationRequest.setInterval(1000); // Update interval in milliseconds
+        locationRequest.setInterval(5000); // Update interval in milliseconds
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         maxSpeed = 0;
         minSpeed = 999;
@@ -217,6 +216,7 @@ public class MultiModePlayFragment extends Fragment {
                 if (locationResult != null) {
                     Location location = locationResult.getLastLocation();
                     LatLng newPoint = new LatLng(location.getLatitude(), location.getLongitude());
+                    Log.d("debug:location", "location : " + location.getLongitude() + ", " + location.getLatitude());
                     pathPoints.add(newPoint);
 
                     int lastDistanceInt = (int) distance;
@@ -227,34 +227,42 @@ public class MultiModePlayFragment extends Fragment {
                             Location lastLocation = new Location("");
                             lastLocation.setLatitude(pathPoints.get(pathPoints.size() - 2).latitude);
                             lastLocation.setLongitude(pathPoints.get(pathPoints.size() - 2).longitude);
+
                             // unit : meter -> kilometer
-                            if (location.distanceTo(lastLocation) != 0) {
-                                int paceMinute = (int) (1 / ((location.distanceTo(lastLocation) / (double) 1000) / 5)) / 60;
-                                int paceSecond = (int) (1 / ((location.distanceTo(lastLocation) / (double) 1000) / 5)) % 60;
-                                String paceString = String.format("%02d:%02d", paceMinute, paceSecond);
+                            double last_distance_5s_kilometer = location.distanceTo(lastLocation) / (double) 1000;
+                            distance += last_distance_5s_kilometer;
+                            double speed_average = distance / (double) (Duration.between(gameStartTime, LocalDateTime.now()).getSeconds() / 3600.0);
+
+                            if (speed_average > 0.1) {
+                                Log.d("debug:distance", "last 5s distance (km) : " + last_distance_5s_kilometer + "");
+                                Log.d("debug:speed", "average speed since start (km/h) : " + speed_average + "");
+                                String paceString = String.format("%4.2f km/h", speed_average);
                                 pacePresentContentTextView.setText(paceString);
                             } else {
-                                String paceString = "--:--";
+                                String paceString = "--.-- km/h";
                                 pacePresentContentTextView.setText(paceString);
                             }
 
 
-                            distance += location.distanceTo(lastLocation) / (double) 1000;
-                            if ((int) distance != lastDistanceInt) {
-                                LocalDateTime currentTime = LocalDateTime.now();
-                                Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
-                                long secondsDuration = iterationDuration.getSeconds();
-                                float newPace = (float) (1.0 / (secondsDuration / 3600.0));
-                                if (newPace > maxSpeed) maxSpeed = newPace;
-                                if (newPace < minSpeed) minSpeed = newPace;
-                                speedList.add(newPace);
-                                iterationStartTime = currentTime;
 
-                            }
+
+                            // pace unused for now
+//                            if ((int) distance != lastDistanceInt) {
+//                                LocalDateTime currentTime = LocalDateTime.now();
+//                                Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
+//                                long secondsDuration = iterationDuration.getSeconds();
+//                                float newPace = (float) (1.0 / (secondsDuration / 3600.0));
+//                                if (newPace > maxSpeed) maxSpeed = newPace;
+//                                if (newPace < minSpeed) minSpeed = newPace;
+//                                speedList.add(newPace);
+//                                iterationStartTime = currentTime;
+//
+//                            }
                         }
                     }
                     // update distance text
-                    distancePresentContentTextView.setText(String.format(Locale.getDefault(), "%.1f" + "km", distance));
+                    distancePresentContentTextView.setText(String.format(Locale.getDefault(), "%.2f" + "km", distance));
+                    Log.d("debug:distance", "total distance : " + distance);
                 }
             }
         };
