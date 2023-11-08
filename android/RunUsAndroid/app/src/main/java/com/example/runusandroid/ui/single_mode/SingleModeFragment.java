@@ -156,16 +156,44 @@ public class SingleModeFragment extends Fragment {
             public void onClick(View v) {
                 startButton.setVisibility(View.GONE);
 
+                View dialogView = getLayoutInflater().inflate(R.layout.dialog_mission_start, null);
+                AlertDialog dialog = new AlertDialog.Builder(getActivity()).create();
+
+                dialog.setView(dialogView);
+
+                TextView missionInfo = dialogView.findViewById(R.id.textViewMissionInfo);
+
+                SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", MODE_PRIVATE);
+                String nickname = sharedPreferences.getString("nickname", "");
+
                 boolean enoughHistory = modelInput[4][2] == 0 ? false : true;
                 if (!enoughHistory) {
                     setStandard();
+
+
+                    missionInfo.setText("5회 러닝 전에는 "+nickname+"님과 비슷한 그룹의 평균 러닝이 추천돼요!");
                 }
 
 
-                View dialogView = getLayoutInflater().inflate(R.layout.dialog_mission_start, null);
-                AlertDialog dialog = new AlertDialog.Builder(getActivity()).create();
-                dialog.setView(dialogView);
                 dialog.show();
+
+
+                float lastDistance = modelInput[0][1] * 7.019781e+00f + 1.207809e+01f;
+                float lastTime = modelInput[0][2] * 6.457635e-01f + 1.156572e+00f;
+
+                if (goalDistance/goalTime > lastDistance*1.1/lastTime){
+                    missionInfo.setText(nickname+"님, 오늘은 더 바람을 느끼며 달려 보세요! \n 지난 기록보다 높은 목표를 추천해 드렸어요.");
+                }
+                else if (goalDistance/goalTime < lastDistance*0.9/lastTime){
+                    missionInfo.setText(nickname+"님, 오늘은 쉬어가는 러닝을 가져 보세요! \n 지난 기록보다 편한 목표를 추천해 드렸어요.");
+                }
+                else {
+                    missionInfo.setText("러닝은 꾸준함이 생명! \n 지난 러닝의 감각을 계속해서 익혀 보세요.");
+                }
+
+
+
+
 
                 Button buttonConfirm = dialogView.findViewById(R.id.buttonConfirm);
                 Button buttonCancel = dialogView.findViewById(R.id.buttonCancel);
@@ -304,9 +332,6 @@ public class SingleModeFragment extends Fragment {
         quitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    return;
-                }
                 runningNow = false;
                 quitButton.setVisibility(View.GONE);
                 startButton.setVisibility(View.VISIBLE);
@@ -553,6 +578,8 @@ public class SingleModeFragment extends Fragment {
                             wholeTime += recentDuration;
 
                         }
+
+                        Log.e("model input", convertArrayToString(modelInput));
                         wholeTime /= 5;
                         wholeDistance /= 5;
 
