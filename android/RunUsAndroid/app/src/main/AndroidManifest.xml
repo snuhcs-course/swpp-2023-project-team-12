@@ -32,13 +32,19 @@
 
         <activity
             android:name=".MainActivity"
-            android:exported="false"></activity>
+            android:exported="false">
+        </activity>
 
-        <activity android:name=".LoginActivity"></activity>
-        <activity android:name=".SignUpStep1Activity"></activity>
-        <activity android:name=".SignUpStep2Activity"></activity>
-        <activity android:name=".SignUpStep3Activity"></activity>
-        <activity android:name=".SignUpStep4Activity"></activity>
+        <activity android:name=".LoginActivity">
+        </activity>
+        <activity android:name=".SignUpStep1Activity">
+        </activity>
+        <activity android:name=".SignUpStep2Activity">
+        </activity>
+        <activity android:name=".SignUpStep3Activity">
+        </activity>
+        <activity android:name=".SignUpStep4Activity">
+        </activity>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
