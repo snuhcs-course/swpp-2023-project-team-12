@@ -4,6 +4,10 @@ import static android.content.Context.MODE_PRIVATE;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
@@ -12,26 +16,21 @@ import android.icu.text.SimpleDateFormat;
 import android.icu.util.TimeZone;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Chronometer;
-import android.widget.EditText;
-import android.widget.RadioButton;
 import android.widget.SeekBar;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.example.runusandroid.HistoryApi;
 import com.example.runusandroid.HistoryData;
@@ -39,18 +38,12 @@ import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
 import com.example.runusandroid.RetrofitClient;
 import com.example.runusandroid.databinding.FragmentSingleModeBinding;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.navigation.NavigationView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -77,15 +70,14 @@ import retrofit2.Response;
 
 public class SingleModeFragment extends Fragment {
 
-    private final List<LatLng> pathPoints = new ArrayList<>();
-    private final List<Float> speedList = new ArrayList<>(); // 매 km 마다 속력 (km/h)
+    private List<LatLng> pathPoints = new ArrayList<>();
+    private List<Float> speedList = new ArrayList<>(); // 매 km 마다 속력 (km/h)
     private final float[][] modelInput = new float[5][3];
     private final float[][] modelOutput = new float[1][2];
     Chronometer currentTimeText;
+
+    TextView currentDistanceText;
     SimpleDateFormat dateFormat;
-    FusedLocationProviderClient fusedLocationClient;
-    LocationCallback locationCallback;
-    LocationRequest locationRequest;
     MainActivity2 mainActivity;
     LocalDateTime gameStartTime;
     LocalDateTime iterationStartTime;
@@ -103,15 +95,27 @@ public class SingleModeFragment extends Fragment {
     private Interpreter tflite;
     private MappedByteBuffer tfliteModel;
 
+    private boolean startlocation = false;
+
     private boolean timeLimitLess = true;
 
     private float[][] standard = {{2.41f, 2.38f, 2.32f, 2.21f}, {2.04f, 1.96f, 1.88f, 1.79f}};
 
+    private final String[] background_location_permission = {
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION
+    };
 
+    private final String[] foreground_location_permission = {
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+    };
+
+    static final String START_LOCATION_SERVICE = "start";
+    static final String STOP_LOCATION_SERVICE = "stop";
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
-            ViewGroup container, Bundle savedInstanceState) {
+                             ViewGroup container, Bundle savedInstanceState) {
         SingleModeViewModel singleModeViewModel = new ViewModelProvider(this).get(SingleModeViewModel.class);
 
         binding = FragmentSingleModeBinding.inflate(inflater, container, false);
@@ -122,7 +126,7 @@ public class SingleModeFragment extends Fragment {
 
         Button quitButton = binding.quitButton;
         Button startButton = binding.startButton;
-        TextView currentDistanceText = binding.currentDistanceText;
+        currentDistanceText = binding.currentDistanceText;
         currentTimeText = binding.currentTimeText;
         currentTimeText.setBase(SystemClock.elapsedRealtime());
         TextView goalDistanceStaticText = binding.goalDistanceStaticText;
@@ -146,6 +150,7 @@ public class SingleModeFragment extends Fragment {
         dateFormat = new SimpleDateFormat("HH:mm:ss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 
+
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -157,7 +162,6 @@ public class SingleModeFragment extends Fragment {
                 }
 
 
-
                 View dialogView = getLayoutInflater().inflate(R.layout.dialog_mission_start, null);
                 AlertDialog dialog = new AlertDialog.Builder(getActivity()).create();
                 dialog.setView(dialogView);
@@ -166,19 +170,19 @@ public class SingleModeFragment extends Fragment {
                 Button buttonConfirm = dialogView.findViewById(R.id.buttonConfirm);
                 Button buttonCancel = dialogView.findViewById(R.id.buttonCancel);
 
-                SeekBar distanceSeekBar =  dialogView.findViewById(R.id.distanceSeekBar);
+                SeekBar distanceSeekBar = dialogView.findViewById(R.id.distanceSeekBar);
                 TextView distanceTextView = dialogView.findViewById(R.id.textViewGoalDistance);
 
-                distanceSeekBar.setProgress((int) (goalDistance*10));
+                distanceSeekBar.setProgress((int) (goalDistance * 10));
 
                 String formattedDistance = String.format("%.1f", goalDistance);
                 distanceTextView.setText(String.valueOf(formattedDistance) + " km");
 
-                SeekBar timeSeekBar =  dialogView.findViewById(R.id.timeSeekBar);
+                SeekBar timeSeekBar = dialogView.findViewById(R.id.timeSeekBar);
                 TextView timeTextView = dialogView.findViewById(R.id.textViewGoalTime);
 
                 timeSeekBar.setProgress((int) goalTime);
-                timeTextView.setText(String.valueOf((int) goalTime)+" 분");
+                timeTextView.setText(String.valueOf((int) goalTime) + " 분");
 
                 Button buttonLess = dialogView.findViewById(R.id.buttonLess);
 
@@ -213,30 +217,25 @@ public class SingleModeFragment extends Fragment {
                 });
 
 
-
-
                 distanceSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        distanceTextView.setText(String.valueOf(progress / 10.0f)+"km");
+                        distanceTextView.setText(String.valueOf(progress / 10.0f) + "km");
 
                     }
 
                     @Override
-                    public void onStartTrackingTouch(SeekBar seekBar) {
-
-                    }
+                    public void onStartTrackingTouch(SeekBar seekBar) {             }
 
                     @Override
                     public void onStopTrackingTouch(SeekBar seekBar) {
-
                     }
                 });
 
                 timeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        timeTextView.setText(String.valueOf(progress) +"분");
+                        timeTextView.setText(String.valueOf(progress) + "분");
                     }
 
                     @Override
@@ -250,16 +249,24 @@ public class SingleModeFragment extends Fragment {
                     }
                 });
 
-                buttonConfirm.setOnClickListener(new Button.OnClickListener(){
-                    public void onClick(View v){
+                buttonConfirm.setOnClickListener(new Button.OnClickListener() {
+                    public void onClick(View v) {
+                        pathPoints = new ArrayList<>();
+                        speedList = new ArrayList<>();
                         goalDistanceStaticText.setText("목표 거리");
-                        goalDistance = distanceSeekBar.getProgress()/100.0f;
+                        goalDistance = distanceSeekBar.getProgress() / 10.0f;
                         goalTime = timeSeekBar.getProgress();
                         String formattedDistance = String.format("%.1f", goalDistance);
                         goalDistanceText.setText(String.valueOf(formattedDistance) + " km");
                         goalTimeStaticText.setText("목표 시간");
                         int roundedGoalTime = Math.round(goalTime);
                         goalTimeText.setText(String.valueOf(roundedGoalTime) + " 분");
+
+                        if (ActivityCompat.checkSelfPermission(mainActivity,
+                                Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            ActivityCompat.requestPermissions(mainActivity, background_location_permission,
+                                    200);
+                        }
 
                         gameStartTime = LocalDateTime.now();
                         lastLocation = null;
@@ -282,14 +289,13 @@ public class SingleModeFragment extends Fragment {
                     }
                 });
 
-                buttonCancel.setOnClickListener(new Button.OnClickListener(){
-                    public void onClick(View v){
+                buttonCancel.setOnClickListener(new Button.OnClickListener() {
+                    public void onClick(View v) {
 
                         startButton.setVisibility(View.VISIBLE);
                         dialog.dismiss();
                     }
                 });
-
 
 
             }
@@ -298,6 +304,9 @@ public class SingleModeFragment extends Fragment {
         quitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    return;
+                }
                 runningNow = false;
                 quitButton.setVisibility(View.GONE);
                 startButton.setVisibility(View.VISIBLE);
@@ -367,82 +376,6 @@ public class SingleModeFragment extends Fragment {
             }
         });
 
-        locationRequest = LocationRequest.create();
-        locationRequest.setInterval(5000); // Update interval in milliseconds
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        // TODO: only draw lines if running is started
-        // TODO: doesn't update location when app is in background -> straight lines are
-        // drawn from the last location when app is opened again
-        // TODO: lines are ugly and noisy -> need to filter out some points or smoothed
-        locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                if (locationResult != null && runningNow) {
-                    Location location = locationResult.getLastLocation();
-                    Log.d("test:location", "Location:" + location.getLatitude() + ", " + location.getLongitude());
-
-                    LatLng newPoint = new LatLng(location.getLatitude(), location.getLongitude());
-                    pathPoints.add(newPoint);
-
-                    int lastDistanceInt = (int) distance;
-
-                    // Update UI (draw line, zoom in)
-                    if (mMap != null) {
-                        mMap.clear(); // Remove previous polylines
-                        mMap.addPolyline(new PolylineOptions().addAll(pathPoints).color(Color.parseColor("#4AA570")).width(10));
-                        if (newPoint != null) {
-                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 16));
-                        }
-                    }
-
-                    // get distance
-                    if (newPoint != null) {
-                        // first few points might be noisy
-                        if (pathPoints.size() > 5) {
-                            Location lastLocation = new Location("");
-                            lastLocation.setLatitude(pathPoints.get(pathPoints.size() - 2).latitude);
-                            lastLocation.setLongitude(pathPoints.get(pathPoints.size() - 2).longitude);
-                            // unit : meter -> kilometer
-                            distance += location.distanceTo(lastLocation) / (double) 1000;
-                            if ((int) distance != lastDistanceInt) {
-                                LocalDateTime currentTime = LocalDateTime.now();
-                                Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
-                                long secondsDuration = iterationDuration.getSeconds();
-                                float newPace = (float) (1.0 / (secondsDuration / 3600.0));
-                                if (newPace > maxSpeed)
-                                    maxSpeed = newPace;
-                                if (newPace < minSpeed)
-                                    minSpeed = newPace;
-                                speedList.add(newPace);
-                                iterationStartTime = currentTime;
-
-                            }
-                            Log.d("test:distance", "Distance:" + distance);
-                        }
-                    }
-                    currentDistanceText.setText(String.format(Locale.getDefault(), "%.2f " + "km", distance));
-
-                    lastLocation = location;
-
-                }
-                else if (locationResult != null) {
-                    Location location = locationResult.getLastLocation();
-                    LatLng newPoint = new LatLng(location.getLatitude(), location.getLongitude());
-
-                    // Update UI (draw line, zoom in)
-                    if (mMap != null) {
-                        mMap.clear(); // Remove previous polylines
-                        if (newPoint != null) {
-                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 16));
-                        }
-                    }
-                }
-            }
-        };
-
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(mainActivity);
-
         // Finding the visual component displaying the map
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         // Initialize the map
@@ -462,6 +395,8 @@ public class SingleModeFragment extends Fragment {
 
         return root;
     }
+
+
 
     private void setStandard() {
 
@@ -492,29 +427,40 @@ public class SingleModeFragment extends Fragment {
         super.onDestroyView();
         binding = null;
         currentTimeText.stop();
+        Intent intent = new Intent(getContext(), BackGroundLocationService.class);
+        intent.setAction(STOP_LOCATION_SERVICE);
+        getActivity().startForegroundService(intent);
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(locationReceiver);
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        fusedLocationClient.removeLocationUpdates(locationCallback);
-        if (ActivityCompat.checkSelfPermission(mainActivity,
-                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(mainActivity, new String[] { Manifest.permission.ACCESS_COARSE_LOCATION },
-                    1000);
+        if (!startlocation){
+            if (ActivityCompat.checkSelfPermission(mainActivity,
+                    Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(mainActivity, new String[] { Manifest.permission.ACCESS_COARSE_LOCATION },
+                        1000);
+            }
+            if (ActivityCompat.checkSelfPermission(mainActivity,
+                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(mainActivity, new String[] { Manifest.permission.ACCESS_FINE_LOCATION },
+                        1000);
+            }
+            Intent intent = new Intent(getContext(), BackGroundLocationService.class);
+            intent.setAction(START_LOCATION_SERVICE);
+            getActivity().startForegroundService(intent);
+            startlocation = true;
+
+            LocalBroadcastManager.getInstance(requireContext()).registerReceiver(locationReceiver, new IntentFilter("location_update"));
+
         }
-        if (ActivityCompat.checkSelfPermission(mainActivity,
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(mainActivity, new String[] { Manifest.permission.ACCESS_FINE_LOCATION },
-                    1000);
-        }
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
     }
 
     @Override
     public void onPause() {
-        super.onPause();
-    }
+        super.onPause();}
 
     void saveHistoryDataOnSingleMode() throws JSONException {
         if ((int) minSpeed == 999)
@@ -616,10 +562,6 @@ public class SingleModeFragment extends Fragment {
                         goalTime = (modelOutput[0][1] * 6.457635e-01f + 1.156572e+00f);
 
 
-
-                        Log.e("mission", convertArrayToString(modelInput));
-                        Log.e("mission", "original : "+String.valueOf(goalDistance)+ " "+String.valueOf(goalTime));
-
                         if (goalDistance/goalTime >= 1.3*wholeDistance/wholeTime){
                             goalDistance = goalTime* 1.3f*wholeDistance/wholeTime;
                         }
@@ -628,7 +570,6 @@ public class SingleModeFragment extends Fragment {
                             goalTime /= 1.3f;
                         }
                         goalTime *= 60;
-                        Log.e("mission", "Revised : "+String.valueOf(goalDistance)+ " "+String.valueOf(goalTime));
                     } catch (Exception e) {
                         Log.e("modeloutput error", e.toString());
                         e.printStackTrace();
@@ -658,5 +599,73 @@ public class SingleModeFragment extends Fragment {
         else
             nav_view.setVisibility(View.VISIBLE);
     }
+
+    private BroadcastReceiver locationReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals("location_update")) {
+                double latitude = intent.getDoubleExtra("latitude", 0.0);
+                double longitude = intent.getDoubleExtra("longitude", 0.0);
+                LatLng newPoint = new LatLng(latitude, longitude);
+
+                if (runningNow) {
+
+                    pathPoints.add(newPoint);
+                    Location location = new Location("");
+                    location.setLatitude(latitude);
+                    location.setLongitude(longitude);
+                    int lastDistanceInt = (int) distance;
+
+                    // Update UI (draw line, zoom in)
+                    if (mMap != null) {
+                        mMap.clear(); // Remove previous polylines
+                        mMap.addPolyline(new PolylineOptions().addAll(pathPoints).color(Color.parseColor("#4AA570")).width(10));
+                        if (newPoint != null) {
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 16));
+                        }
+                    }
+
+                    // get distance
+                    if (newPoint != null) {
+                        // first few points might be noisy
+                        if (pathPoints.size() > 5) {
+                            Location lastLocation = new Location("");
+                            lastLocation.setLatitude(pathPoints.get(pathPoints.size() - 2).latitude);
+                            lastLocation.setLongitude(pathPoints.get(pathPoints.size() - 2).longitude);
+                            // unit : meter -> kilometer
+                            distance += location.distanceTo(lastLocation) / (double) 1000;
+                            if ((int) distance != lastDistanceInt) {
+                                LocalDateTime currentTime = LocalDateTime.now();
+                                Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
+                                long secondsDuration = iterationDuration.getSeconds();
+                                float newPace = (float) (1.0 / (secondsDuration / 3600.0));
+                                if (newPace > maxSpeed)
+                                    maxSpeed = newPace;
+                                if (newPace < minSpeed)
+                                    minSpeed = newPace;
+                                speedList.add(newPace);
+                                iterationStartTime = currentTime;
+
+                            }
+                            Log.d("test:distance", "Distance:" + distance);
+                        }
+                    }
+                    currentDistanceText.setText(String.format(Locale.getDefault(), "%.2f " + "km", distance));
+
+                    lastLocation = location;
+
+                }
+                else {
+                    // Update UI (draw line, zoom in)
+                    if (mMap != null) {
+                        mMap.clear(); // Remove previous polylines
+                        if (newPoint != null) {
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 16));
+                        }
+                    }
+                }
+            }
+        }
+    };
 
 }
