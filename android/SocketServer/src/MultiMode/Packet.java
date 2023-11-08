@@ -6,6 +6,7 @@ import java.util.List;
 public class Packet implements Serializable { //서버와 통신하기 위해 사용하는 클래스. Protocol + 필요한 정보 넣어서 전송 및 수신
     private static final long serialVersionUID = 1L;
     UserDistance[] top3UserDistance = null;
+    List<UserDistance> listTop3UserDistance = null;
     // 데이터 유형을 나타내는 필드
     private final int protocol;
     private RoomCreateInfo roomCreateInfo = null;
@@ -74,6 +75,11 @@ public class Packet implements Serializable { //서버와 통신하기 위해 �
         this.groupHistoryId = groupHistoryId;
     }
 
+    public Packet(int protocol, List<UserDistance> lTop3UserDistances, int temp) {
+        this.protocol = protocol;
+        this.listTop3UserDistance = lTop3UserDistances;
+    }
+
     public Packet(int protocol, MultiModeUser user, float distance) {
         this.protocol = protocol;
         this.user = user;
@@ -82,6 +88,9 @@ public class Packet implements Serializable { //서버와 통신하기 위해 �
 
     public long getGroupHistoryId() {
         return groupHistoryId;
+    }
+    public List<UserDistance> getListTop3UserDistance() {
+        return listTop3UserDistance;
     }
 
     public void setGroupHistoryId(long groupHistoryId) {

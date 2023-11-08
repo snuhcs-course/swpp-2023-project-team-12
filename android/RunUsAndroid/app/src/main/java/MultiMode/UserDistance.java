@@ -3,7 +3,7 @@ package MultiMode;
 import java.io.Serializable;
 
 public class UserDistance implements Serializable {
-
+    private static final long serialVersionUID = 1931380L;
 
     MultiModeUser user;
 
