@@ -40,7 +40,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/pretendardregular"
                 android:gravity="center_horizontal"
-                android:text="--:--"
+                android:text="--'--''"
                 android:textAppearance="@style/multi_room_play_goal" />
         </LinearLayout>
 
