@@ -67,6 +67,7 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import Logging.FileLogger;
 
 public class SingleModeFragment extends Fragment {
 
@@ -661,20 +662,24 @@ public class SingleModeFragment extends Fragment {
                             lastLocation.setLongitude(pathPoints.get(pathPoints.size() - 2).longitude);
                             // unit : meter -> kilometer
                             distance += location.distanceTo(lastLocation) / (double) 1000;
-                            if ((int) distance != lastDistanceInt) {
-                                LocalDateTime currentTime = LocalDateTime.now();
-                                Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
-                                long secondsDuration = iterationDuration.getSeconds();
-                                float newPace = (float) (1.0 / (secondsDuration / 3600.0));
-                                if (newPace > maxSpeed)
-                                    maxSpeed = newPace;
-                                if (newPace < minSpeed)
-                                    minSpeed = newPace;
-                                speedList.add(newPace);
-                                iterationStartTime = currentTime;
-
-                            }
-                            Log.d("test:distance", "Distance:" + distance);
+                            Log.d("test:distance:5sec", "Last 5 second Distance :" + location.distanceTo(lastLocation) / (double) 1000);
+                            // log distance into file
+                            FileLogger.logToFileAndLogcat(mainActivity, "test:distance:5sec", ""+location.distanceTo(lastLocation) / (double) 1000);
+                            // Below code seems to cause NullPointerException after 10 minutes or so (on Duration.between)
+//                            if ((int) distance != lastDistanceInt) {
+//                                LocalDateTime currentTime = LocalDateTime.now();
+//                                Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
+//                                long secondsDuration = iterationDuration.getSeconds();
+//                                float newPace = (float) (1.0 / (secondsDuration / 3600.0));
+//                                if (newPace > maxSpeed)
+//                                    maxSpeed = newPace;
+//                                if (newPace < minSpeed)
+//                                    minSpeed = newPace;
+//                                speedList.add(newPace);
+//                                iterationStartTime = currentTime;
+//
+//                            }
+                            Log.d("test:distance:total", "Distance:" + distance);
                         }
                     }
                     currentDistanceText.setText(String.format(Locale.getDefault(), "%.2f " + "km", distance));
