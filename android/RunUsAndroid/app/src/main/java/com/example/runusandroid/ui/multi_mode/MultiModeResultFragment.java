@@ -19,6 +19,7 @@ import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
 
 import java.io.ObjectOutputStream;
+import java.util.Locale;
 
 import MultiMode.MultiModeRoom;
 import MultiMode.MultiModeUser;
@@ -43,7 +44,9 @@ public class MultiModeResultFragment extends Fragment {
     TextView bronzeNickNameTextView;
     ProgressBar progressBar;
     Button playLeaveButton;
+    TextView distanceResultContentTextView; //API 사용해서 구한 나의 현재 이동 거리
     SocketListenerThread socketListenerThread = MultiModeWaitFragment.socketListenerThread;
+    private TextView timeResultContentTextView;
 
     @Nullable
     @Override
@@ -61,6 +64,9 @@ public class MultiModeResultFragment extends Fragment {
             bronzeDistanceTextView = view.findViewById(R.id.bronze_distance);
             progressBar = view.findViewById(R.id.linear_progress_bar);
             playLeaveButton = view.findViewById(R.id.result_leaveButton);
+            distanceResultContentTextView = view.findViewById(R.id.distance_present_content);
+            timeResultContentTextView = view.findViewById(R.id.time_present_content);
+
 
         }
 
@@ -90,20 +96,20 @@ public class MultiModeResultFragment extends Fragment {
         if (top3UserDistance.length >= 1) {
             goldNickNameTextView.setText(top3UserDistance[0].getUser().getNickName());
             goldDistance = top3UserDistance[0].getDistance();
-            String goldDistanceString = String.format("%.3fkm", goldDistance);
+            String goldDistanceString = String.format("%.2fkm", goldDistance);
             goldDistanceTextView.setText(goldDistanceString);
 
             if (top3UserDistance.length >= 2) {
 
                 silverNickNameTextView.setText(top3UserDistance[1].getUser().getNickName());
                 double silverDistance = top3UserDistance[1].getDistance();
-                String silverDistanceString = String.format("%.3fkm", silverDistance);
+                String silverDistanceString = String.format("%.2fkm", silverDistance);
                 silverDistanceTextView.setText(silverDistanceString);
 
                 if (top3UserDistance.length >= 3) {
                     bronzeNickNameTextView.setText(top3UserDistance[2].getUser().getNickName());
                     double bronzeDistance = top3UserDistance[2].getDistance();
-                    String bronzeDistanceString = String.format("%.3fkm", bronzeDistance);
+                    String bronzeDistanceString = String.format("%.2fkm", bronzeDistance);
                     bronzeDistanceTextView.setText(bronzeDistanceString);
                 }
             }
@@ -123,6 +129,16 @@ public class MultiModeResultFragment extends Fragment {
         UserDistance[] top3UserDistance = (UserDistance[]) getArguments().getSerializable("top3UserDistance");
         updateTop3UserDistance(top3UserDistance);
         distance = (float) getArguments().getSerializable("userDistance");
+        distanceResultContentTextView.setText(String.format(Locale.getDefault(), "%.2f" + "km", distance));
+        long seconds = selectedRoom.getDuration().getSeconds();
+        long hours = seconds / 3600;
+        long minutes = (seconds % 3600) / 60;
+        seconds = seconds % 60;
+
+        // "00:00:00" 형태의 문자열로 변환
+        String formattedDuration = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+
+        timeResultContentTextView.setText(formattedDuration);
         Log.d("response", "here is room result screen");
 
 

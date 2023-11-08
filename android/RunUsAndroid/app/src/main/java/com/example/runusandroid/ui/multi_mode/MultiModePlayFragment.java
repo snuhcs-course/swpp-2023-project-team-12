@@ -136,7 +136,8 @@ public class MultiModePlayFragment extends Fragment {
                     } else {
                         String formattedTime = String.format(Locale.getDefault(), "%02d:%02d:%02d",
                                 hours, minutes, seconds);
-                        timePresentContentTextView.setText(formattedTime);
+                        if (timePresentContentTextView != null)
+                            timePresentContentTextView.setText(formattedTime);
                     }
                 }
                 if (isFinished == 0) {
@@ -323,21 +324,21 @@ public class MultiModePlayFragment extends Fragment {
         if (top3UserDistance.length >= 1) {
             goldNickNameTextView.setText(top3UserDistance[0].getUser().getNickName());
             goldDistance = top3UserDistance[0].getDistance();
-            String goldDistanceString = String.format("%.3fkm", goldDistance);
+            String goldDistanceString = String.format("%.2fkm", goldDistance);
             goldDistanceTextView.setText(goldDistanceString);
 
             if (top3UserDistance.length >= 2) {
 
                 silverNickNameTextView.setText(top3UserDistance[1].getUser().getNickName());
                 double silverDistance = top3UserDistance[1].getDistance();
-                String silverDistanceString = String.format("%.3fkm", silverDistance);
+                String silverDistanceString = String.format("%.2fkm", silverDistance);
                 silverDistanceTextView.setText(silverDistanceString);
 
                 if (top3UserDistance.length >= 3) {
 
                     bronzeNickNameTextView.setText(top3UserDistance[2].getUser().getNickName());
                     double bronzeDistance = top3UserDistance[2].getDistance();
-                    String bronzeDistanceString = String.format("%.3fkm", bronzeDistance);
+                    String bronzeDistanceString = String.format("%.2fkm", bronzeDistance);
                     bronzeDistanceTextView.setText(bronzeDistanceString);
                 }
             }
@@ -346,7 +347,7 @@ public class MultiModePlayFragment extends Fragment {
         int progress = 0;
         if (goldDistance != 0) {
             progress = (int) ((int) distance / goldDistance) * 100;
-        }
+        } else progress = 100;
         progressBar.setProgress(progress);
 
     }
@@ -355,7 +356,7 @@ public class MultiModePlayFragment extends Fragment {
     public void onResume() {
         super.onResume();
         //아래 코드에서 resume때 result fragment로 가는 이유?
-        transitionToRusultFragment();
+        transitionToResultFragment();
 //        socketListenerThread = (SocketListenerThread) getArguments().getSerializable("socketListenerThread"); //waitFragment의 socketListenrThread객체 가져와서 이어서 사용
 
         Log.d("response", "start play screen");
@@ -413,7 +414,7 @@ public class MultiModePlayFragment extends Fragment {
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
-                    transitionToRusultFragment();
+                    transitionToResultFragment();
                 }
 
             }
@@ -509,7 +510,7 @@ public class MultiModePlayFragment extends Fragment {
         this.sendDataHandler = sendDataHandler;
     }
 
-    private void transitionToRusultFragment() {
+    private void transitionToResultFragment() {
         if (userDistances != null) {
             Bundle bundle = new Bundle();
             bundle.putSerializable("room", selectedRoom);
@@ -593,6 +594,9 @@ public class MultiModePlayFragment extends Fragment {
             super.onPostExecute(success);
             if (success) {
                 Log.d("SendfinishedPacket", "Packet sent successfully!");
+                timeHandler.removeCallbacks(timeRunnable);
+                sendDataHandler.removeCallbacks(sendDataRunnable);
+
 
             } else {
                 Log.d("SendfinishedPacket", "Failed to send packet!");

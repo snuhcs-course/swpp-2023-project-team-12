@@ -130,7 +130,9 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
                             public void run() {
                                 try {
                                     Log.d("response", "got packet and try to save group history");
-                                    playFragment.saveGroupHistoryData(packet.getTop3UserDistance());
+                                    List<UserDistance> temp = packet.getListTop3UserDistance();
+                                    UserDistance[] userDistances = temp.toArray(new UserDistance[temp.size()]);
+                                    playFragment.saveGroupHistoryData(userDistances);
                                 } catch (JSONException e) {
                                     throw new RuntimeException(e);
                                 }
@@ -148,7 +150,9 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
                                 Bundle bundle = new Bundle();
                                 bundle.putSerializable("room", selectedRoom);
                                 //bundle.putSerializable("socketListenerThread", SocketListenerThread.this);
-                                playFragment.userDistances = packet.getTop3UserDistance();
+                                List<UserDistance> temp = packet.getListTop3UserDistance();
+                                UserDistance[] userDistances = temp.toArray(new UserDistance[temp.size()]);
+                                playFragment.userDistances = userDistances;
 //                                bundle.putSerializable("top3UserDistance", packet.getTop3UserDistance());
 //                                bundle.putSerializable("userDistance", playFragment.distance);
                                 Log.d("response", "go to room result screen");
@@ -159,7 +163,7 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
                                 }
 //                                NavController navController = Navigation.findNavController(playFragment.requireView());
 //                                navController.navigate(R.id.navigation_multi_room_result, bundle);
-                                Log.d("response", packet.getTop3UserDistance() + " ");
+                                //Log.d("response", packet.getTop3UserDistance() + " ");
                                 Log.d("response", resultFragment + "");
 
 //                                resultFragment.updateTop3UserDistance(packet.getTop3UserDistance());

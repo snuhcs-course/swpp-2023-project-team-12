@@ -113,8 +113,8 @@ public class MultiModeFragment extends Fragment {
                 int timePickerCurrentHour = time_picker.getCurrentHour();
                 int timePickerCurrentMinute = time_picker.getCurrentMinute();
 
-                Duration duration = Duration.ofHours(numberPickerHour.getValue()).plusMinutes(numberPickerMinute.getValue());
-                //Duration duration = Duration.ofHours(0).plusMinutes(0).plusSeconds(8);
+                //Duration duration = Duration.ofHours(numberPickerHour.getValue()).plusMinutes(numberPickerMinute.getValue());
+                Duration duration = Duration.ofHours(0).plusMinutes(0).plusSeconds(8);
                 LocalDate today = LocalDate.now();
                 LocalDateTime startTime = LocalDateTime.of(today, LocalTime.of(timePickerCurrentHour, timePickerCurrentMinute));
                 // 현재 시간보다 선택한 시간이 느린 경우 하루 뒤로 설정
@@ -122,8 +122,8 @@ public class MultiModeFragment extends Fragment {
                 if (startTime.isBefore(now)) {
                     startTime = startTime.plusDays(1);
                 }
-                //RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, 0, LocalDateTime.now().plusSeconds(5), numRunners, duration);
-                RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, 0, startTime, numRunners, duration);
+                RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, 0, LocalDateTime.now().plusSeconds(5), numRunners, duration);
+                //RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, 0, startTime, numRunners, duration);
                 new SendRoomInfoTask().execute(roomInfo); //소켓에 연결하여 패킷 전송
 
             }

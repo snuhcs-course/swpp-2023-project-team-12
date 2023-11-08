@@ -180,7 +180,9 @@ public class Server {
                 break;
             }
         }
-        Packet updateTop3Packet = new Packet(protocol, top3UserDistance);
+        List<UserDistance> lTop3UserDistances = new ArrayList<UserDistance>(Arrays.asList(top3UserDistance));
+        System.out.println(lTop3UserDistances);
+        Packet updateTop3Packet = new Packet(protocol, lTop3UserDistances, 0);
 
         ObjectOutputStream oos = room.getRoomOwnerOos();
         if (oos != null ){
@@ -206,7 +208,8 @@ public class Server {
         for(int i = 0; i < top3UserDistance.length; i++){
             System.out.println("user " + i + " : " + top3UserDistance[0].getUser().getNickName() + " , distance : " + top3UserDistance[0].getDistance());
         }
-        Packet updateTop3Packet = new Packet(protocol, top3UserDistance, groupHistoryId);
+        List<UserDistance> lTop3UserDistances = new ArrayList<UserDistance>(Arrays.asList(top3UserDistance));
+        Packet updateTop3Packet = new Packet(protocol, lTop3UserDistances, (int) groupHistoryId);
         broadcastToRoomUsers(room, updateTop3Packet);
     }
 
@@ -231,7 +234,7 @@ public class Server {
             System.out.println("user " + i + " : " + packet.getListTop3UserDistance().get(i).getUser().getNickName() + " , distance : " + packet.getListTop3UserDistance().get(i).getDistance());
         }
         }else if(packet.getProtocol() == Protocol.CLOSE_GAME){
-            System.out.println("!!!send close room packet " + packet.getProtocol() + " 1st user is " + packet.getTop3UserDistance()[0].getUser().getNickName());
+            //System.out.println("!!!send close room packet " + packet.getProtocol() + " 1st user is " + packet.getTop3UserDistance()[0].getUser().getNickName());
         }
         for(int i=0; i<oosList.size(); i++){
             ObjectOutputStream oos = oosList.get(i);
