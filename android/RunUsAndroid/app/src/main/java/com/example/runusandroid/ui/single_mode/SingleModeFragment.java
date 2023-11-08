@@ -319,8 +319,6 @@ public class SingleModeFragment extends Fragment {
                     }
                 }
 
-
-
                 goalDistanceStaticText.setText("");
                 goalDistanceText.setText("");
                 goalTimeStaticText.setText("");
@@ -423,6 +421,9 @@ public class SingleModeFragment extends Fragment {
                             Log.d("test:distance", "Distance:" + distance);
                         }
                     }
+                    currentDistanceText.setText(String.format(Locale.getDefault(), "%.2f " + "km", distance));
+
+                    lastLocation = location;
 
                 }
             }
@@ -501,7 +502,6 @@ public class SingleModeFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        fusedLocationClient.removeLocationUpdates(locationCallback);
     }
 
     void saveHistoryDataOnSingleMode() throws JSONException {
