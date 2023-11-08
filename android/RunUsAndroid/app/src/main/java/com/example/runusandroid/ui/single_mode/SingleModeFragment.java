@@ -44,9 +44,13 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -151,6 +155,7 @@ public class SingleModeFragment extends Fragment {
                 if (!enoughHistory) {
                     setStandard();
                 }
+
 
 
                 View dialogView = getLayoutInflater().inflate(R.layout.dialog_mission_start, null);
@@ -271,6 +276,7 @@ public class SingleModeFragment extends Fragment {
                         currentTimeText.start();
 
                         quitButton.setVisibility(View.VISIBLE);
+                        hideBottomNavigation(true);
 
                         dialog.dismiss();
                     }
@@ -312,8 +318,6 @@ public class SingleModeFragment extends Fragment {
                         missionCompleted = true;
                     }
                 }
-
-
 
                 goalDistanceStaticText.setText("");
                 goalDistanceText.setText("");
@@ -359,6 +363,7 @@ public class SingleModeFragment extends Fragment {
                     throw new RuntimeException(e);
                 }
                 getMission();
+                hideBottomNavigation(false);
             }
         });
 
@@ -381,6 +386,15 @@ public class SingleModeFragment extends Fragment {
                     pathPoints.add(newPoint);
 
                     int lastDistanceInt = (int) distance;
+
+                    // Update UI (draw line, zoom in)
+                    if (mMap != null) {
+                        mMap.clear(); // Remove previous polylines
+                        mMap.addPolyline(new PolylineOptions().addAll(pathPoints).color(Color.parseColor("#4AA570")).width(10));
+                        if (newPoint != null) {
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 16));
+                        }
+                    }
 
                     // get distance
                     if (newPoint != null) {
@@ -407,10 +421,22 @@ public class SingleModeFragment extends Fragment {
                             Log.d("test:distance", "Distance:" + distance);
                         }
                     }
-                    // update distance text
                     currentDistanceText.setText(String.format(Locale.getDefault(), "%.2f " + "km", distance));
 
                     lastLocation = location;
+
+                }
+                else if (locationResult != null) {
+                    Location location = locationResult.getLastLocation();
+                    LatLng newPoint = new LatLng(location.getLatitude(), location.getLongitude());
+
+                    // Update UI (draw line, zoom in)
+                    if (mMap != null) {
+                        mMap.clear(); // Remove previous polylines
+                        if (newPoint != null) {
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 16));
+                        }
+                    }
                 }
             }
         };
@@ -488,7 +514,6 @@ public class SingleModeFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        fusedLocationClient.removeLocationUpdates(locationCallback);
     }
 
     void saveHistoryDataOnSingleMode() throws JSONException {
@@ -624,6 +649,14 @@ public class SingleModeFragment extends Fragment {
     public float convertTimetoHour(String timeString) {
         LocalTime localTime = LocalTime.parse(timeString);
         return localTime.getHour() + (float) localTime.getMinute() / 60;
+    }
+
+    public void hideBottomNavigation(Boolean hide) {
+        BottomNavigationView nav_view = getActivity().findViewById(R.id.nav_view);
+        if (hide)
+            nav_view.setVisibility(View.GONE);
+        else
+            nav_view.setVisibility(View.VISIBLE);
     }
 
 }
