@@ -6,6 +6,28 @@
     android:layout_height="match_parent"
     tools:context=".ui.user_setting.UserSettingFragment">
 
+    <ImageView
+        android:id="@+id/profile_picture_bg"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:background="@drawable/circle_profile_picture"
+        android:scaleType="center"
+        app:layout_constraintBottom_toTopOf="@+id/LogoutBtn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/profile_picture"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:scaleType="fitCenter"
+        app:layout_constraintBottom_toTopOf="@+id/LogoutBtn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/single_mode" />
+
     <TextView
         android:id="@+id/text_user_setting"
         android:layout_width="match_parent"
