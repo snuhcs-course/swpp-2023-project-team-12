@@ -44,9 +44,11 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -382,6 +384,15 @@ public class SingleModeFragment extends Fragment {
 
                     int lastDistanceInt = (int) distance;
 
+                    // Update UI (draw line, zoom in)
+                    if (mMap != null) {
+                        mMap.clear(); // Remove previous polylines
+                        mMap.addPolyline(new PolylineOptions().addAll(pathPoints).color(Color.parseColor("#4AA570")).width(10));
+                        if (newPoint != null) {
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 16));
+                        }
+                    }
+
                     // get distance
                     if (newPoint != null) {
                         // first few points might be noisy
@@ -407,10 +418,7 @@ public class SingleModeFragment extends Fragment {
                             Log.d("test:distance", "Distance:" + distance);
                         }
                     }
-                    // update distance text
-                    currentDistanceText.setText(String.format(Locale.getDefault(), "%.2f " + "km", distance));
 
-                    lastLocation = location;
                 }
             }
         };
