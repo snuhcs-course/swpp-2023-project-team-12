@@ -426,6 +426,18 @@ public class SingleModeFragment extends Fragment {
                     lastLocation = location;
 
                 }
+                else if (locationResult != null) {
+                    Location location = locationResult.getLastLocation();
+                    LatLng newPoint = new LatLng(location.getLatitude(), location.getLongitude());
+
+                    // Update UI (draw line, zoom in)
+                    if (mMap != null) {
+                        mMap.clear(); // Remove previous polylines
+                        if (newPoint != null) {
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 16));
+                        }
+                    }
+                }
             }
         };
 
