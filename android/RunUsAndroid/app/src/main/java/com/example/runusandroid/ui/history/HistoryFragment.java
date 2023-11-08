@@ -32,7 +32,7 @@ public class HistoryFragment extends Fragment {
     private HistoryApi historyApi;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
-            ViewGroup container, Bundle savedInstanceState) {
+                             ViewGroup container, Bundle savedInstanceState) {
         HistoryViewModel historyViewModel = new ViewModelProvider(this).get(HistoryViewModel.class);
 
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
@@ -63,9 +63,9 @@ public class HistoryFragment extends Fragment {
                 if (response.isSuccessful()) {
                     Log.d("HistoryApi", "Response Success");
                     HistoryDataforRendering data = response.body();
-                    totalDistance.setText("이달의 거리\n" + data.getDistance() + " km");
+                    totalDistance.setText("이달의 거리\n" + String.format("%.2f", data.getDistance()) + " km");
                     totalTime.setText("이달의 시간\n" + data.getTime());
-                    totalKcal.setText("이달의 칼로리\n" + data.getCalories() + " kcal");
+                    totalKcal.setText("이달의 칼로리\n" + String.format("%.1f", data.getCalories()) + " kcal");
                 }
             }
 
@@ -83,9 +83,9 @@ public class HistoryFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     Log.d("HistoryAPI", "Response received");
                     HistoryDataforRendering data = response.body();
-                    dailyDistance.setText("거리\n" + data.getDistance() + " km");
+                    dailyDistance.setText("거리\n" + String.format("%.2f", data.getDistance()) + " km");
                     dailyTime.setText("시간\n" + data.getTime());
-                    dailyKcal.setText("칼로리\n" + data.getCalories() + " kcal");
+                    dailyKcal.setText("칼로리\n" + String.format("%.1f", data.getCalories()) + " kcal");
                 }
             }
 
@@ -104,13 +104,13 @@ public class HistoryFragment extends Fragment {
                 historyApi.getMonthlyData(year, month + 1, userId).enqueue(new Callback<HistoryDataforRendering>() {
                     @Override
                     public void onResponse(Call<HistoryDataforRendering> call,
-                            Response<HistoryDataforRendering> response) {
+                                           Response<HistoryDataforRendering> response) {
                         if (response.isSuccessful()) {
                             Log.d("HistoryApi", "Response Success");
                             HistoryDataforRendering data = response.body();
-                            totalDistance.setText("이달의 거리\n" + data.getDistance() + " km");
+                            totalDistance.setText("이달의 거리\n" + String.format("%.2f", data.getDistance()) + " km");
                             totalTime.setText("이달의 시간\n" + data.getTime());
-                            totalKcal.setText("이달의 칼로리\n" + data.getCalories() + " kcal");
+                            totalKcal.setText("이달의 칼로리\n" + String.format("%.1f", data.getCalories()) + " kcal");
                         }
                     }
 
@@ -126,13 +126,13 @@ public class HistoryFragment extends Fragment {
                         .enqueue(new Callback<HistoryDataforRendering>() {
                             @Override
                             public void onResponse(Call<HistoryDataforRendering> call,
-                                    Response<HistoryDataforRendering> response) {
+                                                   Response<HistoryDataforRendering> response) {
                                 if (response.isSuccessful() && response.body() != null) {
                                     Log.d("HistoryAPI", "Response received");
                                     HistoryDataforRendering data = response.body();
-                                    dailyDistance.setText("거리\n" + data.getDistance() + " km");
+                                    dailyDistance.setText("거리\n" + String.format("%.2f", data.getDistance()) + " km");
                                     dailyTime.setText("시간\n" + data.getTime());
-                                    dailyKcal.setText("칼로리\n" + data.getCalories() + " kcal");
+                                    dailyKcal.setText("칼로리\n" + String.format("%.1f", data.getCalories()) + " kcal");
                                 }
                             }
 

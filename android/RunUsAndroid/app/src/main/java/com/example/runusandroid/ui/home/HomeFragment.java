@@ -87,7 +87,7 @@ public class HomeFragment extends Fragment {
                 if (response.isSuccessful()) {
                     Log.d("HistoryApi", "Response Success");
                     HistoryDataforRendering data = response.body();
-                    todayRunningHistoryTextView.setText("오늘의 달리기 기록\n\n" + "거리: " + data.getDistance() + " km\n\n시간: " + data.getTime());
+                    todayRunningHistoryTextView.setText("오늘의 달리기 기록\n\n" + "거리: " + String.format("%.2f", data.getDistance()) + " km\n\n시간: " + data.getTime());
                 }
             }
 
