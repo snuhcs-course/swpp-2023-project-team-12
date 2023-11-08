@@ -129,6 +129,7 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
     private class EnterRoomTask extends AsyncTask<Void, Void, Boolean> {
         private final Context mContext;
         private final NavController navcon;
+        private boolean isRoomFull;
         Packet packet;
 
         public EnterRoomTask(Context context, NavController navcon) {
@@ -140,6 +141,7 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
         protected Boolean doInBackground(Void... voids) {
             Socket socket = null;
             boolean success = true;
+            isRoomFull = false;
             try {
                 socketManager.openSocket(); // 소켓 연결
 
@@ -161,6 +163,10 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
                         printRoomInfo(packet.getSelectedRoom());
                     }
                 }
+                else{
+                    success = false;
+                    isRoomFull = true;
+                }
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
                 success = false;
@@ -171,8 +177,6 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
         @Override
         protected void onPostExecute(Boolean success) { //doInBackground()의 return값에 따라 작업 수행. 룸 리스트 업데이트, 입장하는 방 정보 업데이트
             super.onPostExecute(success);
-            setRoomList(packet.getRoomList());
-            selectedRoom = packet.getSelectedRoom();
             if (success) {
                 Log.d("SendPacket", "Packet sent successfully!");
                 setRoomList(packet.getRoomList());
@@ -183,7 +187,9 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
                 // NavController를 사용하여 다음 fragment로 이동
                 navcon.navigate(R.id.navigation_multi_room_wait, bundle);
             } else {
-                showFullRoomToast(mContext); // 방이 이미 꽉 찼다는 Toast 보내기
+                if(isRoomFull) {
+                    showFullRoomToast(mContext); // 방이 이미 꽉 찼다는 Toast 보내기
+                }
                 Log.e("SendPacket", "Failed to send packet!");
             }
         }
