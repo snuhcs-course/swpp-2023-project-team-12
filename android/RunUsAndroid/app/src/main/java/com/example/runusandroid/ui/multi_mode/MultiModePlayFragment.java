@@ -1,6 +1,10 @@
 package com.example.runusandroid.ui.multi_mode;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.AsyncTask;
@@ -19,6 +23,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
@@ -28,11 +33,10 @@ import com.example.runusandroid.HistoryData;
 import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
 import com.example.runusandroid.RetrofitClient;
+import com.example.runusandroid.ui.single_mode.BackGroundLocationService;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONException;
@@ -49,6 +53,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+import Logging.FileLogger;
 import MultiMode.MultiModeRoom;
 import MultiMode.MultiModeUser;
 import MultiMode.Packet;
@@ -60,6 +65,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MultiModePlayFragment extends Fragment {
+    static final String START_LOCATION_SERVICE = "start";
+    static final String STOP_LOCATION_SERVICE = "stop";
     private final List<LatLng> pathPoints = new ArrayList<>();
     private final List<Float> speedList = new ArrayList<>(); // 매 km 마다 속력 (km/h)
     LocalDateTime iterationStartTime;
@@ -71,7 +78,6 @@ public class MultiModePlayFragment extends Fragment {
     ObjectOutputStream oos;
     MultiModeRoom selectedRoom;
     float distance = 0;
-
     float calories = 0;
     FusedLocationProviderClient fusedLocationClient;
     LocationCallback locationCallback;
@@ -88,6 +94,71 @@ public class MultiModePlayFragment extends Fragment {
     LocalDateTime gameStartTime;
     TextView distancePresentContentTextView; //API 사용해서 구한 나의 현재 이동 거리
     TextView pacePresentContentTextView; //API 사용해서 구한 나의 현재 페이스
+    private final BroadcastReceiver locationReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals("location_update")) {
+                double latitude = intent.getDoubleExtra("latitude", 0.0);
+                double longitude = intent.getDoubleExtra("longitude", 0.0);
+                LatLng newPoint = new LatLng(latitude, longitude);
+
+                pathPoints.add(newPoint);
+                Location location = new Location("");
+                location.setLatitude(latitude);
+                location.setLongitude(longitude);
+                int lastDistanceInt = (int) distance;
+
+                // get distance
+                if (newPoint != null) {
+                    // first few points might be noisy
+                    if (pathPoints.size() > 5) {
+                        Location lastLocation = new Location("");
+                        lastLocation.setLatitude(pathPoints.get(pathPoints.size() - 2).latitude);
+                        lastLocation.setLongitude(pathPoints.get(pathPoints.size() - 2).longitude);
+                        // unit : meter -> kilometer
+                        double last_distance_5s_kilometer = location.distanceTo(lastLocation) / (double) 1000;
+
+                        distance += last_distance_5s_kilometer;
+                        Log.d("test:distance:5sec", "Last 5 second Distance :" + location.distanceTo(lastLocation) / (double) 1000);
+                        if (last_distance_5s_kilometer != 0) {
+                            int paceMinute = (int) (1 / (last_distance_5s_kilometer / 5)) / 60;
+                            int paceSecond = (int) (1 / (last_distance_5s_kilometer / 5)) % 60;
+                            if (paceMinute <= 30) {
+                                String paceString = String.format("%02d'%02d\"", paceMinute, paceSecond);
+                                pacePresentContentTextView.setText(paceString);
+                            } else {
+                                String paceString = "--'--\"";
+                                pacePresentContentTextView.setText(paceString);
+                            }
+                        } else {
+                            String paceString = "--'--\"";
+                            pacePresentContentTextView.setText(paceString);
+                        }
+
+                        // log distance into file
+                        FileLogger.logToFileAndLogcat(mainActivity, "test:distance:5sec", "" + location.distanceTo(lastLocation) / (double) 1000);
+                        // Below code seems to cause NullPointerException after 10 minutes or so (on Duration.between)
+//                            if ((int) distance != lastDistanceInt) {
+//                                LocalDateTime currentTime = LocalDateTime.now();
+//                                Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
+//                                long secondsDuration = iterationDuration.getSeconds();
+//                                float newPace = (float) (1.0 / (secondsDuration / 3600.0));
+//                                if (newPace > maxSpeed)
+//                                    maxSpeed = newPace;
+//                                if (newPace < minSpeed)
+//                                    minSpeed = newPace;
+//                                speedList.add(newPace);
+//                                iterationStartTime = currentTime;
+//
+//                            }
+                        Log.d("test:distance:total", "Distance:" + distance);
+                    }
+
+                }
+                distancePresentContentTextView.setText(String.format(Locale.getDefault(), "%.2f" + "km", distance));
+            }
+        }
+    };
     Button playLeaveButton;
     SocketListenerThread socketListenerThread = MultiModeWaitFragment.socketListenerThread;
     Handler timeHandler;
@@ -156,7 +227,6 @@ public class MultiModePlayFragment extends Fragment {
         historyApi = RetrofitClient.getClient().create(HistoryApi.class);
     }
 
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -164,10 +234,10 @@ public class MultiModePlayFragment extends Fragment {
 
 
         mainActivity = (MainActivity2) getActivity();
-        locationRequest = LocationRequest.create();
-        // TODO: let's find out which interval has best tradeoff
-        locationRequest.setInterval(5000); // Update interval in milliseconds
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        //locationRequest = LocationRequest.create();
+        //// TODO: let's find out which interval has best tradeoff
+        //locationRequest.setInterval(5000); // Update interval in milliseconds
+        //locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         maxSpeed = 0;
         minSpeed = 999;
         View view = inflater.inflate(R.layout.fragment_multi_room_play, container, false); //각종 view 선언
@@ -208,82 +278,82 @@ public class MultiModePlayFragment extends Fragment {
             }
         });
 
-        //TODO: only draw lines if running is started
-        //TODO: doesn't update location when app is in background -> straight lines are drawn from the last location when app is opened again
-        //TODO: lines are ugly and noisy -> need to filter out some points or smoothed
-        locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                if (locationResult != null) {
-                    Location location = locationResult.getLastLocation();
-                    LatLng newPoint = new LatLng(location.getLatitude(), location.getLongitude());
-                    Log.d("debug:location", "location : " + location.getLongitude() + ", " + location.getLatitude());
-                    pathPoints.add(newPoint);
-
-                    int lastDistanceInt = (int) distance;
-                    // TODO: check calculate distance
-                    if (newPoint != null) {
-                        // first few points might be noisy && while activity is running (or walking)
-                        if (pathPoints.size() > 5 && mainActivity.activityReceiver.getIsRunning()) {
-                            Location lastLocation = new Location("");
-                            lastLocation.setLatitude(pathPoints.get(pathPoints.size() - 2).latitude);
-                            lastLocation.setLongitude(pathPoints.get(pathPoints.size() - 2).longitude);
-
-                            // unit : meter -> kilometer
-                            double last_distance_5s_kilometer = location.distanceTo(lastLocation) / (double) 1000;
-                            distance += last_distance_5s_kilometer;
-
-                            // double speed_average = distance / (double) (Duration.between(gameStartTime, LocalDateTime.now()).getSeconds() / 3600.0);
-
-//                            if (speed_average > 0.1) {
-//                                Log.d("debug:distance", "last 5s distance (km) : " + last_distance_5s_kilometer + "");
-//                                Log.d("debug:speed", "average speed since start (km/h) : " + speed_average + "");
-//                                String paceString = String.format("%4.2f km/h", speed_average);
-//                                pacePresentContentTextView.setText(paceString);
-//                            } else {
-//                                String paceString = "--.-- km/h";
-//                                pacePresentContentTextView.setText(paceString);
-//                            }
-
-                            if (last_distance_5s_kilometer != 0) {
-                                int paceMinute = (int) (1 / (last_distance_5s_kilometer / 5)) / 60;
-                                int paceSecond = (int) (1 / (last_distance_5s_kilometer / 5)) % 60;
-
-                                if (paceMinute <= 30) {
-                                    String paceString = String.format("%02d'%02d\"", paceMinute, paceSecond);
-                                    pacePresentContentTextView.setText(paceString);
-                                } else {
-                                    String paceString = "--'--\"";
-                                    pacePresentContentTextView.setText(paceString);
-                                }
-                            } else {
-                                String paceString = "--'--\"";
-                                pacePresentContentTextView.setText(paceString);
-                            }
-
-
-                            // pace unused for now
-//                            if ((int) distance != lastDistanceInt) {
-//                                LocalDateTime currentTime = LocalDateTime.now();
-//                                Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
-//                                long secondsDuration = iterationDuration.getSeconds();
-//                                float newPace = (float) (1.0 / (secondsDuration / 3600.0));
-//                                if (newPace > maxSpeed) maxSpeed = newPace;
-//                                if (newPace < minSpeed) minSpeed = newPace;
-//                                speedList.add(newPace);
-//                                iterationStartTime = currentTime;
+//        //TODO: only draw lines if running is started
+//        //TODO: doesn't update location when app is in background -> straight lines are drawn from the last location when app is opened again
+//        //TODO: lines are ugly and noisy -> need to filter out some points or smoothed
+//        locationCallback = new LocationCallback() {
+//            @Override
+//            public void onLocationResult(LocationResult locationResult) {
+//                if (locationResult != null) {
+//                    Location location = locationResult.getLastLocation();
+//                    LatLng newPoint = new LatLng(location.getLatitude(), location.getLongitude());
+//                    Log.d("debug:location", "location : " + location.getLongitude() + ", " + location.getLatitude());
+//                    pathPoints.add(newPoint);
 //
+//                    int lastDistanceInt = (int) distance;
+//                    // TODO: check calculate distance
+//                    if (newPoint != null) {
+//                        // first few points might be noisy && while activity is running (or walking)
+//                        if (pathPoints.size() > 5 && mainActivity.activityReceiver.getIsRunning()) {
+//                            Location lastLocation = new Location("");
+//                            lastLocation.setLatitude(pathPoints.get(pathPoints.size() - 2).latitude);
+//                            lastLocation.setLongitude(pathPoints.get(pathPoints.size() - 2).longitude);
+//
+//                            // unit : meter -> kilometer
+//                            double last_distance_5s_kilometer = location.distanceTo(lastLocation) / (double) 1000;
+//                            distance += last_distance_5s_kilometer;
+//
+//                            // double speed_average = distance / (double) (Duration.between(gameStartTime, LocalDateTime.now()).getSeconds() / 3600.0);
+//
+////                            if (speed_average > 0.1) {
+////                                Log.d("debug:distance", "last 5s distance (km) : " + last_distance_5s_kilometer + "");
+////                                Log.d("debug:speed", "average speed since start (km/h) : " + speed_average + "");
+////                                String paceString = String.format("%4.2f km/h", speed_average);
+////                                pacePresentContentTextView.setText(paceString);
+////                            } else {
+////                                String paceString = "--.-- km/h";
+////                                pacePresentContentTextView.setText(paceString);
+////                            }
+//
+//                            if (last_distance_5s_kilometer != 0) {
+//                                int paceMinute = (int) (1 / (last_distance_5s_kilometer / 5)) / 60;
+//                                int paceSecond = (int) (1 / (last_distance_5s_kilometer / 5)) % 60;
+//
+//                                if (paceMinute <= 30) {
+//                                    String paceString = String.format("%02d'%02d\"", paceMinute, paceSecond);
+//                                    pacePresentContentTextView.setText(paceString);
+//                                } else {
+//                                    String paceString = "--'--\"";
+//                                    pacePresentContentTextView.setText(paceString);
+//                                }
+//                            } else {
+//                                String paceString = "--'--\"";
+//                                pacePresentContentTextView.setText(paceString);
 //                            }
-                        }
-                    }
-                    // update distance text
-                    distancePresentContentTextView.setText(String.format(Locale.getDefault(), "%.2f" + "km", distance));
-                    Log.d("debug:distance", "total distance : " + distance);
-                }
-            }
-        };
+//
+//
+//                            // pace unused for now
+////                            if ((int) distance != lastDistanceInt) {
+////                                LocalDateTime currentTime = LocalDateTime.now();
+////                                Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
+////                                long secondsDuration = iterationDuration.getSeconds();
+////                                float newPace = (float) (1.0 / (secondsDuration / 3600.0));
+////                                if (newPace > maxSpeed) maxSpeed = newPace;
+////                                if (newPace < minSpeed) minSpeed = newPace;
+////                                speedList.add(newPace);
+////                                iterationStartTime = currentTime;
+////
+////                            }
+//                        }
+//                    }
+//                    // update distance text
+//                    distancePresentContentTextView.setText(String.format(Locale.getDefault(), "%.2f" + "km", distance));
+//                    Log.d("debug:distance", "total distance : " + distance);
+//                }
+//            }
+//        };
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(mainActivity);
+        //fusedLocationClient = LocationServices.getFusedLocationProviderClient(mainActivity);
 
 
         //5초마다 현재 이동 거리 전송
@@ -311,7 +381,6 @@ public class MultiModePlayFragment extends Fragment {
         return view;
 
     }
-
 
     public void updateTop3UserDistance(UserDistance[] userDistances) { // 화면에 표시되는 top3 유저 정보 업데이트. socketListenerThread에서 사용
         UserDistance[] top3UserDistance = userDistances;
@@ -362,7 +431,7 @@ public class MultiModePlayFragment extends Fragment {
         Log.d("response", "start play screen");
         //top3UpdateHandler.postDelayed(sendDataRunnable, 5000);
 
-        fusedLocationClient.removeLocationUpdates(locationCallback);
+        //fusedLocationClient.removeLocationUpdates(locationCallback);
 
         if (ActivityCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -372,8 +441,12 @@ public class MultiModePlayFragment extends Fragment {
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1000);
         }
+        Intent intent = new Intent(getContext(), BackGroundLocationService.class);
+        intent.setAction(START_LOCATION_SERVICE);
+        getActivity().startForegroundService(intent);
+        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(locationReceiver, new IntentFilter("location_update"));
 
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+        //fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
 
     }
 
@@ -383,7 +456,7 @@ public class MultiModePlayFragment extends Fragment {
 //        if (socketListenerThread != null) {
 //            socketListenerThread.interrupt();
 //        }
-        fusedLocationClient.removeLocationUpdates(locationCallback);
+        //fusedLocationClient.removeLocationUpdates(locationCallback);
         //finishedTask.cancel(true);
     }
 
