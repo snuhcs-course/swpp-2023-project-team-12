@@ -108,6 +108,7 @@ public class MultiModePlayFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        finishedTask = new SendFinishedTask();
         socketListenerThread.addPlayFragment(this);
         socketListenerThread.resumeListening();
         gameStartTime = (LocalDateTime) getArguments().getSerializable("startTime");
@@ -120,7 +121,7 @@ public class MultiModePlayFragment extends Fragment {
         timeRunnable = new Runnable() {
             @Override
             public void run() {
-                if (selectedRoom != null && isFinished==0) {
+                if (selectedRoom != null && isFinished == 0) {
                     LocalDateTime currentTime = LocalDateTime.now();
                     Duration present = Duration.between(gameStartTime, currentTime);
                     long secondsElapsed = present.getSeconds();
@@ -140,9 +141,8 @@ public class MultiModePlayFragment extends Fragment {
                 }
                 if (isFinished == 0) {
                     timeHandler.postDelayed(this, 1000);
-                } else if(isFinished == 1){
+                } else if (isFinished == 1) {
                     Packet requestPacket = new Packet(Protocol.FINISH_GAME, user, selectedRoom);
-                    finishedTask = new SendFinishedTask();
                     finishedTask.execute(requestPacket);
                     isFinished = 2;
                 }
@@ -244,15 +244,14 @@ public class MultiModePlayFragment extends Fragment {
 //                                pacePresentContentTextView.setText(paceString);
 //                            }
 
-                            if (last_distance_5s_kilometer != 0 ) {
+                            if (last_distance_5s_kilometer != 0) {
                                 int paceMinute = (int) (1 / (last_distance_5s_kilometer / 5)) / 60;
                                 int paceSecond = (int) (1 / (last_distance_5s_kilometer / 5)) % 60;
 
                                 if (paceMinute <= 30) {
                                     String paceString = String.format("%02d'%02d\"", paceMinute, paceSecond);
                                     pacePresentContentTextView.setText(paceString);
-                                }
-                                else {
+                                } else {
                                     String paceString = "--'--\"";
                                     pacePresentContentTextView.setText(paceString);
                                 }
@@ -260,8 +259,6 @@ public class MultiModePlayFragment extends Fragment {
                                 String paceString = "--'--\"";
                                 pacePresentContentTextView.setText(paceString);
                             }
-
-
 
 
                             // pace unused for now
@@ -386,7 +383,7 @@ public class MultiModePlayFragment extends Fragment {
 //            socketListenerThread.interrupt();
 //        }
         fusedLocationClient.removeLocationUpdates(locationCallback);
-        finishedTask.cancel(true);
+        //finishedTask.cancel(true);
     }
 
     @Override
@@ -475,6 +472,7 @@ public class MultiModePlayFragment extends Fragment {
                 }
 
             }
+
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
             }
@@ -571,11 +569,10 @@ public class MultiModePlayFragment extends Fragment {
                 if (packets.length > 0) {
                     Packet requestPacket = packets[0];
                     ObjectOutputStream oos = socketManager.getOOS();
-                    if(!isCancelled() && oos!=null) {
+                    if (!isCancelled() && oos != null) {
                         oos.writeObject(requestPacket);
                         oos.flush();
-                    }
-                    else {
+                    } else {
                         success = false;
                         Log.d("Sendfinishedpacket", "task is cancelled or oos is null");
                     }
@@ -643,6 +640,7 @@ public class MultiModePlayFragment extends Fragment {
 
     public class ExitGameTask extends AsyncTask<Packet, Void, Boolean> {
         Packet packet;
+
         @Override
         public Boolean doInBackground(Packet... packets) {
             boolean success = true;

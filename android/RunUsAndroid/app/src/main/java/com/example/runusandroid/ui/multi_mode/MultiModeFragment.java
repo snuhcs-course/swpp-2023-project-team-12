@@ -89,8 +89,9 @@ public class MultiModeFragment extends Fragment {
         // 초기값 설정
         groupNameEditText.setText("Test");
         //distanceEditText.setText("5");
-        time_picker.setHour(0);
-        time_picker.setMinute(0);
+        LocalTime now = LocalTime.now().plusMinutes(1);
+        time_picker.setHour(now.getHour());
+        time_picker.setMinute(now.getMinute());
         membersEditText.setText("5");
         numberPickerHour.setValue(0);
         numberPickerMinute.setValue(1);
