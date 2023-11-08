@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Queue;
 
 public class MultiModeRoom implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1344949L;
     private final int GAME_STARTED = 1;
     private final int GAME_NOT_STARTED = 0;
     private final transient List<ObjectOutputStream> clientOutputStreams = new ArrayList<>();
