@@ -31,7 +31,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/pretendardregular"
                 android:gravity="center_horizontal"
-                android:text="평균 속력"
+                android:text="현재 페이스"
                 android:textAppearance="@style/multi_room_play_goal" />
 
             <TextView
@@ -40,7 +40,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/pretendardregular"
                 android:gravity="center_horizontal"
-                android:text="--:-- km/h"
+                android:text="--'--''"
                 android:textAppearance="@style/multi_room_play_goal" />
         </LinearLayout>
 

@@ -231,15 +231,33 @@ public class MultiModePlayFragment extends Fragment {
                             // unit : meter -> kilometer
                             double last_distance_5s_kilometer = location.distanceTo(lastLocation) / (double) 1000;
                             distance += last_distance_5s_kilometer;
-                            double speed_average = distance / (double) (Duration.between(gameStartTime, LocalDateTime.now()).getSeconds() / 3600.0);
 
-                            if (speed_average > 0.1) {
-                                Log.d("debug:distance", "last 5s distance (km) : " + last_distance_5s_kilometer + "");
-                                Log.d("debug:speed", "average speed since start (km/h) : " + speed_average + "");
-                                String paceString = String.format("%4.2f km/h", speed_average);
-                                pacePresentContentTextView.setText(paceString);
+                            // double speed_average = distance / (double) (Duration.between(gameStartTime, LocalDateTime.now()).getSeconds() / 3600.0);
+
+//                            if (speed_average > 0.1) {
+//                                Log.d("debug:distance", "last 5s distance (km) : " + last_distance_5s_kilometer + "");
+//                                Log.d("debug:speed", "average speed since start (km/h) : " + speed_average + "");
+//                                String paceString = String.format("%4.2f km/h", speed_average);
+//                                pacePresentContentTextView.setText(paceString);
+//                            } else {
+//                                String paceString = "--.-- km/h";
+//                                pacePresentContentTextView.setText(paceString);
+//                            }
+
+                            if (last_distance_5s_kilometer != 0 ) {
+                                int paceMinute = (int) (1 / (last_distance_5s_kilometer / 5)) / 60;
+                                int paceSecond = (int) (1 / (last_distance_5s_kilometer / 5)) % 60;
+
+                                if (paceMinute <= 30) {
+                                    String paceString = String.format("%02d'%02d\"", paceMinute, paceSecond);
+                                    pacePresentContentTextView.setText(paceString);
+                                }
+                                else {
+                                    String paceString = "--'--\"";
+                                    pacePresentContentTextView.setText(paceString);
+                                }
                             } else {
-                                String paceString = "--.-- km/h";
+                                String paceString = "--'--\"";
                                 pacePresentContentTextView.setText(paceString);
                             }
 
