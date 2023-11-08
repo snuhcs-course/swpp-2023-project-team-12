@@ -123,7 +123,6 @@ public class MultiModePlayFragment extends Fragment {
             public void run() {
                 if (selectedRoom != null && isFinished==0) {
                     LocalDateTime currentTime = LocalDateTime.now();
-                    //Duration present = Duration.between(selectedRoom.getStartTime(), currentTime);
                     Duration present = Duration.between(gameStartTime, currentTime);
                     long secondsElapsed = present.getSeconds();
 
@@ -138,15 +137,11 @@ public class MultiModePlayFragment extends Fragment {
                         String formattedTime = String.format(Locale.getDefault(), "%02d:%02d:%02d",
                                 hours, minutes, seconds);
                         timePresentContentTextView.setText(formattedTime);
-                        //Log.d("response", formattedTime);
-
                     }
                 }
                 if (isFinished == 0) {
-                    // 1초마다 Runnable 실행
                     timeHandler.postDelayed(this, 1000);
                 } else if(isFinished == 1){
-                    Log.d("response", "finished time count");
                     Packet requestPacket = new Packet(Protocol.FINISH_GAME, user, selectedRoom);
                     finishedTask = new SendFinishedTask();
                     finishedTask.execute(requestPacket);
@@ -204,7 +199,6 @@ public class MultiModePlayFragment extends Fragment {
         }
 
         playLeaveButton.setOnClickListener(new View.OnClickListener() {
-            //not executed
             @Override
             public void onClick(View v) {
                 Packet requestPacket = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
@@ -222,13 +216,10 @@ public class MultiModePlayFragment extends Fragment {
             public void onLocationResult(LocationResult locationResult) {
                 if (locationResult != null) {
                     Location location = locationResult.getLastLocation();
-                    //Log.d("test:location", "Location:" + location.getLatitude() + ", " + location.getLongitude());
-
                     LatLng newPoint = new LatLng(location.getLatitude(), location.getLongitude());
                     pathPoints.add(newPoint);
 
                     int lastDistanceInt = (int) distance;
-
                     // TODO: check calculate distance
                     if (newPoint != null) {
                         // first few points might be noisy && while activity is running (or walking)
@@ -249,8 +240,6 @@ public class MultiModePlayFragment extends Fragment {
 
 
                             distance += location.distanceTo(lastLocation) / (double) 1000;
-                            //Log.d("test:distance", "Distance:" + distance);
-                            // update pace if new iteration started (every 1km)
                             if ((int) distance != lastDistanceInt) {
                                 LocalDateTime currentTime = LocalDateTime.now();
                                 Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
@@ -279,7 +268,6 @@ public class MultiModePlayFragment extends Fragment {
             @Override
             public void run() {
                 Packet requestPacket = new Packet(Protocol.UPDATE_USER_DISTANCE, user, distance);
-                //distance += 1;
                 new SendDistanceTask().execute(requestPacket);
                 if (isFinished == 0) {
                     // 1초마다 Runnable 실행
@@ -304,10 +292,8 @@ public class MultiModePlayFragment extends Fragment {
     public void updateTop3UserDistance(UserDistance[] userDistances) { // 화면에 표시되는 top3 유저 정보 업데이트. socketListenerThread에서 사용
         UserDistance[] top3UserDistance = userDistances;
         for (int i = 0; i < userDistances.length; i++) {
-
             //Log.d("response", "In updateTop3UserDistance, top3user " + i + " : " + top3UserDistance[0].getUser().getNickName() + " , distance : " + userDistances[0].getDistance());
             //Log.d("response", "In updateTop3UserDistance, user " + i + " : " + userDistances[0].getUser().getNickName() + " , distance : " + userDistances[0].getDistance());
-
         }
         double goldDistance = 0;
 
@@ -405,8 +391,6 @@ public class MultiModePlayFragment extends Fragment {
                         throw new RuntimeException(e);
                     }
                     transitionToRusultFragment();
-                    Log.d("response", "really go to result screen");
-                } else {
                 }
 
             }
@@ -459,17 +443,12 @@ public class MultiModePlayFragment extends Fragment {
                         groupHistoryId = (int) responseBody.getLong("id");
                         Packet requestPacket = new Packet(Protocol.SAVE_GROUP_HISTORY, user, selectedRoom, groupHistoryId);
                         new SendSavedInfoTask().execute(requestPacket);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    } catch (JSONException e) {
+                    } catch (IOException | JSONException e) {
                         throw new RuntimeException(e);
                     }
-
-                } else {
                 }
 
             }
-
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
             }
@@ -564,7 +543,6 @@ public class MultiModePlayFragment extends Fragment {
             boolean success = true;
             try {
                 if (packets.length > 0) {
-                    Log.d("SendfinishedPacket", "Packet is bigger than 0");
                     Packet requestPacket = packets[0];
                     ObjectOutputStream oos = socketManager.getOOS();
                     if(!isCancelled() && oos!=null) {
@@ -573,19 +551,15 @@ public class MultiModePlayFragment extends Fragment {
                     }
                     else {
                         success = false;
-                        Log.d("Sendfinishedpacket", "task is cancelled");
+                        Log.d("Sendfinishedpacket", "task is cancelled or oos is null");
                     }
                 } else {
-                    Log.d("SendfinishedPacket", "Packet is 0");
                     success = false;
                 }
 
             } catch (IOException e) {
                 e.printStackTrace();
                 success = false;
-            } finally {
-                //timeHandler.removeCallbacksAndMessages(null);
-                //sendDataHandler.removeCallbacksAndMessages(null);
             }
             return success;
         }
@@ -643,9 +617,6 @@ public class MultiModePlayFragment extends Fragment {
 
     public class ExitGameTask extends AsyncTask<Packet, Void, Boolean> {
         Packet packet;
-        //play fragment에서 leave button의 onclick에 등록하고, 바로 result fragment로 가므로
-        //leave button을 눌러도 exitgametask는 실행 안됨
-
         @Override
         public Boolean doInBackground(Packet... packets) {
             boolean success = true;
@@ -663,13 +634,8 @@ public class MultiModePlayFragment extends Fragment {
                 success = false;
             } finally {
                 try {
-
-                    //timeHandler.removeCallbacksAndMessages(null);
-                    //sendDataHandler.removeCallbacksAndMessages(null);
                     socketManager.closeSocket();
-                    //Log.d("response", "socket closed");
                 } catch (IOException e) {
-                    //Log.d("response", "socket close error");
                     success = false;
                 }
             }
