@@ -26,10 +26,16 @@ public class SignUpStep3Activity extends AppCompatActivity {
         final String email = intent.getStringExtra("email");
         final String nickname = intent.getStringExtra("nickname");
 
+
         nextButton3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String phoneNumber = signUpPhoneNumberInput.getText().toString();
+
+                if (phoneNumber.length() != 11) {
+                    signUpPhoneNumberInput.setError("휴대폰 번호는 11자리여야 합니다");
+                    return;
+                }
 
                 Intent intentToStep4 = new Intent(SignUpStep3Activity.this, SignUpStep4Activity.class);
                 intentToStep4.putExtra("userName", userName);
