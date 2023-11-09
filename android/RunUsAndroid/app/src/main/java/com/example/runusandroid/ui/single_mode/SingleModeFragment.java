@@ -25,12 +25,15 @@ import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.example.runusandroid.HistoryApi;
 import com.example.runusandroid.HistoryData;
@@ -38,6 +41,7 @@ import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
 import com.example.runusandroid.RetrofitClient;
 import com.example.runusandroid.databinding.FragmentSingleModeBinding;
+import com.example.runusandroid.ui.multi_mode.MultiModePlayFragment;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -63,6 +67,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+import MultiMode.Packet;
+import MultiMode.Protocol;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -150,6 +156,20 @@ public class SingleModeFragment extends Fragment {
 
         dateFormat = new SimpleDateFormat("HH:mm:ss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+        // for debugging purpose, hidden button on right bottom corner shows toast about lastly detected activity transition and isRunning value
+        Button hiddenButton = binding.hiddenButton;
+        hiddenButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean isRunning = mainActivity.activityReceiver.getIsRunning();
+                String lastActivityType = mainActivity.activityReceiver.getLastActivityType();
+                String lastTransitionType = mainActivity.activityReceiver.getLastTransitionType();
+
+                Toast.makeText(mainActivity, "last detected : " + lastTransitionType+ " " + lastActivityType +
+                        " . isRunning " + isRunning, Toast.LENGTH_LONG).show();
+            }
+        });
 
 
         startButton.setOnClickListener(new View.OnClickListener() {
