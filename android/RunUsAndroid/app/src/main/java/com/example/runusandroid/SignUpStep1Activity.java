@@ -2,8 +2,11 @@ package com.example.runusandroid;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.Spanned;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,20 +26,55 @@ public class SignUpStep1Activity extends AppCompatActivity {
         signUpPasswordInput = findViewById(R.id.SignUpPasswordInput);
         signUpEmailInput = findViewById(R.id.SignUpEmailInput);
         nextButton1 = findViewById(R.id.nextButton1);
+        EditText IdText = findViewById(R.id.SignUpIdInput);
+        EditText editText = findViewById(R.id.SignUpEmailInput);
+
+        //아이디는 영어 대,소문자와 숫자만 입력 가능함.
+        InputFilter Idfilter = new InputFilter() {
+            public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+                for (int i = start; i < end; i++) {
+                    if (!Character.isLetterOrDigit(source.charAt(i))) {
+                        return "";
+                    }
+                }
+                return null;
+            }
+        };
+        IdText.setFilters(new InputFilter[]{Idfilter});
+
 
         nextButton1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String userName = signUpIdInput.getText().toString();
+                String Id = signUpIdInput.getText().toString();
                 String password = signUpPasswordInput.getText().toString();
                 String email = signUpEmailInput.getText().toString();
 
+                // 이메일 주소가 올바르지 않으면 다음으로 넘어가지 않는다.
+                if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    signUpEmailInput.setError("유효한 이메일 주소를 입력하세요");
+                    return;
+                }
+
+                // 비밀번호는 8자리 이상이어야 한다.
+                if (password.length() < 8) {
+                    signUpPasswordInput.setError("비밀번호는 8자리 이상이어야 합니다");
+                    return;
+                }
+
+                // 아이디는 있는지만 검사한다.
+                if (Id.length() == 0) {
+                    signUpIdInput.setError("아이디를 입력하세요.");
+                    return;
+                }
+
                 Intent intent = new Intent(SignUpStep1Activity.this, SignUpStep2Activity.class);
-                intent.putExtra("userName", userName);
+                intent.putExtra("userName", Id);
                 intent.putExtra("password", password);
                 intent.putExtra("email", email);
                 startActivity(intent);
             }
         });
+
     }
 }
