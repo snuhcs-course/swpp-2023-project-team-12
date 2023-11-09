@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatButton;
@@ -16,12 +17,14 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.runusandroid.LoginActivity;
+import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
 import com.example.runusandroid.databinding.FragmentUserSettingBinding;
 
 public class UserSettingFragment extends Fragment {
 
     private FragmentUserSettingBinding binding;
+    MainActivity2 mainActivity;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -31,6 +34,7 @@ public class UserSettingFragment extends Fragment {
         String userName = sharedPreferences.getString("username", "");
         binding = FragmentUserSettingBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+        mainActivity = (MainActivity2) getActivity();
 
         final TextView textView = binding.textUserSetting;
         userSettingViewModel.setText(userName + "님 환영해요!");
@@ -43,6 +47,23 @@ public class UserSettingFragment extends Fragment {
             public void onClick(View v) {
                 logoutUser();
             }
+        });
+
+        // TO CHECK ACTIVITY STATE
+        AppCompatButton checkButton = root.findViewById(R.id.check);
+        checkButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+
+                String activityType = mainActivity.activityReceiver.getLastActivityType();
+                String transitionType = mainActivity.activityReceiver.getLastTransitionType();
+                boolean isRunning = mainActivity.activityReceiver.getIsRunning();
+
+                Toast.makeText(mainActivity, "last state:" + transitionType+ " " + activityType + " " + isRunning, Toast.LENGTH_LONG).show();
+
+            }
+
         });
 
         return root;

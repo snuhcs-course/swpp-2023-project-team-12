@@ -654,7 +654,7 @@ public class SingleModeFragment extends Fragment {
                     }
 
                     // get distance
-                    if (newPoint != null) {
+                    if (newPoint != null && mainActivity.activityReceiver.getIsRunning()) {
                         // first few points might be noisy
                         if (pathPoints.size() > 5) {
                             Location lastLocation = new Location("");
