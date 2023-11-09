@@ -11,4 +11,7 @@ public interface AccountApi {
 
     @POST("/account/login/")
     Call<ResponseBody> postLoginData(@Body AccountData data);
+
+    @POST("/account/find_username/")
+    Call<ResponseBody> findUsername(@Body EmailData emailData);
 }
