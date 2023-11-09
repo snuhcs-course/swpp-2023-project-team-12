@@ -14,11 +14,13 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
 
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Locale;
 
 import MultiMode.MultiModeRoom;
@@ -32,6 +34,7 @@ public class MultiModeResultFragment extends Fragment {
     ObjectOutputStream oos;
     MultiModeRoom selectedRoom;
     float distance = 0;
+    ArrayList<Float> speedList;
     NavController navController;
     TextView paceGoalContentTextView;
     MainActivity2 mainActivity;
@@ -44,8 +47,12 @@ public class MultiModeResultFragment extends Fragment {
     TextView bronzeNickNameTextView;
     ProgressBar progressBar;
     Button playLeaveButton;
+    Button recordButton;
     TextView distanceResultContentTextView; //API 사용해서 구한 나의 현재 이동 거리
     SocketListenerThread socketListenerThread = MultiModeWaitFragment.socketListenerThread;
+    RecyclerView recyclerView;
+    RecordDialog dialog;
+    boolean isDialogOpenedBefore = false;
     private TextView timeResultContentTextView;
 
     @Nullable
@@ -66,7 +73,48 @@ public class MultiModeResultFragment extends Fragment {
             playLeaveButton = view.findViewById(R.id.result_leaveButton);
             distanceResultContentTextView = view.findViewById(R.id.distance_present_content);
             timeResultContentTextView = view.findViewById(R.id.time_present_content);
+            dialog = new RecordDialog(requireContext()); // requireContext()를 사용하여 컨텍스트 가져옴
 
+            recordButton = view.findViewById(R.id.record_button);
+            recordButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.show();
+                    if (!isDialogOpenedBefore) {
+
+
+                        speedList = (ArrayList<Float>) getArguments().getSerializable("userSpeedList");
+                        Log.d("speedList", speedList.size() + "");
+                        double section = 1.0;
+                        //for test
+//                        distance = 4.579f;
+//                        speedList = new ArrayList<>();
+//                        speedList.add(12.0f);
+//                        speedList.add(10.0f);
+//                        speedList.add(15.0f);
+//                        speedList.add(20.0f);
+//                        speedList.add(12.0f);
+
+                        while (true) {
+                            if (distance - section >= 0) {
+                                float speed = speedList.get((int) section - 1);
+                                dialog.adapter.addItem(new RecordItem(section, speed));
+                                Log.d("speedList", "first if : " + section + " " + speed);
+
+                                section++;
+                            } else {
+                                float speed = speedList.get((int) section - 1);
+                                dialog.adapter.addItem(new RecordItem(distance - (section - 1), speed));
+                                Log.d("speedList", "second if : " + (section - 1) + " " + speed);
+                                section = 1.0;
+                                break;
+                            }
+                        }
+                        dialog.adapter.notifyDataSetChanged();
+                        isDialogOpenedBefore = true;
+                    }
+                }
+            });
 
         }
 
@@ -134,9 +182,9 @@ public class MultiModeResultFragment extends Fragment {
         long hours = seconds / 3600;
         long minutes = (seconds % 3600) / 60;
         seconds = seconds % 60;
-
         // "00:00:00" 형태의 문자열로 변환
         String formattedDuration = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+
 
         timeResultContentTextView.setText(formattedDuration);
         Log.d("response", "here is room result screen");

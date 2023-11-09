@@ -45,6 +45,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -94,6 +95,15 @@ public class MultiModePlayFragment extends Fragment {
     LocalDateTime gameStartTime;
     TextView distancePresentContentTextView; //API 사용해서 구한 나의 현재 이동 거리
     TextView pacePresentContentTextView; //API 사용해서 구한 나의 현재 페이스
+    Button playLeaveButton;
+    SocketListenerThread socketListenerThread = MultiModeWaitFragment.socketListenerThread;
+    Handler timeHandler;
+    Runnable timeRunnable;
+    Handler sendDataHandler;
+    Runnable sendDataRunnable;
+    UserDistance[] userDistances;
+    private float minSpeed;
+    private float maxSpeed;
     private final BroadcastReceiver locationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -111,7 +121,7 @@ public class MultiModePlayFragment extends Fragment {
                 // get distance
                 if (newPoint != null) {
                     // first few points might be noisy
-                    if (pathPoints.size() > 5) {
+                    if (pathPoints.size() > 5 && mainActivity.activityReceiver.getIsRunning()) {
                         Location lastLocation = new Location("");
                         lastLocation.setLatitude(pathPoints.get(pathPoints.size() - 2).latitude);
                         lastLocation.setLongitude(pathPoints.get(pathPoints.size() - 2).longitude);
@@ -137,20 +147,20 @@ public class MultiModePlayFragment extends Fragment {
 
                         // log distance into file
                         FileLogger.logToFileAndLogcat(mainActivity, "test:distance:5sec", "" + location.distanceTo(lastLocation) / (double) 1000);
-                        // Below code seems to cause NullPointerException after 10 minutes or so (on Duration.between)
-//                            if ((int) distance != lastDistanceInt) {
-//                                LocalDateTime currentTime = LocalDateTime.now();
-//                                Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
-//                                long secondsDuration = iterationDuration.getSeconds();
-//                                float newPace = (float) (1.0 / (secondsDuration / 3600.0));
-//                                if (newPace > maxSpeed)
-//                                    maxSpeed = newPace;
-//                                if (newPace < minSpeed)
-//                                    minSpeed = newPace;
-//                                speedList.add(newPace);
-//                                iterationStartTime = currentTime;
-//
-//                            }
+                        //Below code seems to cause NullPointerException after 10 minutes or so (on Duration.between)
+                        if ((int) distance != lastDistanceInt) {
+                            LocalDateTime currentTime = LocalDateTime.now();
+                            Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
+                            long secondsDuration = iterationDuration.getSeconds();
+                            float newPace = (float) (1.0 / (secondsDuration / 3600.0));
+                            if (newPace > maxSpeed)
+                                maxSpeed = newPace;
+                            if (newPace < minSpeed)
+                                minSpeed = newPace;
+                            speedList.add(newPace);
+                            iterationStartTime = currentTime;
+
+                        }
                         Log.d("test:distance:total", "Distance:" + distance);
                     }
 
@@ -159,15 +169,6 @@ public class MultiModePlayFragment extends Fragment {
             }
         }
     };
-    Button playLeaveButton;
-    SocketListenerThread socketListenerThread = MultiModeWaitFragment.socketListenerThread;
-    Handler timeHandler;
-    Runnable timeRunnable;
-    Handler sendDataHandler;
-    Runnable sendDataRunnable;
-    UserDistance[] userDistances;
-    private float minSpeed;
-    private float maxSpeed;
     private float medianSpeed;
     private HistoryApi historyApi;
     private TextView timePresentContentTextView;
@@ -585,10 +586,18 @@ public class MultiModePlayFragment extends Fragment {
 
     private void transitionToResultFragment() {
         if (userDistances != null) {
+            if (speedList != null) {
+                LocalDateTime currentTime = LocalDateTime.now();
+                Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
+                long secondsDuration = iterationDuration.getSeconds();
+                float newPace = (float) ((distance - (int) distance) / (secondsDuration / 3600.0));
+                speedList.add(newPace);
+            }
             Bundle bundle = new Bundle();
             bundle.putSerializable("room", selectedRoom);
             bundle.putSerializable("top3UserDistance", userDistances);
             bundle.putSerializable("userDistance", distance);
+            bundle.putSerializable("userSpeedList", (Serializable) speedList);
             NavController navController = Navigation.findNavController(requireView());
             navController.navigate(R.id.navigation_multi_room_result, bundle);
         }
