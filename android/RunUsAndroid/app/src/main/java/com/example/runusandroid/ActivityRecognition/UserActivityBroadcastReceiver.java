@@ -14,7 +14,7 @@ import java.util.Objects;
 
 public class UserActivityBroadcastReceiver extends BroadcastReceiver {
 
-    boolean isRunning = false;
+    boolean isRunning = true;
     String lastActivityType = "DEFAULT";
     String lastTransitionType = "DEFAULT";
 
