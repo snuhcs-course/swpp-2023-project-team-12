@@ -6,20 +6,33 @@
     android:layout_height="match_parent"
     tools:context=".SignUpStep1Activity">
 
+    <ImageView
+        android:id="@+id/logoInStep1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="30dp"
+        android:src="@drawable/runus_logo"
+        app:layout_constraintBottom_toTopOf="@+id/idText"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
+        android:id="@+id/idText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/pretendardregular"
         android:text="아이디"
         app:layout_constraintBottom_toTopOf="@id/SignUpIdInput"
-        app:layout_constraintLeft_toLeftOf="@id/SignUpIdInput" />
+        app:layout_constraintLeft_toLeftOf="@id/SignUpIdInput"
+        app:layout_constraintTop_toBottomOf="@id/logoInStep1" />
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/SignUpIdInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="15dp"
-        android:layout_marginTop="70dp"
         android:layout_marginRight="15dp"
         android:background="@drawable/round_shape_for_field"
         android:fontFamily="@font/pretendardregular"
@@ -28,7 +41,7 @@
         android:paddingLeft="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/idText" />
 
     <TextView
         android:layout_width="wrap_content"
