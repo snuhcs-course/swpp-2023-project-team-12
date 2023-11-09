@@ -59,7 +59,6 @@ public class FindIdActivity extends AppCompatActivity {
                             AlertDialog dialog = builder.create();
                             dialog.show();
                         } else {
-                            // 실패 응답 처리: 가입된 이메일 없음 대화 상자 표시
                             AlertDialog.Builder builder = new AlertDialog.Builder(FindIdActivity.this);
                             builder.setTitle("찾기 실패");
                             builder.setMessage("가입된 이메일이 없어요.");
@@ -76,7 +75,7 @@ public class FindIdActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
                         // 네트워크 요청 실패 처리
-                        Toast.makeText(FindIdActivity.this, "네트워크 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(FindIdActivity.this, "서버에 예상치 못한 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
                     }
                 });
 

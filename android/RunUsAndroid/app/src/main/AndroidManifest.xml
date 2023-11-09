@@ -45,6 +45,7 @@
         <activity android:name=".SignUpStep3Activity"></activity>
         <activity android:name=".SignUpStep4Activity"></activity>
         <activity android:name=".FindIdActivity"></activity>
+        <activity android:name=".ResetPasswordActivity"></activity>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
