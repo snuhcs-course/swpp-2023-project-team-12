@@ -193,4 +193,12 @@
         app:layout_constraintEnd_toStartOf="@+id/guidelineRight"
         app:layout_constraintStart_toStartOf="@+id/guidelineLeft" />
 
+    <Button
+        android:id="@+id/hiddenButton"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:backgroundTint="#90FFFFFF"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -268,6 +269,20 @@ public class MultiModePlayFragment extends Fragment {
             timeGoalContentTextView.setText(formattedTime);
 
         }
+
+        // for debugging purpose, hidden button on right bottom corner shows toast about lastly detected activity transition and isRunning value
+        Button hiddenButton = view.findViewById(R.id.hiddenButton);
+        hiddenButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean isRunning = mainActivity.activityReceiver.getIsRunning();
+                String lastActivityType = mainActivity.activityReceiver.getLastActivityType();
+                String lastTransitionType = mainActivity.activityReceiver.getLastTransitionType();
+
+                Toast.makeText(mainActivity, "last detected : " + lastTransitionType+ " " + lastActivityType +
+                        " . isRunning " + isRunning, Toast.LENGTH_LONG).show();
+            }
+        });
 
         playLeaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
