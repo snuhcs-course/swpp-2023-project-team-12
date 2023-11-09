@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.net.Socket;
 
 public class MultiModeUser implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2194848L;
 
     private long id;
     private MultiModeRoom room;

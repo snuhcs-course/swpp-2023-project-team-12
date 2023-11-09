@@ -16,6 +16,7 @@ import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.net.SocketException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import MultiMode.MultiModeRoom;
 import MultiMode.MultiModeUser;
@@ -37,9 +38,6 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
         this.ois = ois;
         this.waitFragment = waitFragment;
         this.selectedRoom = selectedRoom;
-        Log.d("response", "waitFragment is " + this.waitFragment);
-        Log.d("response", "playFragment is " + this.playFragment);
-
     }
 
     public void pauseListening() {
@@ -71,7 +69,6 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
                 synchronized (ois) {
                     receivedObject = ois.readObject();
                 }
-                Log.d("response", "getReceivedObject " + receivedObject);
 
                 if (receivedObject instanceof Packet) {
                     Packet packet = (Packet) receivedObject;
@@ -118,21 +115,13 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                UserDistance[] userDistances = packet.getTop3UserDistance();
-                                if (userDistances == null) {
-                                    Log.d("response", "userDistances.length is null");
-                                } else {
-                                    Log.d("response", "userDistances.length is " + userDistances.length);
-
-                                    for (int i = 0; i < userDistances.length; i++) {
-
-                                        Log.d("response", "user " + i + " : " + userDistances[0].getUser().getNickName() + " , distance : " + userDistances[0].getDistance());
-                                    }
-                                    Log.d("response", "playFragment is " + playFragment);
-                                    Log.d("response", "waitFragment is " + waitFragment);
-                                    playFragment.updateTop3UserDistance(userDistances);
+                                List<UserDistance> temp = packet.getListTop3UserDistance();
+                                UserDistance[] userDistances = temp.toArray(new UserDistance[temp.size()]);
+                                Log.d("response", "userDistances.length is " + userDistances.length);
+                                for (int i = 0; i < userDistances.length; i++) {
+                                    Log.d("response", "user " + i + " : " + userDistances[i].getUser().getNickName() + " , distance : " + userDistances[i].getDistance());
                                 }
-
+                                playFragment.updateTop3UserDistance(userDistances);
                             }
                         });
                     } else if (packet.getProtocol() == Protocol.SAVE_GROUP_HISTORY) {
@@ -141,7 +130,9 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
                             public void run() {
                                 try {
                                     Log.d("response", "got packet and try to save group history");
-                                    playFragment.saveGroupHistoryData(packet.getTop3UserDistance());
+                                    List<UserDistance> temp = packet.getListTop3UserDistance();
+                                    UserDistance[] userDistances = temp.toArray(new UserDistance[temp.size()]);
+                                    playFragment.saveGroupHistoryData(userDistances);
                                 } catch (JSONException e) {
                                     throw new RuntimeException(e);
                                 }
@@ -159,7 +150,9 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
                                 Bundle bundle = new Bundle();
                                 bundle.putSerializable("room", selectedRoom);
                                 //bundle.putSerializable("socketListenerThread", SocketListenerThread.this);
-                                playFragment.userDistances = packet.getTop3UserDistance();
+                                List<UserDistance> temp = packet.getListTop3UserDistance();
+                                UserDistance[] userDistances = temp.toArray(new UserDistance[temp.size()]);
+                                playFragment.userDistances = userDistances;
 //                                bundle.putSerializable("top3UserDistance", packet.getTop3UserDistance());
 //                                bundle.putSerializable("userDistance", playFragment.distance);
                                 Log.d("response", "go to room result screen");
@@ -170,7 +163,7 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
                                 }
 //                                NavController navController = Navigation.findNavController(playFragment.requireView());
 //                                navController.navigate(R.id.navigation_multi_room_result, bundle);
-                                Log.d("response", packet.getTop3UserDistance() + " ");
+                                //Log.d("response", packet.getTop3UserDistance() + " ");
                                 Log.d("response", resultFragment + "");
 
 //                                resultFragment.updateTop3UserDistance(packet.getTop3UserDistance());
