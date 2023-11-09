@@ -24,18 +24,33 @@
         app:layout_constraintGuide_percent="0.2" />
 
     <TextView
+        android:id="@+id/textViewMissionTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:gravity="center"
+        android:text="RunUs가 추천하는 오늘의 러닝!"
+        android:textSize="20dp"
+        android:padding="5dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/textViewMissionInfo"/>
+
+    <TextView
         android:id="@+id/textViewMissionInfo"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:gravity="center"
         android:text="오늘의 러닝 목표"
-        android:textSize="20dp"
-        android:padding="10dp"
+        android:textSize="13dp"
+        android:padding="5dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textViewMissionTitle"
         app:layout_constraintBottom_toTopOf="@id/goalDistanceStaticText"/>
 
     <TextView

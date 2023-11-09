@@ -25,8 +25,8 @@ public class SocketManager { // 모든 fragment에서 공통의 소켓을 활용
 
     public void openSocket() throws IOException { //소켓 열기
         if (socket == null || socket.isClosed()) {
-            socket = new Socket("192.168.0.4", 5001);
-            //socket = new Socket("ec2-3-36-116-64.ap-northeast-2.compute.amazonaws.com", 5001);
+            //socket = new Socket("192.168.0.4", 5001);
+            socket = new Socket("ec2-3-36-116-64.ap-northeast-2.compute.amazonaws.com", 5001);
             System.out.println("open socket");
 
             oos = new ObjectOutputStream(socket.getOutputStream()); //서버로 보내는 바이트스트림을 직렬화 하기 위해 사용

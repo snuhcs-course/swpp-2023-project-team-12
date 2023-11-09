@@ -72,9 +72,24 @@ public class SignUpStep4Activity extends AppCompatActivity {
                 } else if (selectedGender.equals("여성")) {
                     gender = 2;
                 } else {
-                    gender = 1; // FIXME: 예상치 못한 값에는 에러는 우선 남성으로 대처
+                    gender = -1; // FIXME: 예상치 못한 값에는 에러는 우선 남성으로 대처
                 }
 
+                if (height < 100 || height > 230) {
+                    signUpHeightInput.setError("키는 100cm에서 230cm 사이여야 합니다");
+                    return;
+                }
+
+                if (weight < 30 || weight > 150) {
+                    signUpWeightInput.setError("체중은 30kg에서 150kg 사이여야 합니다");
+                    return;
+                }
+
+                if (age < 10 || age > 100) {
+                    signUpAgeInput.setError("나이는 10세에서 100세 사이여야 합니다");
+                    return;
+                }
+                
                 // Create sign up data object
                 SignUpData requestData = new SignUpData(
                         userName,

@@ -61,7 +61,7 @@
 
     <TextView
         android:id="@+id/multi_room_wait_start_time"
-        android:layout_width="127dp"
+        android:layout_width="140dp"
         android:layout_height="70dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
@@ -69,7 +69,7 @@
         android:fontFamily="@font/pretendardregular"
         android:gravity="center_vertical"
         android:lineSpacingExtra="-37sp"
-        android:text="21:30"
+        android:text="21:39"
         android:textAppearance="@style/multi_room_wait_start_time"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@id/multi_room_wait_title"

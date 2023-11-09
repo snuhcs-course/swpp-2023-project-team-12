@@ -15,6 +15,9 @@ import java.util.Objects;
 public class UserActivityBroadcastReceiver extends BroadcastReceiver {
 
     boolean isRunning = true;
+    String lastActivityType = "DEFAULT";
+    String lastTransitionType = "DEFAULT";
+
     @Override
     public void onReceive(Context context, Intent intent) {
         if (!Objects.equals(intent.getAction(), UserActivityTransitionManager.CUSTOM_INTENT_USER_ACTION)) {
@@ -23,20 +26,18 @@ public class UserActivityBroadcastReceiver extends BroadcastReceiver {
         if (ActivityTransitionResult.hasResult(intent)) {
             ActivityTransitionResult result = ActivityTransitionResult.extractResult(intent);
             for (ActivityTransitionEvent event : result.getTransitionEvents()) {
-                String activityType;
-                String transitionType;
 
-                if (event.getActivityType() == DetectedActivity.WALKING) activityType = "WALKING";
-                else if (event.getActivityType() == DetectedActivity.RUNNING) activityType = "RUNNING";
-                else if (event.getActivityType() == DetectedActivity.STILL) activityType = "STILL";
-                else activityType = "illegal";
+                if (event.getActivityType() == DetectedActivity.WALKING) lastActivityType = "WALKING";
+                else if (event.getActivityType() == DetectedActivity.RUNNING) lastActivityType = "RUNNING";
+                else if (event.getActivityType() == DetectedActivity.STILL) lastActivityType = "STILL";
+                else lastActivityType = "illegal";
 
-                if(event.getTransitionType() == ActivityTransition.ACTIVITY_TRANSITION_ENTER) transitionType = "ENTER";
-                else if(event.getTransitionType() == ActivityTransition.ACTIVITY_TRANSITION_EXIT) transitionType = "EXIT";
-                else transitionType = "illegal";
+                if(event.getTransitionType() == ActivityTransition.ACTIVITY_TRANSITION_ENTER) lastTransitionType = "ENTER";
+                else if(event.getTransitionType() == ActivityTransition.ACTIVITY_TRANSITION_EXIT) lastTransitionType = "EXIT";
+                else lastTransitionType = "illegal";
 
-                Toast.makeText(context, "activity detected, " + transitionType+ " " + activityType, Toast.LENGTH_LONG).show();
-                saveState(activityType, transitionType);
+                Toast.makeText(context, "activity detected, " + lastTransitionType+ " " + lastActivityType, Toast.LENGTH_LONG).show();
+                saveState(lastActivityType, lastTransitionType);
             }
         }
     }
@@ -46,8 +47,17 @@ public class UserActivityBroadcastReceiver extends BroadcastReceiver {
         if(activityType == "RUNNING" && transitionType == "ENTER") {
             isRunning = true;
         }
+        else if(activityType == "RUNNING" && transitionType == "EXIT") {
+            isRunning = false;
+        }
         else if(activityType == "WALKING" && transitionType == "ENTER") {
             isRunning = true;
+        }
+        else if(activityType == "WALKING" && transitionType == "EXIT") {
+            isRunning = false;
+        }
+        else if(activityType == "STILL" && transitionType == "ENTER") {
+            isRunning = false;
         }
         else {
             isRunning = false;
@@ -56,5 +66,11 @@ public class UserActivityBroadcastReceiver extends BroadcastReceiver {
 
     public boolean getIsRunning() {
         return isRunning;
+    }
+    public String getLastActivityType() {
+        return lastActivityType;
+    }
+    public String getLastTransitionType() {
+        return lastTransitionType;
     }
 }

@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:backgroundTint="#99FFFFFF"
+    tools:visibility="visible">
 
     <LinearLayout
         android:id="@+id/goal_box"
@@ -40,7 +43,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/pretendardregular"
                 android:gravity="center_horizontal"
-                android:text="--:--"
+                android:text="--'--''"
                 android:textAppearance="@style/multi_room_play_goal" />
         </LinearLayout>
 
@@ -288,6 +291,14 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/present_box" />
+
+    <Button
+        android:id="@+id/hiddenButton"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:backgroundTint="#90FFFFFF"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

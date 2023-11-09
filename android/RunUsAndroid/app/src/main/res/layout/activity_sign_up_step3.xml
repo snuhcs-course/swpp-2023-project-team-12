@@ -6,6 +6,18 @@
     android:layout_height="match_parent"
     tools:context=".SignUpStep3Activity">
 
+    <ImageView
+        android:id="@+id/logoInStep3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="30dp"
+        android:src="@drawable/runus_logo"
+        app:layout_constraintBottom_toTopOf="@+id/PhoneNumberText"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
         android:id="@+id/PhoneNumberText"
         android:layout_width="wrap_content"
@@ -16,7 +28,7 @@
         android:textStyle="bold"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/logoInStep3" />
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/SignUpPhoneNumberInput"
@@ -28,18 +40,21 @@
         android:background="@drawable/round_shape_for_field"
         android:fontFamily="@font/pretendardregular"
         android:hint="휴대폰 번호"
-        android:inputType="text"
+        android:inputType="number"
+        android:maxLength="11"
         android:paddingLeft="10dp"
+        android:text="010"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/PhoneNumberText" />
+
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/nextButton3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="15dp"
-        android:layout_marginTop="400dp"
+        android:layout_marginTop="350dp"
         android:layout_marginRight="15dp"
         android:background="@drawable/round_shape_green"
         android:fontFamily="@font/pretendardregular"
