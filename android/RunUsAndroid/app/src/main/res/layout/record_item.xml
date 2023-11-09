@@ -9,8 +9,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:fontFamily="@font/pretendardregular"
         android:gravity="start"
-        android:text="달린 구간"
+        android:text="달린 구간(km)"
         android:textSize="20dp" />
 
     <TextView
@@ -18,6 +19,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:fontFamily="@font/pretendardregular"
         android:gravity="end"
         android:text="페이스"
         android:textSize="20dp" />

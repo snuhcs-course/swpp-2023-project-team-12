@@ -33,14 +33,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:fontFamily="@font/pretendardregular"
                 android:gravity="start"
-                android:text="구간"
+                android:text="구간(km)"
                 android:textSize="18sp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:fontFamily="@font/pretendardregular"
                 android:gravity="end"
                 android:text="평균 페이스"
                 android:textSize="18sp" />
