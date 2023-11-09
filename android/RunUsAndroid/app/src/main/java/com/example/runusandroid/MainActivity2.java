@@ -80,7 +80,6 @@ public class MainActivity2 extends AppCompatActivity {
                 new Intent(UserActivityTransitionManager.CUSTOM_INTENT_USER_ACTION),
                 PendingIntent.FLAG_MUTABLE
         );
-        activityManager.registerActivityTransitions(pendingIntent);
         activityReceiver = new UserActivityBroadcastReceiver();
     }
 
@@ -88,19 +87,16 @@ public class MainActivity2 extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        activityManager.registerActivityTransitions(pendingIntent);
         IntentFilter filter = new IntentFilter(UserActivityTransitionManager.CUSTOM_INTENT_USER_ACTION);
         this.registerReceiver(activityReceiver, filter, RECEIVER_EXPORTED);
     }
 
-    @Override
-    protected void onPause() {
-        activityManager.removeActivityTransitions(pendingIntent);
-        super.onPause();
-    }
 
     @Override
     protected void onStop() {
-        unregisterReceiver(activityReceiver);
+        activityManager.removeActivityTransitions(pendingIntent);
+        this.unregisterReceiver(activityReceiver);
         super.onStop();
     }
 
