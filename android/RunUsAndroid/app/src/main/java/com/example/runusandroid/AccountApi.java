@@ -14,4 +14,7 @@ public interface AccountApi {
 
     @POST("/account/find_username/")
     Call<ResponseBody> findUsername(@Body EmailData emailData);
+
+    @POST("/account/reset_password/")
+    Call<ResponseBody> resetPassword(@Body ResetPasswordData data);
 }
