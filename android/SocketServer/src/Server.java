@@ -140,6 +140,12 @@ public class Server {
 
                 } catch (SocketException | EOFException e) {
                     System.out.println("클라이언트 연결 종료: " + socket.getInetAddress());
+                    if(user.getRoom() != null){
+                        MultiModeRoom exitRoom = RoomManager.getRoom(user.getRoom().getId());
+                        int index = exitRoom.exitUser(user);
+                        if(index != -1) exitRoom.removeOutputStream(index);
+                        broadcastToRoomUsers(exitRoom, new Packet(Protocol.EXIT_ROOM, user, exitRoom));
+                    }
                     allClientOutputStreams.removeIf(clientOOS -> clientOOS == oos);
                     break;
                 }
