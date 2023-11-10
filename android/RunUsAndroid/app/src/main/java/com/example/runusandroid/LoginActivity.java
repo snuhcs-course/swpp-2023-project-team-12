@@ -113,7 +113,6 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void updateDrawState(TextPaint ds) {
                 super.updateDrawState(ds);
-                ds.setUnderlineText(false); // 밑줄 제거
                 ds.setColor(Color.parseColor("#4AA570")); // 링크 색상
             }
         };
