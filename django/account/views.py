@@ -73,7 +73,7 @@ class FindUsernameAndSendEmailView(APIView):
         email = serializer.validated_data["email"]
 
         try:
-            user = CustomUser.objects.get(email=email)
+            user = CustomUser.objects.filter(email=email).last()
             subject = "[RunUs] 아이디 찾기"
             message = f"아이디: {user.username}"
             email_from = settings.EMAIL_HOST_USER
