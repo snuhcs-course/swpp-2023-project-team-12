@@ -1,6 +1,13 @@
+import secrets
+import string
 from django.conf import settings
 from account.models import CustomUser
-from .serializers import EmailSerializer, UserCreateSerializer, LoginSerializer
+from .serializers import (
+    EmailSerializer,
+    ResetPasswordSerializer,
+    UserCreateSerializer,
+    LoginSerializer,
+)
 from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.views import APIView
@@ -85,3 +92,36 @@ class FindUsernameAndSendEmailView(APIView):
             return Response({"message": "Email sent successfully"})
         except CustomUser.DoesNotExist:
             return Response({"message": "User not found"}, status=404)
+
+
+# 임시 비밀번호 생성기
+def generate_temp_password(length=10):
+    characters = string.ascii_letters + string.digits + string.punctuation
+    return "".join(secrets.choice(characters) for i in range(length))
+
+
+class ResetPasswordView(APIView):
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            username = serializer.validated_data["username"]
+            email = serializer.validated_data["email"]
+
+            try:
+                user = CustomUser.objects.get(username=username, email=email)
+                temp_password = generate_temp_password()
+                user.set_password(temp_password)
+                user.save()
+
+                send_mail(
+                    "[RunUs]임시 비밀번호",
+                    f"임시 비밀번호: {temp_password}",
+                    "from@example.com",
+                    [email],
+                    fail_silently=False,
+                )
+                return Response({"message": "Temporary password sent to your email."})
+            except CustomUser.DoesNotExist:
+                return Response({"error": "No matching user found."}, status=404)
+        else:
+            return Response(serializer.errors, status=400)

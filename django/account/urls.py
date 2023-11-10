@@ -1,5 +1,10 @@
 from django.urls import path
-from .views import FindUsernameAndSendEmailView, SignupView, LoginView
+from .views import (
+    FindUsernameAndSendEmailView,
+    ResetPasswordView,
+    SignupView,
+    LoginView,
+)
 from . import views
 
 appname = "accounts"
@@ -11,4 +16,5 @@ urlpatterns = [
     path(
         "find_username/", FindUsernameAndSendEmailView.as_view(), name="find_username"
     ),
+    path("reset_password/", ResetPasswordView.as_view(), name="reset_password"),
 ]
