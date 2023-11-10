@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -28,10 +29,7 @@ import MultiMode.MultiModeUser;
 import MultiMode.UserDistance;
 
 public class MultiModeResultFragment extends Fragment {
-
-    MultiModeUser user = MultiModeFragment.user;
-    SocketManager socketManager = SocketManager.getInstance();
-    ObjectOutputStream oos;
+    OnBackPressedCallback backPressedCallBack;
     MultiModeRoom selectedRoom;
     float distance = 0;
     ArrayList<Float> speedList;
@@ -49,12 +47,16 @@ public class MultiModeResultFragment extends Fragment {
     Button playLeaveButton;
     Button recordButton;
     TextView distanceResultContentTextView; //API 사용해서 구한 나의 현재 이동 거리
-    SocketListenerThread socketListenerThread = MultiModeWaitFragment.socketListenerThread;
+    SocketListenerThread socketListenerThread = MultiModeFragment.socketListenerThread;
     RecyclerView recyclerView;
     RecordDialog dialog;
     boolean isDialogOpenedBefore = false;
     private TextView timeResultContentTextView;
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -162,15 +164,22 @@ public class MultiModeResultFragment extends Fragment {
                 }
             }
         }
-
-
         progressBar.setProgress(100);
-
     }
 
     @Override
     public void onResume() {
         super.onResume();
+
+        Log.d("create callback","create callback");
+        backPressedCallBack = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                NavController navController = Navigation.findNavController(requireView());
+                navController.navigate(R.id.navigation_multi_mode);
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
         //socketListenerThread = (SocketListenerThread) getArguments().getSerializable("socketListenerThread"); //waitFragment의 socketListenrThread객체 가져와서 이어서 사용
         socketListenerThread.addResultFragment(this);
         socketListenerThread.resumeListening();
@@ -185,10 +194,12 @@ public class MultiModeResultFragment extends Fragment {
         // "00:00:00" 형태의 문자열로 변환
         String formattedDuration = String.format("%02d:%02d:%02d", hours, minutes, seconds);
 
-
         timeResultContentTextView.setText(formattedDuration);
         Log.d("response", "here is room result screen");
-
-
+    }
+    @Override
+    public void onPause() {
+        super.onPause();
+        backPressedCallBack.remove();
     }
 }

@@ -20,6 +20,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
@@ -72,12 +73,10 @@ public class MultiModePlayFragment extends Fragment {
     private final List<LatLng> pathPoints = new ArrayList<>();
     private final List<Float> speedList = new ArrayList<>(); // 매 km 마다 속력 (km/h)
     LocalDateTime iterationStartTime;
+    private boolean userExit = false;
     MultiModeUser user = MultiModeFragment.user;
     SocketManager socketManager = SocketManager.getInstance();
-    //MultiModeUser user = new MultiModeUser(1, "choco");
-    //MultiModeUser user = new MultiModeUser(2, "berry"); // 유저 정보 임시로 더미데이터 활용
-    //MultiModeUser user = new MultiModeUser(3, "apple");
-    ObjectOutputStream oos;
+    OnBackPressedCallback backPressedCallBack;
     MultiModeRoom selectedRoom;
     float distance = 0;
     float calories = 0;
@@ -97,7 +96,7 @@ public class MultiModePlayFragment extends Fragment {
     TextView distancePresentContentTextView; //API 사용해서 구한 나의 현재 이동 거리
     TextView pacePresentContentTextView; //API 사용해서 구한 나의 현재 페이스
     Button playLeaveButton;
-    SocketListenerThread socketListenerThread = MultiModeWaitFragment.socketListenerThread;
+    SocketListenerThread socketListenerThread = MultiModeFragment.socketListenerThread;
     Handler timeHandler;
     Runnable timeRunnable;
     Handler sendDataHandler;
@@ -130,7 +129,7 @@ public class MultiModePlayFragment extends Fragment {
                         double last_distance_5s_kilometer = location.distanceTo(lastLocation) / (double) 1000;
 
                         distance += last_distance_5s_kilometer;
-                        Log.d("test:distance:5sec", "Last 5 second Distance :" + location.distanceTo(lastLocation) / (double) 1000);
+                        //Log.d("test:distance:5sec", "Last 5 second Distance :" + location.distanceTo(lastLocation) / (double) 1000);
                         if (last_distance_5s_kilometer != 0) {
                             int paceMinute = (int) (1 / (last_distance_5s_kilometer / 5)) / 60;
                             int paceSecond = (int) (1 / (last_distance_5s_kilometer / 5)) % 60;
@@ -147,7 +146,7 @@ public class MultiModePlayFragment extends Fragment {
                         }
 
                         // log distance into file
-                        FileLogger.logToFileAndLogcat(mainActivity, "test:distance:5sec", "" + location.distanceTo(lastLocation) / (double) 1000);
+                        //FileLogger.logToFileAndLogcat(mainActivity, "test:distance:5sec", "" + location.distanceTo(lastLocation) / (double) 1000);
                         //Below code seems to cause NullPointerException after 10 minutes or so (on Duration.between)
                         if ((int) distance != lastDistanceInt) {
                             LocalDateTime currentTime = LocalDateTime.now();
@@ -162,7 +161,7 @@ public class MultiModePlayFragment extends Fragment {
                             iterationStartTime = currentTime;
 
                         }
-                        Log.d("test:distance:total", "Distance:" + distance);
+                        //Log.d("test:distance:total", "Distance:" + distance);
                     }
 
                 }
@@ -174,7 +173,6 @@ public class MultiModePlayFragment extends Fragment {
     private HistoryApi historyApi;
     private TextView timePresentContentTextView;
     private int isFinished;
-    private ObjectInputStream ois;
     private int groupHistoryId = 999;
     private SendFinishedTask finishedTask;
 
@@ -182,8 +180,6 @@ public class MultiModePlayFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         finishedTask = new SendFinishedTask();
-        socketListenerThread.addPlayFragment(this);
-        socketListenerThread.resumeListening();
         gameStartTime = (LocalDateTime) getArguments().getSerializable("startTime");
         //Log.d("currentTime", gameStartTime + "");
         //경과 시간 업데이트
@@ -216,8 +212,10 @@ public class MultiModePlayFragment extends Fragment {
                 if (isFinished == 0) {
                     timeHandler.postDelayed(this, 1000);
                 } else if (isFinished == 1) {
-                    Packet requestPacket = new Packet(Protocol.FINISH_GAME, user, selectedRoom);
-                    finishedTask.execute(requestPacket);
+                    if(isVisible() && isAdded()) {
+                        Packet requestPacket = new Packet(Protocol.FINISH_GAME, user, selectedRoom);
+                        finishedTask.execute(requestPacket);
+                    }
                     isFinished = 2;
                 }
 
@@ -272,26 +270,19 @@ public class MultiModePlayFragment extends Fragment {
 
         // for debugging purpose, hidden button on right bottom corner shows toast about lastly detected activity transition and isRunning value
         Button hiddenButton = view.findViewById(R.id.hiddenButton);
-        hiddenButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                boolean isRunning = mainActivity.activityReceiver.getIsRunning();
-                String lastActivityType = mainActivity.activityReceiver.getLastActivityType();
-                String lastTransitionType = mainActivity.activityReceiver.getLastTransitionType();
+        hiddenButton.setOnClickListener(v -> {
+            boolean isRunning = mainActivity.activityReceiver.getIsRunning();
+            String lastActivityType = mainActivity.activityReceiver.getLastActivityType();
+            String lastTransitionType = mainActivity.activityReceiver.getLastTransitionType();
 
-                Toast.makeText(mainActivity, "last detected : " + lastTransitionType+ " " + lastActivityType +
-                        " . isRunning " + isRunning, Toast.LENGTH_LONG).show();
-            }
+            Toast.makeText(mainActivity, "last detected : " + lastTransitionType+ " " + lastActivityType +
+                    " . isRunning " + isRunning, Toast.LENGTH_LONG).show();
         });
 
-        playLeaveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Packet requestPacket = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
-                new ExitGameTask().execute(requestPacket);
-                NavController navController = Navigation.findNavController(v);
-                navController.navigate(R.id.navigation_multi_mode);
-            }
+        playLeaveButton.setOnClickListener(v -> {
+            userExit = true;
+            Packet requestPacket = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
+            new ExitGameTask().execute(requestPacket);
         });
 
 //        //TODO: only draw lines if running is started
@@ -441,13 +432,21 @@ public class MultiModePlayFragment extends Fragment {
     public void onResume() {
         super.onResume();
         //아래 코드에서 resume때 result fragment로 가는 이유?
+        backPressedCallBack = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                userExit = true;
+                Packet requestPacket = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
+                new ExitGameTask().execute(requestPacket);
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
+        socketListenerThread.addPlayFragment(this);
+        socketListenerThread.resumeListening();
+
         transitionToResultFragment();
-//        socketListenerThread = (SocketListenerThread) getArguments().getSerializable("socketListenerThread"); //waitFragment의 socketListenrThread객체 가져와서 이어서 사용
 
         Log.d("response", "start play screen");
-        //top3UpdateHandler.postDelayed(sendDataRunnable, 5000);
-
-        //fusedLocationClient.removeLocationUpdates(locationCallback);
 
         if (ActivityCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -482,6 +481,7 @@ public class MultiModePlayFragment extends Fragment {
         // 타이머가 더 이상 필요하지 않을 때 핸들러를 제거합니다.
         timeHandler.removeCallbacks(timeRunnable);
         sendDataHandler.removeCallbacks(sendDataRunnable);
+        backPressedCallBack.remove();
     }
 
     void saveHistoryData(long groupHistoryId) throws JSONException {
@@ -498,11 +498,6 @@ public class MultiModePlayFragment extends Fragment {
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
                     Log.d("response", "Send History Success");
-                    try {
-                        socketManager.closeSocket();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
                     transitionToResultFragment();
                 }
 
@@ -623,14 +618,13 @@ public class MultiModePlayFragment extends Fragment {
         public Boolean doInBackground(Packet... packets) {
             boolean success = true;
             try {
-                if (packets.length > 0) {
+                if (!userExit && packets.length > 0) {
                     // Get the first Packet to send from the parameters
                     Packet packetToSend = packets[0];
-
                     // Get the ObjectOutputStream from the socket manager
                     ObjectOutputStream oos = socketManager.getOOS();
-
                     // Write the Packet object to the output stream
+                    oos.reset();
                     oos.writeObject(packetToSend);
                     oos.flush();
                 } else {
@@ -644,15 +638,9 @@ public class MultiModePlayFragment extends Fragment {
             return success;
         }
 
-        // Handle the result of sending the packet
         @Override
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
-            if (success) {
-                //Log.d("SendPacket", "Packet sent successfully! distance : " + distance);
-            } else {
-                //Log.d("SendPacket", "Failed to send packet! distance : " + distance);
-            }
         }
     }
 
@@ -664,10 +652,11 @@ public class MultiModePlayFragment extends Fragment {
         public Boolean doInBackground(Packet... packets) {
             boolean success = true;
             try {
-                if (packets.length > 0) {
+                if (!userExit && packets.length > 0) {
                     Packet requestPacket = packets[0];
                     ObjectOutputStream oos = socketManager.getOOS();
                     if (!isCancelled() && oos != null) {
+                        oos.reset();
                         oos.writeObject(requestPacket);
                         oos.flush();
                     } else {
@@ -685,16 +674,11 @@ public class MultiModePlayFragment extends Fragment {
             return success;
         }
 
-        //ExitGameTask 실행 결과에 따라 수행
         @Override
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (success) {
                 Log.d("SendfinishedPacket", "Packet sent successfully!");
-                timeHandler.removeCallbacks(timeRunnable);
-                sendDataHandler.removeCallbacks(sendDataRunnable);
-
-
             } else {
                 Log.d("SendfinishedPacket", "Failed to send packet!");
             }
@@ -709,9 +693,10 @@ public class MultiModePlayFragment extends Fragment {
         public Boolean doInBackground(Packet... packets) {
             boolean success = true;
             try {
-                if (packets.length > 0) {
+                if (!userExit && packets.length > 0) {
                     Packet requestPacket = packets[0];
                     ObjectOutputStream oos = socketManager.getOOS();
+                    oos.reset();
                     oos.writeObject(requestPacket);
                     oos.flush();
 
@@ -725,7 +710,6 @@ public class MultiModePlayFragment extends Fragment {
             return success;
         }
 
-        //ExitGameTask 실행 결과에 따라 수행
         @Override
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
@@ -740,8 +724,6 @@ public class MultiModePlayFragment extends Fragment {
     }
 
     public class ExitGameTask extends AsyncTask<Packet, Void, Boolean> {
-        Packet packet;
-
         @Override
         public Boolean doInBackground(Packet... packets) {
             boolean success = true;
@@ -749,6 +731,7 @@ public class MultiModePlayFragment extends Fragment {
                 if (packets.length > 0) {
                     Packet requestPacket = packets[0];
                     ObjectOutputStream oos = socketManager.getOOS();
+                    oos.reset();
                     oos.writeObject(requestPacket);
                     oos.flush();
                 } else {
@@ -757,12 +740,6 @@ public class MultiModePlayFragment extends Fragment {
             } catch (IOException e) {
                 e.printStackTrace();
                 success = false;
-            } finally {
-                try {
-                    socketManager.closeSocket();
-                } catch (IOException e) {
-                    success = false;
-                }
             }
             return success;
         }
@@ -772,8 +749,9 @@ public class MultiModePlayFragment extends Fragment {
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (success) {
+                NavController navController = Navigation.findNavController(requireView());
+                navController.navigate(R.id.navigation_multi_mode);
                 Log.d("ExitSendPacket", "Packet sent successfully!");
-
             } else {
                 Log.d("ExitSendPacket", "Failed to send packet!");
             }

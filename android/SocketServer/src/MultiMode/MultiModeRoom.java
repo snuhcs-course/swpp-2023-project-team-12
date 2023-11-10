@@ -55,7 +55,9 @@ public class MultiModeRoom implements Serializable {
     public MultiModeRoom() {
 
     }
-
+    public boolean isRoomFull(){
+        return userList.size() >= numRunners;
+    }
     public void enterUser(MultiModeUser user) {
         user.enterRoom(this);
         userList.add(user);
