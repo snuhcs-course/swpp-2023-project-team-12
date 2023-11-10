@@ -1,7 +1,10 @@
+import logging
 from rest_framework import serializers
 from .models import CustomUser
-from django.contrib.auth.hashers import check_password
 from django.contrib.auth import authenticate
+from django.core.files.storage import default_storage
+
+logger = logging.getLogger(__name__)
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -48,6 +51,32 @@ class LoginSerializer(serializers.Serializer):
 
         data["user"] = user
         return data
+
+
+class UserProfileImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ["profile_image"]
+
+    def update(self, instance, validated_data):
+        new_image = validated_data.get("profile_image")
+
+        if new_image and instance.profile_image:
+            if default_storage.exists(instance.profile_image.name):
+                default_storage.delete(instance.profile_image.name)
+                logger.debug(f"Deleted old image: {instance.profile_image.name}")
+
+        if new_image:
+            logger.debug(f"Updating profile image to: {new_image}")
+            instance.profile_image = new_image
+        else:
+            logger.debug("No new image provided; keeping the existing image")
+
+        instance.save()
+        logger.debug(
+            f"Updated user instance: {instance.username} with image: {instance.profile_image}"
+        )
+        return instance
 
 
 class EmailSerializer(serializers.Serializer):
