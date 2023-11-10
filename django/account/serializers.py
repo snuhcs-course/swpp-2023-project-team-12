@@ -3,6 +3,7 @@ from .models import CustomUser
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth import authenticate
 
+
 class UserCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user: CustomUser = CustomUser.objects.create_user(**validated_data)
@@ -11,50 +12,43 @@ class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = [
-            'username', 
-            'nickname', 
-            'email', 
-            'phone_num',
-            'password', 
-            'gender', 
-            'height', 
-            'weight', 
-            'age',
-            ]
+            "username",
+            "nickname",
+            "email",
+            "phone_num",
+            "password",
+            "gender",
+            "height",
+            "weight",
+            "age",
+        ]
 
 
 class LoginSerializer(serializers.Serializer):
-
     username = serializers.CharField(max_length=255, write_only=True)
     password = serializers.CharField(max_length=128, write_only=True)
 
     def validate(self, data):
-        username = data.get('username', None)
-        password = data.get('password', None)
+        username = data.get("username", None)
+        password = data.get("password", None)
 
         if username is None:
             raise serializers.ValidationError(
-                'An username should be included to log in.'
+                "An username should be included to log in."
             )
-        
+
         if password is None:
             raise serializers.ValidationError(
-                'A password should be included to log in.'
+                "A password should be included to log in."
             )
 
-        user = authenticate(
-            username=username, 
-            password=password
-            )
+        user = authenticate(username=username, password=password)
         if user is None:
             raise serializers.ValidationError("Login error")
-        
-        data['user'] = user
+
+        data["user"] = user
         return data
-    
 
 
-            
-
-
-
+class EmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()

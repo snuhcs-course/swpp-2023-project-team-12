@@ -57,7 +57,7 @@ public class LoginActivity extends AppCompatActivity {
         spannableString.setSpan(colorSpan, text.length(), text.length() + signUpText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         // 회원가입 부분에 클릭 이벤트 적용
-        ClickableSpan clickableSpan = new ClickableSpan() {
+        ClickableSpan clickableSpanforSignUp = new ClickableSpan() {
             @Override
             public void onClick(@NonNull View widget) {
                 // 회원가입 클릭시 SignUpActivity 시작
@@ -70,11 +70,35 @@ public class LoginActivity extends AppCompatActivity {
                 super.updateDrawState(ds);
             }
         };
-        spannableString.setSpan(clickableSpan, text.length(), text.length() + signUpText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        spannableString.setSpan(clickableSpanforSignUp, text.length(), text.length() + signUpText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        // TextView에 SpannableString 설정
         signInMessage.setText(spannableString);
         signInMessage.setMovementMethod(LinkMovementMethod.getInstance());
+
+        TextView forgotIdText = findViewById(R.id.ForgotIdText);
+        String fullText = "아이디를 잊어버리셨나요? 아이디 찾기";
+        SpannableString ss = new SpannableString(fullText);
+        forgotIdText.setMovementMethod(LinkMovementMethod.getInstance());
+
+        // '아이디 찾기' 부분에 클릭 이벤트와 색상 변경 추가
+        ClickableSpan clickableSpanforFindId = new ClickableSpan() {
+            @Override
+            public void onClick(View textView) {
+                // 아이디 찾기 액티비티로 이동
+                Intent intent = new Intent(LoginActivity.this, FindIdActivity.class);
+                startActivity(intent);
+            }
+
+            @Override
+            public void updateDrawState(TextPaint ds) {
+                super.updateDrawState(ds);
+                ds.setColor(Color.parseColor("#4AA570"));
+            }
+        };
+        ss.setSpan(clickableSpanforFindId, 14, 20, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        forgotIdText.setText(ss);
+        forgotIdText.setMovementMethod(LinkMovementMethod.getInstance());
 
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override

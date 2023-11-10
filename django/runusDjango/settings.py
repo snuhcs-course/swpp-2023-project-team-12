@@ -36,6 +36,7 @@ ALLOWED_HOSTS = [
     "google.com",
     "10.0.2.2",
     "172.30.1.46",
+    "172.30.1.8",
 ]
 
 
@@ -181,3 +182,10 @@ LOGGING = {
         "level": "WARNING",
     },
 }
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "runusnoreply"
+EMAIL_HOST_PASSWORD = "uowq tlzw ckdo ehml"  # 실제 Gmail 비밀번호 입력
