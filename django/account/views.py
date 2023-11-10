@@ -1,10 +1,13 @@
-from .serializers import UserCreateSerializer, LoginSerializer
+from django.conf import settings
+from account.models import CustomUser
+from .serializers import EmailSerializer, UserCreateSerializer, LoginSerializer
 from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.core.mail import send_mail
 
 
 # Create your views here.
@@ -59,3 +62,26 @@ class LoginView(APIView):
 def get_user_info(request):
     user = request.user
     return Response({"user_id": user.username})
+
+
+class FindUsernameAndSendEmailView(APIView):
+    serializer_class = EmailSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+
+        try:
+            user = CustomUser.objects.filter(email=email).last()
+            subject = "[RunUs] 아이디 찾기"
+            message = f"아이디: {user.username}"
+            email_from = settings.EMAIL_HOST_USER
+            recipient_list = [
+                user.email,
+            ]
+            send_mail(subject, message, email_from, recipient_list)
+
+            return Response({"message": "Email sent successfully"})
+        except CustomUser.DoesNotExist:
+            return Response({"message": "User not found"}, status=404)
