@@ -1,5 +1,7 @@
 package com.example.runusandroid;
 
+import static com.example.runusandroid.RetrofitClient.setAuthToken;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -150,6 +152,7 @@ public class LoginActivity extends AppCompatActivity {
                                 String username = userObject.getString("username");
                                 String nickname = userObject.getString("nickname");
                                 String email = userObject.getString("email");
+                                String profileImageUrl = userObject.optString("profile_image", "");
                                 String phone_num = userObject.getString("phone_num");
                                 int gender = userObject.getInt("gender");
                                 float height = (float) userObject.getDouble("height");
@@ -158,6 +161,7 @@ public class LoginActivity extends AppCompatActivity {
 
                                 String token = responseBody.getJSONObject("jwt_token").getString("access_token");
 
+                                setAuthToken(token);
                                 // 로그인 성공 시 SharePreferences에 유저 정보 및 토큰 저장
                                 SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
                                 SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -166,13 +170,13 @@ public class LoginActivity extends AppCompatActivity {
                                 editor.putString("username", username);
                                 editor.putString("nickname", nickname);
                                 editor.putString("email", email);
+                                editor.putString("profile_image", profileImageUrl);
                                 editor.putString("phone_num", phone_num);
                                 editor.putInt("gender", gender);
                                 editor.putFloat("height", height);
                                 editor.putFloat("weight", weight);
                                 editor.putInt("age", age);
                                 editor.apply();
-                                Log.d("Login", sharedPreferences.getString("phone_num", null));
                                 Intent intent = new Intent(LoginActivity.this, MainActivity2.class);
                                 startActivity(intent);
                             } catch (JSONException e) {
