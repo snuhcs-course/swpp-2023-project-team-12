@@ -100,6 +100,32 @@ public class LoginActivity extends AppCompatActivity {
         forgotIdText.setText(ss);
         forgotIdText.setMovementMethod(LinkMovementMethod.getInstance());
 
+        TextView forgotPasswordText = findViewById(R.id.forgotPasswordText);
+        SpannableString ssforpw = new SpannableString("비밀번호를 잊어버리셨나요? 비밀번호 찾기");
+        ClickableSpan clickableSpan = new ClickableSpan() {
+            @Override
+            public void onClick(View textView) {
+                // ResetPasswordActivity로 이동
+                Intent intent = new Intent(LoginActivity.this, ResetPasswordActivity.class);
+                startActivity(intent);
+            }
+
+            @Override
+            public void updateDrawState(TextPaint ds) {
+                super.updateDrawState(ds);
+                ds.setColor(Color.parseColor("#4AA570")); // 링크 색상
+            }
+        };
+
+        // '비밀번호 찾기' 부분에 클릭 이벤트 추가
+        String linkText = "비밀번호 찾기";
+        int start = ssforpw.toString().indexOf(linkText);
+        int end = start + linkText.length();
+        ssforpw.setSpan(clickableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        forgotPasswordText.setText(ssforpw);
+        forgotPasswordText.setMovementMethod(LinkMovementMethod.getInstance());
+
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
