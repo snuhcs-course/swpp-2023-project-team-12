@@ -27,11 +27,14 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.example.runusandroid.HistoryApi;
 import com.example.runusandroid.HistoryData;
@@ -83,6 +86,7 @@ public class SingleModeFragment extends Fragment {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
     };
+    private final float[][] standard = {{2.41f, 2.38f, 2.32f, 2.21f}, {2.04f, 1.96f, 1.88f, 1.79f}};
     Chronometer currentTimeText;
     TextView currentDistanceText;
     TextView currentPaceText;
@@ -92,6 +96,13 @@ public class SingleModeFragment extends Fragment {
     LocalDateTime iterationStartTime;
     float calories = 0; // TODO: 칼로리 계산
     double distance = 0;
+    OnBackPressedCallback backPressedCallBack;
+    TextView goalDistanceStaticText;
+    TextView goalDistanceText;
+    TextView goalTimeStaticText;
+    TextView goalTimeText;
+    Button quitButton;
+    Button startButton;
     private List<LatLng> pathPoints = new ArrayList<>();
     private List<Float> speedList = new ArrayList<>(); // 매 km 마다 속력 (km/h)
     private HistoryApi historyApi;
@@ -103,11 +114,6 @@ public class SingleModeFragment extends Fragment {
     private float goalDistance;
     private float goalTime;
     private boolean runningNow;
-    private Interpreter tflite;
-    private MappedByteBuffer tfliteModel;
-    private boolean startlocation = false;
-    private boolean timeLimitLess = true;
-    private final float[][] standard = {{2.41f, 2.38f, 2.32f, 2.21f}, {2.04f, 1.96f, 1.88f, 1.79f}};
     private final BroadcastReceiver locationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -194,6 +200,10 @@ public class SingleModeFragment extends Fragment {
             }
         }
     };
+    private Interpreter tflite;
+    private MappedByteBuffer tfliteModel;
+    private boolean startlocation = false;
+    private boolean timeLimitLess = true;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -205,16 +215,16 @@ public class SingleModeFragment extends Fragment {
         mainActivity = (MainActivity2) getActivity();
         historyApi = RetrofitClient.getClient().create(HistoryApi.class);
 
-        Button quitButton = binding.quitButton;
-        Button startButton = binding.startButton;
+        quitButton = binding.quitButton;
+        startButton = binding.startButton;
         currentDistanceText = binding.currentDistanceText;
         currentTimeText = binding.currentTimeText;
         currentPaceText = binding.currentPaceText;
         currentTimeText.setBase(SystemClock.elapsedRealtime());
-        TextView goalDistanceStaticText = binding.goalDistanceStaticText;
-        TextView goalDistanceText = binding.goalDistanceText;
-        TextView goalTimeStaticText = binding.goalTimeStaticText;
-        TextView goalTimeText = binding.goalTimeText;
+        goalDistanceStaticText = binding.goalDistanceStaticText;
+        goalDistanceText = binding.goalDistanceText;
+        goalTimeStaticText = binding.goalTimeStaticText;
+        goalTimeText = binding.goalTimeText;
         maxSpeed = 0;
         minSpeed = 999;
         runningNow = false;
@@ -250,7 +260,7 @@ public class SingleModeFragment extends Fragment {
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startButton.setVisibility(View.GONE);
+                //startButton.setVisibility(View.GONE);
 
                 View dialogView = getLayoutInflater().inflate(R.layout.dialog_mission_start, null);
                 AlertDialog dialog = new AlertDialog.Builder(getActivity()).create();
@@ -371,6 +381,7 @@ public class SingleModeFragment extends Fragment {
 
                 buttonConfirm.setOnClickListener(new Button.OnClickListener() {
                     public void onClick(View v) {
+
                         pathPoints = new ArrayList<>();
                         speedList = new ArrayList<>();
                         goalDistanceStaticText.setText("목표 거리");
@@ -401,7 +412,7 @@ public class SingleModeFragment extends Fragment {
                         });
                         currentTimeText.setBase(SystemClock.elapsedRealtime());
                         currentTimeText.start();
-
+                        startButton.setVisibility(View.GONE);
                         quitButton.setVisibility(View.VISIBLE);
                         hideBottomNavigation(true);
 
@@ -424,71 +435,20 @@ public class SingleModeFragment extends Fragment {
         quitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                runningNow = false;
-                quitButton.setVisibility(View.GONE);
-                startButton.setVisibility(View.VISIBLE);
-                mainActivity.getLastLocation();
-                currentTimeText.stop();
-                View dialogView;
-                Button confirmButton;
-                boolean missionCompleted = false;
-                float wholeDistance = Float.valueOf((String) currentDistanceText.getText().subSequence(0, currentDistanceText.getText().length() - 2));
-                float wholeTime = (float) Duration.between(gameStartTime, LocalDateTime.now()).getSeconds();
-                if (timeLimitLess) {
-                    if (wholeDistance >= goalDistance && wholeTime < goalTime * 60) {
-                        missionCompleted = true;
-                    }
-                } else {
-                    if (wholeDistance >= goalDistance && wholeTime >= goalTime * 60) {
-                        missionCompleted = true;
-                    }
-                }
+                View finishDialog = getLayoutInflater().inflate(R.layout.dialog_single_play_finish, null);
+                AlertDialog dialog = new AlertDialog.Builder(getActivity()).create();
 
-                goalDistanceStaticText.setText("");
-                goalDistanceText.setText("");
-                goalTimeStaticText.setText("");
-                goalTimeText.setText("");
+                dialog.setView(finishDialog);
 
-                LayoutInflater inflater = requireActivity().getLayoutInflater();
-                if (missionCompleted) {
-                    dialogView = inflater.inflate(R.layout.dialog_mission_success, null);
-                    confirmButton = dialogView.findViewById(R.id.buttonConfirm);
-                    TextView elapsedTimeTextView = dialogView.findViewById(R.id.textViewElapsedTimeonSuccess);
-                    TextView distanceTextView = dialogView.findViewById(R.id.textViewDistanceonSuccess);
-                    elapsedTimeTextView.setText("달린 시간: " + currentTimeText.getText());
-                    distanceTextView.setText("달린 거리: " + currentDistanceText.getText());
-                } else {
-                    dialogView = inflater.inflate(R.layout.dialog_mission_failure, null);
-                    confirmButton = dialogView.findViewById(R.id.buttonConfirmFailure);
-                    TextView elapsedTimeTextView = dialogView.findViewById(R.id.textViewElapsedTimeonFailure);
-                    TextView distanceTextView = dialogView.findViewById(R.id.textViewDistanceonFailure);
-                    elapsedTimeTextView.setText("달린 시간: " + currentTimeText.getText());
-                    distanceTextView.setText("달린 거리: " + currentDistanceText.getText());
-                }
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setView(dialogView);
-
-                final AlertDialog dialog = builder.create();
-
-                confirmButton.setOnClickListener(new View.OnClickListener() {
+                Button buttonConfirmClose = finishDialog.findViewById(R.id.buttonConfirmClose);
+                buttonConfirmClose.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        dialog.dismiss();
-                        lastLocation = null;
-                        distance = 0;
-                        currentDistanceText.setText("0.00 km");
-                        currentTimeText.setBase(SystemClock.elapsedRealtime());
+                        finishPlaySingleMode();
+                        dialog.dismiss(); // 다이얼로그를 닫는 예제 동작
                     }
                 });
                 dialog.show();
-                try {
-                    saveHistoryDataOnSingleMode();
-                } catch (JSONException e) {
-                    throw new RuntimeException(e);
-                }
-                getMission();
-                hideBottomNavigation(false);
             }
         });
 
@@ -551,6 +511,38 @@ public class SingleModeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+
+        backPressedCallBack = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (runningNow) {
+
+
+                    View finishDialog = getLayoutInflater().inflate(R.layout.dialog_single_play_finish, null);
+                    AlertDialog dialog = new AlertDialog.Builder(getActivity()).create();
+
+                    dialog.setView(finishDialog);
+
+                    Button buttonConfirmClose = finishDialog.findViewById(R.id.buttonConfirmClose);
+                    buttonConfirmClose.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            finishPlaySingleMode();
+                            dialog.dismiss(); // 다이얼로그를 닫는 예제 동작
+                        }
+                    });
+
+                    dialog.show();
+                } else {
+                    NavController navController = Navigation.findNavController(requireView());
+                    navController.navigate(R.id.navigation_home);
+                }
+
+
+            }
+        };
+
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
         if (!startlocation) {
             if (ActivityCompat.checkSelfPermission(mainActivity,
                     Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -715,6 +707,74 @@ public class SingleModeFragment extends Fragment {
             nav_view.setVisibility(View.GONE);
         else
             nav_view.setVisibility(View.VISIBLE);
+    }
+
+    private void finishPlaySingleMode() {
+        runningNow = false;
+        quitButton.setVisibility(View.GONE);
+        startButton.setVisibility(View.VISIBLE);
+        mainActivity.getLastLocation();
+        currentTimeText.stop();
+        View dialogView;
+        Button confirmButton;
+        boolean missionCompleted = false;
+        float wholeDistance = Float.valueOf((String) currentDistanceText.getText().subSequence(0, currentDistanceText.getText().length() - 2));
+        float wholeTime = (float) Duration.between(gameStartTime, LocalDateTime.now()).getSeconds();
+        if (timeLimitLess) {
+            if (wholeDistance >= goalDistance && wholeTime < goalTime * 60) {
+                missionCompleted = true;
+            }
+        } else {
+            if (wholeDistance >= goalDistance && wholeTime >= goalTime * 60) {
+                missionCompleted = true;
+            }
+        }
+
+        goalDistanceStaticText.setText("");
+        goalDistanceText.setText("");
+        goalTimeStaticText.setText("");
+        goalTimeText.setText("");
+
+        LayoutInflater inflater = requireActivity().getLayoutInflater();
+        if (missionCompleted) {
+            dialogView = inflater.inflate(R.layout.dialog_mission_success, null);
+            confirmButton = dialogView.findViewById(R.id.buttonConfirm);
+            TextView elapsedTimeTextView = dialogView.findViewById(R.id.textViewElapsedTimeonSuccess);
+            TextView distanceTextView = dialogView.findViewById(R.id.textViewDistanceonSuccess);
+            elapsedTimeTextView.setText("달린 시간: " + currentTimeText.getText());
+            distanceTextView.setText("달린 거리: " + currentDistanceText.getText());
+        } else {
+            dialogView = inflater.inflate(R.layout.dialog_mission_failure, null);
+            confirmButton = dialogView.findViewById(R.id.buttonConfirmFailure);
+            TextView elapsedTimeTextView = dialogView.findViewById(R.id.textViewElapsedTimeonFailure);
+            TextView distanceTextView = dialogView.findViewById(R.id.textViewDistanceonFailure);
+            elapsedTimeTextView.setText("달린 시간: " + currentTimeText.getText());
+            distanceTextView.setText("달린 거리: " + currentDistanceText.getText());
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setView(dialogView);
+
+        final AlertDialog dialog = builder.create();
+
+        confirmButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                lastLocation = null;
+                distance = 0;
+                currentDistanceText.setText("0.00 km");
+                currentTimeText.setBase(SystemClock.elapsedRealtime());
+            }
+        });
+        dialog.show();
+        try {
+            saveHistoryDataOnSingleMode();
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+        getMission();
+        hideBottomNavigation(false);
     }
 
 }

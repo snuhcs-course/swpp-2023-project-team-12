@@ -26,10 +26,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity2 extends AppCompatActivity {
 
+    public UserActivityBroadcastReceiver activityReceiver;
     UserActivityTransitionManager activityManager;
     PendingIntent pendingIntent;
-
-    public UserActivityBroadcastReceiver activityReceiver;
     private ActivityMain2Binding binding;
     private FusedLocationProviderClient fusedLocationClient;
 
@@ -122,6 +121,11 @@ public class MainActivity2 extends AppCompatActivity {
                 Log.d("test:location:main", "Location failed");
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 
 }
