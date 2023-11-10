@@ -58,6 +58,42 @@
         app:layout_constraintGuide_percent="0.6" />
 
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineLeftBottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="24dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineRightBottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_end="24dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineCenterBottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineclBottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.35" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelinecrBottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.65" />
+
+
     <TextView
         android:id="@+id/goalDistanceStaticText"
         android:layout_width="wrap_content"
@@ -113,52 +149,95 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/goalDistanceText" />
 
-    <TextView
-        android:id="@+id/currentDistanceStaticText"
+    <LinearLayout
+        android:id="@+id/currentDistance"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/pretendardregular"
-        android:paddingTop="30dp"
-        android:text="거리"
-        app:layout_constraintEnd_toStartOf="@id/guidelinecl"
-        app:layout_constraintStart_toStartOf="@id/guidelineLeft"
-        app:layout_constraintTop_toBottomOf="@id/map" />
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toStartOf="@id/guidelineclBottom"
+        app:layout_constraintStart_toStartOf="@id/guidelineLeftBottom"
+        app:layout_constraintTop_toBottomOf="@id/map">
 
-    <TextView
-        android:id="@+id/currentDistanceText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/pretendardregular"
-        android:paddingTop="2dp"
-        android:paddingBottom="30dp"
-        android:text="0.0km"
-        app:layout_constraintEnd_toStartOf="@id/guidelinecl"
-        app:layout_constraintStart_toStartOf="@id/guidelineLeft"
-        app:layout_constraintTop_toBottomOf="@id/currentDistanceStaticText" />
+        <TextView
+            android:id="@+id/currentDistanceStaticText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/pretendardregular"
+            android:paddingTop="30dp"
+            android:text="거리" />
 
-    <TextView
-        android:id="@+id/currentTimeStaticText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/pretendardregular"
-        android:paddingTop="30dp"
-        android:text="시간"
-        app:layout_constraintEnd_toStartOf="@id/guidelineRight"
-        app:layout_constraintStart_toStartOf="@id/guidelinecr"
-        app:layout_constraintTop_toBottomOf="@id/map" />
+        <TextView
+            android:id="@+id/currentDistanceText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/pretendardregular"
+            android:paddingTop="2dp"
+            android:paddingBottom="30dp"
+            android:text="0.0km"
+            app:layout_constraintTop_toBottomOf="@id/currentDistanceStaticText" />
+    </LinearLayout>
 
-    <Chronometer
-        android:id="@+id/currentTimeText"
+    <LinearLayout
+        android:id="@+id/currentPace"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/pretendardregular"
-        android:format="00:00:00"
-        android:paddingTop="2dp"
-        android:paddingBottom="15dp"
-        android:text="00:00:00"
-        app:layout_constraintEnd_toStartOf="@id/guidelineRight"
-        app:layout_constraintStart_toStartOf="@id/guidelinecr"
-        app:layout_constraintTop_toBottomOf="@id/currentTimeStaticText" />
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="@id/guidelinecrBottom"
+        app:layout_constraintStart_toStartOf="@id/guidelineclBottom"
+        app:layout_constraintTop_toBottomOf="@id/map">
+
+        <TextView
+            android:id="@+id/currentPaceStaticText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/pretendardregular"
+            android:paddingTop="30dp"
+            android:text="페이스" />
+
+        <TextView
+            android:id="@+id/currentPaceText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/pretendardregular"
+            android:paddingTop="2dp"
+            android:paddingBottom="30dp"
+            android:text="--'--''"
+            app:layout_constraintTop_toBottomOf="@id/currentPaceStaticText" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/currentTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="@id/guidelineRightBottom"
+        app:layout_constraintStart_toStartOf="@id/guidelinecrBottom"
+        app:layout_constraintTop_toBottomOf="@id/map">
+
+        <TextView
+            android:id="@+id/currentTimeStaticText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/pretendardregular"
+            android:paddingTop="30dp"
+            android:text="시간" />
+
+        <Chronometer
+            android:id="@+id/currentTimeText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/pretendardregular"
+            android:format="00:00:00"
+            android:paddingTop="2dp"
+            android:paddingBottom="15dp"
+            android:text="00:00:00"
+            app:layout_constraintTop_toBottomOf="@id/currentTimeStaticText" />
+    </LinearLayout>
+
 
     <Button
         android:id="@+id/startButton"
@@ -168,30 +247,31 @@
         android:fontFamily="@font/pretendardregular"
         android:shape='oval'
         android:text="시작"
-        android:textStyle="bold"
         android:textSize="25dp"
+        android:textStyle="bold"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/map"
         app:layout_constraintEnd_toStartOf="@+id/guidelineRight"
         app:layout_constraintStart_toStartOf="@+id/guidelineLeft"
+        app:layout_constraintTop_toBottomOf="@id/map"
         tools:layout_editor_absoluteY="541dp" />
 
     <Button
         android:id="@+id/quitButton"
         android:layout_width="130dp"
         android:layout_height="130dp"
+        android:layout_marginTop="60dp"
         android:backgroundTint="#E94334"
         android:fontFamily="@font/pretendardregular"
         android:shape='oval'
         android:text="종료"
-        android:textStyle="bold"
         android:textSize="25dp"
+        android:textStyle="bold"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/map"
         app:layout_constraintEnd_toStartOf="@+id/guidelineRight"
-        app:layout_constraintStart_toStartOf="@+id/guidelineLeft" />
+        app:layout_constraintStart_toStartOf="@+id/guidelineLeft"
+        app:layout_constraintTop_toBottomOf="@id/map" />
 
     <Button
         android:id="@+id/hiddenButton"

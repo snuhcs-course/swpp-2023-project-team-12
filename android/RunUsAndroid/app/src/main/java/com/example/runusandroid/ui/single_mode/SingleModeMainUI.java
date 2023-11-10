@@ -10,16 +10,18 @@ public class SingleModeMainUI {
 
     private final Chronometer currentTimeText;
     private final TextView currentDistanceText;
+    private final TextView currentPaceText;
 
     private final Button showMissionButton;
     private final Button quitButton;
 
     public SingleModeMainUI(Chronometer currentTimeText,
                             TextView currentDistanceText,
-                            Button showMissionButton,
+                            TextView currentPaceText, Button showMissionButton,
                             Button quitButton) {
         this.currentTimeText = currentTimeText;
         this.currentDistanceText = currentDistanceText;
+        this.currentPaceText = currentPaceText;
         this.showMissionButton = showMissionButton;
         this.quitButton = quitButton;
     }
