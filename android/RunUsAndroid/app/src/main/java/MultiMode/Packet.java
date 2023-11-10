@@ -16,6 +16,15 @@ public class Packet implements Serializable { //서버와 통신하기 위해 �
     private MultiModeRoom selectedRoom = null;
     private List<MultiModeRoom> roomList = null; //top3 유저 정보 가져오는 자료구조
     private long groupHistoryId; //db에 저장된 히스토리 id
+    public int temp;
+    public Packet(int protocol) {
+        this.protocol = protocol;
+    }
+    public Packet(int protocol, List<MultiModeRoom> roomList, int n, int m) {
+        this.protocol = protocol;
+        this.roomList = roomList;
+        this.temp = n;
+    }
 
     public Packet(int protocol, MultiModeUser user) {
         this.protocol = protocol;

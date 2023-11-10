@@ -25,6 +25,7 @@ public class MultiModeUser implements Serializable {
     }
 
     public void exitRoom(MultiModeRoom room){
+        System.out.println("exit romm user :" +nickname);
         this.room = null;
     }
     public long getId() {
