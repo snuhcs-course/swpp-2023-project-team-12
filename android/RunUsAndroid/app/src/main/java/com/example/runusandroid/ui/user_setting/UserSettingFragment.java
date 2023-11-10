@@ -50,7 +50,7 @@ public class UserSettingFragment extends Fragment {
     private ActivityResultLauncher<String> imagePickerLauncher;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
-            ViewGroup container, Bundle savedInstanceState) {
+                             ViewGroup container, Bundle savedInstanceState) {
         UserSettingViewModel userSettingViewModel = new ViewModelProvider(this).get(UserSettingViewModel.class);
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
         String userName = sharedPreferences.getString("username", "");
@@ -58,7 +58,7 @@ public class UserSettingFragment extends Fragment {
         View root = binding.getRoot();
         mainActivity = (MainActivity2) getActivity();
 
-        final TextView textView = binding.textUserSetting;
+        final TextView textView = binding.TextUserName;
         userSettingViewModel.setText(userName + "님 환영해요!");
         userSettingViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
 
