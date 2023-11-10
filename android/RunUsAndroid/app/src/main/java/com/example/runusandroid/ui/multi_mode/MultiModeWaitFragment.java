@@ -3,8 +3,6 @@ package com.example.runusandroid.ui.multi_mode;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -41,8 +39,7 @@ import MultiMode.Protocol;
 
 public class MultiModeWaitFragment extends Fragment {
 
-
-    public static SocketListenerThread socketListenerThread;
+    SocketListenerThread socketListenerThread = MultiModeFragment.socketListenerThread;
     private final Handler handler = new Handler(); // 남은 시간 계산 위한 Handler
     private final int updateTimeInSeconds = 1; // 1초마다 업데이트/
     MultiModeUser user = MultiModeFragment.user;
@@ -93,28 +90,6 @@ public class MultiModeWaitFragment extends Fragment {
     };
     private MainActivity2 mainActivity2;
     private ConstraintLayout waitingListBox;
-    private final Handler updateHandler = new Handler(Looper.getMainLooper()) {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-
-            if (msg.obj instanceof Packet) {
-                Packet receivedPacket = (Packet) msg.obj;
-                if (receivedPacket.getProtocol() == Protocol.UPDATE_ROOM) {
-                    selectedRoom.setUserList(receivedPacket.getSelectedRoom().getUserList());
-
-                    waitingListBox.removeAllViews();
-
-                    List<MultiModeUser> updatedUserList = selectedRoom.getUserList();
-                    if (updatedUserList != null && !updatedUserList.isEmpty()) {
-                        for (MultiModeUser user : updatedUserList) {
-                            addUserNameToWaitingList(user.getNickname());
-                        }
-                    }
-                }
-            }
-        }
-    };
     private TextView participantCountTextView;
     private ObjectInputStream ois;
 
@@ -143,9 +118,8 @@ public class MultiModeWaitFragment extends Fragment {
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
+                Log.d("callback","callback called");
                 new ExitRoomTask().execute();
-                NavController navController = Navigation.findNavController(requireView());
-                navController.navigate(R.id.navigation_multi_mode);
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
@@ -194,8 +168,6 @@ public class MultiModeWaitFragment extends Fragment {
             public void onClick(View v) {
                 // 떠나기 버튼을 눌렀을 때 실행할 동작 추가
                 new ExitRoomTask().execute();
-                NavController navController = Navigation.findNavController(v);
-                navController.navigate(R.id.navigation_multi_mode);
             }
         });
         return view;
@@ -322,18 +294,13 @@ public class MultiModeWaitFragment extends Fragment {
         super.onResume();
         socketManager = SocketManager.getInstance();
         ois = socketManager.getOIS();
-        socketListenerThread = new SocketListenerThread(this, updateHandler, selectedRoom, ois);
-        socketListenerThread.start();
+        socketListenerThread.addWaitFragment(this);
+        socketListenerThread.setRoom(selectedRoom);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-//        if (socketListenerThread != null) {
-//            //socketListenerThread.interrupt();
-//            socketListenerThread.pauseListening();
-//            Log.d("response", "socketListenerThread interrupted");
-//        }
     }
 
     @Override
@@ -345,29 +312,19 @@ public class MultiModeWaitFragment extends Fragment {
 
     //방에서 나갈 때 소켓과 연결하여 패킷 송수신
     private class ExitRoomTask extends AsyncTask<Void, Void, Boolean> {
-        Packet packet;
-
         @Override
         protected Boolean doInBackground(Void... voids) {
             boolean success = true;
             try {
                 ObjectOutputStream oos = socketManager.getOOS();
                 Packet requestPacket = new Packet(Protocol.EXIT_ROOM, user, selectedRoom);
+                oos.reset();
                 oos.writeObject(requestPacket);
                 oos.flush();
+                selectedRoom.exitUser(user);
             } catch (IOException e) {
                 e.printStackTrace();
                 success = false;
-            } finally {
-                try {
-                    socketManager.closeSocket();
-                    Log.d("response", "socket closed");
-
-                } catch (IOException e) {
-                    Log.d("response", "socket close error");
-                    success = false;
-                }
-
             }
             return success;
         }
@@ -377,8 +334,9 @@ public class MultiModeWaitFragment extends Fragment {
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (success) {
-                Log.d("SendPacket", "Packet sent successfully!");
-
+                NavController navController = Navigation.findNavController(requireView());
+                navController.navigate(R.id.navigation_multi_mode);
+                Log.d("exitroomSendPacket", "Packet sent successfully!");
             } else {
                 Log.d("ExitSendPacket", "Failed to send packet!");
             }
@@ -387,14 +345,13 @@ public class MultiModeWaitFragment extends Fragment {
     }
 
     private class StartRoomTask extends AsyncTask<Void, Void, Boolean> {
-        Packet packet;
-
         @Override
         protected Boolean doInBackground(Void... voids) {
             boolean success = true;
             try {
                 ObjectOutputStream oos = socketManager.getOOS();
                 Packet requestPacket = new Packet(Protocol.START_GAME, selectedRoom);
+                oos.reset();
                 oos.writeObject(requestPacket);
                 oos.flush();
             } catch (IOException e) {

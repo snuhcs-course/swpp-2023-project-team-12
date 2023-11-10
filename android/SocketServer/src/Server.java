@@ -49,134 +49,6 @@ public class Server {
         }
     }
 
-    class ClientThread extends Thread{
-        
-        private Socket socket;
-        private ObjectOutputStream oos;
-
-        public ClientThread(Socket socket, ObjectOutputStream oos){
-            this.socket = socket;
-            this.oos = oos;
-        }
-        
-        @Override
-        public void run(){
-            MultiModeUser connectedUser = null;
-            MultiModeUser user = null;
-            try {
-                InputStream is = socket.getInputStream();
-                ObjectInputStream ois = new ObjectInputStream(is);
-
-                while (!Thread.interrupted()) {
-                    try {
-                        Object data = ois.readObject();
-
-                        if (data instanceof Packet) {
-                            connectedUser = ((Packet) data).getUser();
-                            user = connectedUser;
-                            System.out.println("protocol : "+((Packet) data).getProtocol());
-
-                            if (((Packet) data).getProtocol() == Protocol.ROOM_LIST) {
-                                Packet roomListPacket = new Packet(Protocol.ROOM_LIST, RoomManager.getRoomList());
-                                System.out.println("RoomList size is "  + RoomManager.getRoomList().size());
-                                oos.writeObject(roomListPacket);
-                                oos.flush();
-                                //broadcastPacketToAllUsers(roomListPacket);  // 모든 사용자에게 패킷을 보내는 부분
-                            } else if (((Packet) data).getProtocol() == Protocol.CREATE_ROOM) {
-                                System.out.println("create_room request came");
-                                RoomCreateInfo roomCreateInfo = ((Packet) data).getRoomCreateInfo();
-                                System.out.println("CREATE_ROOM Success" + " title : " + roomCreateInfo.getTitle() + "time : " + roomCreateInfo.getStartTime() + " distance : " + roomCreateInfo.getDistance());
-                                MultiModeRoom selectedRoom = RoomManager.createRoom(user, roomCreateInfo, oos);
-                                System.out.println(selectedRoom.toString());
-                                Packet createRoomPacket = new Packet(Protocol.CREATE_ROOM, RoomManager.getRoomList(), selectedRoom);
-                                oos.writeObject(createRoomPacket);
-                                oos.flush();
-                            } else if (((Packet) data).getProtocol() == Protocol.ENTER_ROOM) {
-                                MultiModeRoom enteredRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
-                                enteredRoom.enterUser(user);
-                                System.out.println(enteredRoom);
-                                Packet enterRoomPacket = new Packet(Protocol.ENTER_ROOM, RoomManager.getRoomList(), user, enteredRoom);
-                                oos.writeObject(enterRoomPacket);
-                                oos.flush();
-                                broadcastToRoomUsers(enteredRoom, new Packet(Protocol.UPDATE_ROOM, user, enteredRoom));
-                                enteredRoom.addOutputStream(oos);
-                            } else if (((Packet) data).getProtocol() == Protocol.EXIT_ROOM) {
-                                MultiModeRoom exitRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
-                                int index = exitRoom.exitUser(user);
-                                if(index != -1) exitRoom.removeOutputStream(index);
-                                Packet exitRoomPacket = new Packet(Protocol.EXIT_ROOM, RoomManager.getRoomList(), user, exitRoom);
-                                oos.writeObject(exitRoomPacket);
-                                oos.flush();
-                                broadcastToRoomUsers(exitRoom, new Packet(Protocol.EXIT_ROOM, user, exitRoom));
-                            } else if(((Packet) data).getProtocol() == Protocol.UPDATE_USER_DISTANCE){
-                                MultiModeRoom updateRoom = RoomManager.getInGameRoom(user.getRoom().getId());
-                                Float distance = ((Packet) data).getDistance();
-                                System.out.println("user " + ((Packet) data).getUser().getNickName() + "'s update distance is " + distance);
-                                updateRoom.updateDistance(new UserDistance(user, distance));
-
-                                if(updateRoom.canUpdate()){
-                                    System.out.println("update top3 distance");
-                                    updateTop3Users(Protocol.UPDATE_TOP3_STATES, updateRoom);
-                                }
-                            } else if (((Packet) data).getProtocol() == Protocol.START_GAME) {
-                                MultiModeRoom enteredRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
-                                enteredRoom.startGame();
-                                RoomManager.startRoom(enteredRoom);
-                                broadcastToRoomUsers(enteredRoom, new Packet(Protocol.START_GAME, enteredRoom));
-                            }else if(((Packet) data).getProtocol() == Protocol.EXIT_GAME){
-                                MultiModeRoom exitRoom = RoomManager.getInGameRoom(((Packet) data).getSelectedRoom().getId());
-                                System.out.println("EXIT_GAME packet received from " + user.getId() + user.getNickName() + "\n\n\n\n");
-                                int index = exitRoom.exitUser(user);
-                                if(index != -1) exitRoom.removeOutputStream(index);
-                            }else if(((Packet) data).getProtocol() == Protocol.FINISH_GAME){
-                                MultiModeRoom finishRoom = RoomManager.getInGameRoom(((Packet) data).getSelectedRoom().getId());
-                                System.out.println("!!!!!!!!FINISH_GAME packet received from " + user.getId() + user.getNickName() + "\n\n\n\n");
-                                finishRoom.addFinishCount(user);
-                                if(finishRoom.checkGameFinished()){
-                                    System.out.println("send packet");
-                                    System.out.println(finishRoom);
-                                    sendResultToRoomOwner(Protocol.SAVE_GROUP_HISTORY, finishRoom);
-                                }
-                            }else if(((Packet) data).getProtocol() == Protocol.SAVE_GROUP_HISTORY){
-                                MultiModeRoom finishRoom = RoomManager.getInGameRoom(((Packet) data).getSelectedRoom().getId());
-                                System.out.println("!!!!!!!!got saved group history packet " + user.getId() + user.getNickName() + "\n\n\n\n");
-                                sendResultTop3Users(Protocol.CLOSE_GAME, finishRoom, ((Packet) data).getGroupHistoryId());
-                                RoomManager.removeInGameRoom(finishRoom);
-                            }
-                        }
-
-                        else if(data instanceof String){
-                            System.out.println((String) data);
-                        }
-
-                        printRoomListInfo(RoomManager.getRoomList());
-
-                    } catch (SocketException | EOFException e) {
-                        System.out.println("클라이언트 연결 종료: " + socket.getInetAddress());
-                        if(user.getRoom() != null){
-                            MultiModeRoom exitRoom = RoomManager.getRoom(user.getRoom().getId());
-                            int index = exitRoom.exitUser(user);
-                            if(index != -1) exitRoom.removeOutputStream(index);
-                            broadcastToRoomUsers(exitRoom, new Packet(Protocol.EXIT_ROOM, user, exitRoom));
-                        }
-                        allClientOutputStreams.removeIf(clientOOS -> clientOOS == oos);
-                        this.interrupt();
-                        return;
-                    }
-                }
-            } catch (ClosedByInterruptException e) {
-                System.out.println("인터럽트로 인한 스레드 종료.");
-                return;
-            } catch (SocketException e) {
-                MultiModeUser currentUser = null;
-                MultiModeRoom exitRoom = null;
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-                cleanupClientResources(oos, socket);  // Cleanup resources if there's an error
-            } finally { //유저가 경기 방에 있다가 서버와의 연결이 갑자기 끊겼을 때 유저를 방에서 내보내는 코드
-            }
-        }
-    }
     private void handleClient(Socket socket, ObjectOutputStream oos) {
         MultiModeUser connectedUser = null;
         MultiModeUser user = null;
@@ -190,40 +62,49 @@ public class Server {
 
                     if (data instanceof Packet) {
                         connectedUser = ((Packet) data).getUser();
-                        user = connectedUser;
+                        if(user==null) user = connectedUser;
                         System.out.println("protocol : "+((Packet) data).getProtocol());
+                        if(user!=null) System.out.println("user : "+user.getNickName());
 
                         if (((Packet) data).getProtocol() == Protocol.ROOM_LIST) {
                             Packet roomListPacket = new Packet(Protocol.ROOM_LIST, RoomManager.getRoomList());
                             System.out.println("RoomList size is "  + RoomManager.getRoomList().size());
+                            oos.reset();
                             oos.writeObject(roomListPacket);
                             oos.flush();
                             //broadcastPacketToAllUsers(roomListPacket);  // 모든 사용자에게 패킷을 보내는 부분
                         } else if (((Packet) data).getProtocol() == Protocol.CREATE_ROOM) {
                             System.out.println("create_room request came");
                             RoomCreateInfo roomCreateInfo = ((Packet) data).getRoomCreateInfo();
-                            System.out.println("CREATE_ROOM Success" + " title : " + roomCreateInfo.getTitle() + "time : " + roomCreateInfo.getStartTime() + " distance : " + roomCreateInfo.getDistance());
                             MultiModeRoom selectedRoom = RoomManager.createRoom(user, roomCreateInfo, oos);
                             System.out.println(selectedRoom.toString());
                             Packet createRoomPacket = new Packet(Protocol.CREATE_ROOM, RoomManager.getRoomList(), selectedRoom);
+                            oos.reset();
                             oos.writeObject(createRoomPacket);
                             oos.flush();
                         } else if (((Packet) data).getProtocol() == Protocol.ENTER_ROOM) {
                             MultiModeRoom enteredRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
-                            enteredRoom.enterUser(user);
-                            System.out.println(enteredRoom);
-                            Packet enterRoomPacket = new Packet(Protocol.ENTER_ROOM, RoomManager.getRoomList(), user, enteredRoom);
-                            oos.writeObject(enterRoomPacket);
-                            oos.flush();
-                            broadcastToRoomUsers(enteredRoom, new Packet(Protocol.UPDATE_ROOM, user, enteredRoom));
-                            enteredRoom.addOutputStream(oos);
+                            if(enteredRoom == null){
+                                Packet closedRoomPacket = new Packet(Protocol.CLOSED_ROOM_ERROR);
+                                oos.reset();
+                                oos.writeObject(closedRoomPacket);
+                                oos.flush();
+                            } else {
+                                enteredRoom.enterUser(user);
+                                System.out.println(enteredRoom);
+                                //Packet enterRoomPacket = new Packet(Protocol.ENTER_ROOM, RoomManager.getRoomList(), user, enteredRoom);
+                                //oos.writeObject(enterRoomPacket);
+                                //oos.flush();
+                                broadcastToRoomUsers(enteredRoom, new Packet(Protocol.UPDATE_ROOM, user, enteredRoom));
+                                enteredRoom.addOutputStream(oos);
+                            }
                         } else if (((Packet) data).getProtocol() == Protocol.EXIT_ROOM) {
                             MultiModeRoom exitRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
                             int index = exitRoom.exitUser(user);
                             if(index != -1) exitRoom.removeOutputStream(index);
-                            Packet exitRoomPacket = new Packet(Protocol.EXIT_ROOM, RoomManager.getRoomList(), user, exitRoom);
-                            oos.writeObject(exitRoomPacket);
-                            oos.flush();
+                            //Packet exitRoomPacket = new Packet(Protocol.EXIT_ROOM, RoomManager.getRoomList(), user, exitRoom);
+                            //oos.writeObject(exitRoomPacket);
+                            //oos.flush();
                             broadcastToRoomUsers(exitRoom, new Packet(Protocol.EXIT_ROOM, user, exitRoom));
                         } else if(((Packet) data).getProtocol() == Protocol.UPDATE_USER_DISTANCE){
                             MultiModeRoom updateRoom = RoomManager.getInGameRoom(user.getRoom().getId());
@@ -242,12 +123,12 @@ public class Server {
                             broadcastToRoomUsers(enteredRoom, new Packet(Protocol.START_GAME, enteredRoom));
                         }else if(((Packet) data).getProtocol() == Protocol.EXIT_GAME){
                             MultiModeRoom exitRoom = RoomManager.getInGameRoom(((Packet) data).getSelectedRoom().getId());
-                            System.out.println("EXIT_GAME packet received from " + user.getId() + user.getNickName() + "\n\n\n\n");
+                            System.out.println("EXIT_GAME packet received from " + user.getId() + user.getNickName() + "\n");
                             int index = exitRoom.exitUser(user);
                             if(index != -1) exitRoom.removeOutputStream(index);
                         }else if(((Packet) data).getProtocol() == Protocol.FINISH_GAME){
                             MultiModeRoom finishRoom = RoomManager.getInGameRoom(((Packet) data).getSelectedRoom().getId());
-                            System.out.println("!!!!!!!!FINISH_GAME packet received from " + user.getId() + user.getNickName() + "\n\n\n\n");
+                            System.out.println("!!!!!!!!FINISH_GAME packet received from " + user.getId() + user.getNickName() + "\n");
                             finishRoom.addFinishCount(user);
                             if(finishRoom.checkGameFinished()){
                                 System.out.println("send packet");
@@ -256,7 +137,7 @@ public class Server {
                             }
                         }else if(((Packet) data).getProtocol() == Protocol.SAVE_GROUP_HISTORY){
                             MultiModeRoom finishRoom = RoomManager.getInGameRoom(((Packet) data).getSelectedRoom().getId());
-                            System.out.println("!!!!!!!!got saved group history packet " + user.getId() + user.getNickName() + "\n\n\n\n");
+                            System.out.println("!!!!!!!!got saved group history packet " + user.getId() + user.getNickName() + "\n");
                             sendResultTop3Users(Protocol.CLOSE_GAME, finishRoom, ((Packet) data).getGroupHistoryId());
                             RoomManager.removeInGameRoom(finishRoom);
                         }
@@ -270,7 +151,8 @@ public class Server {
 
                 } catch (SocketException | EOFException e) {
                     System.out.println("클라이언트 연결 종료: " + socket.getInetAddress());
-                    if(user.getRoom() != null){
+                    if(user != null && user.getRoom() != null){
+                        System.out.println("user room : " + user.getRoom());
                         MultiModeRoom exitRoom = RoomManager.getRoom(user.getRoom().getId());
                         int index = exitRoom.exitUser(user);
                         if(index != -1) exitRoom.removeOutputStream(index);
@@ -288,7 +170,6 @@ public class Server {
             e.printStackTrace();
             cleanupClientResources(oos, socket);  // Cleanup resources if there's an error
         } finally { //유저가 경기 방에 있다가 서버와의 연결이 갑자기 끊겼을 때 유저를 방에서 내보내는 코드
-            return;
         }
     }
 
@@ -326,6 +207,7 @@ public class Server {
             //&& oos != findOutputStreamByUser(packet.getUser())
             // 방에 들어오거나 나가는 유저가 아닌 다른 유저들한테만 패킷을 보내기 위한 조건
             try {
+                oos.reset();
                 oos.writeObject(updateTop3Packet);
                 oos.flush();
             } catch (IOException e) {
@@ -343,7 +225,7 @@ public class Server {
         }
 
         for(int i = 0; i < top3UserDistance.length; i++){
-            System.out.println("user " + i + " : " + top3UserDistance[0].getUser().getNickName() + " , distance : " + top3UserDistance[0].getDistance());
+            System.out.println("user " + i + " : " + top3UserDistance[i].getUser().getNickName() + " , distance : " + top3UserDistance[i].getDistance());
         }
         List<UserDistance> lTop3UserDistances = new ArrayList<UserDistance>(Arrays.asList(top3UserDistance));
         Packet updateTop3Packet = new Packet(protocol, lTop3UserDistances, (int) groupHistoryId);
@@ -354,6 +236,7 @@ public class Server {
         synchronized (allClientOutputStreams) {
             for (ObjectOutputStream oos : allClientOutputStreams) {
                 try {
+                    oos.reset();
                     oos.writeObject(packet);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -379,6 +262,7 @@ public class Server {
                 //&& oos != findOutputStreamByUser(packet.getUser())
                 // 방에 들어오거나 나가는 유저가 아닌 다른 유저들한테만 패킷을 보내기 위한 조건
                 try {
+                    oos.reset();
                     oos.writeObject(packet);
                     oos.flush();
                 } catch (IOException e) {

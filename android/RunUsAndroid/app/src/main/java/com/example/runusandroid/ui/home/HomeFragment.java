@@ -21,7 +21,9 @@ import com.example.runusandroid.HistoryDataforRendering;
 import com.example.runusandroid.R;
 import com.example.runusandroid.RetrofitClient;
 import com.example.runusandroid.databinding.FragmentHomeBinding;
+import com.example.runusandroid.ui.multi_mode.SocketManager;
 
+import java.io.IOException;
 import java.util.Calendar;
 
 import retrofit2.Call;
@@ -33,7 +35,7 @@ public class HomeFragment extends Fragment {
     private FragmentHomeBinding binding;
 
     private HistoryApi historyApi;
-
+    private final SocketManager socketManager = SocketManager.getInstance();
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         HomeViewModel homeViewModel =
@@ -101,6 +103,20 @@ public class HomeFragment extends Fragment {
         return root;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(socketManager.getOIS()==null) {
+            new Thread(() -> {
+                try {
+                    socketManager.openSocket();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+            }).start();
+        }
+    }
     @Override
     public void onDestroyView() {
         super.onDestroyView();

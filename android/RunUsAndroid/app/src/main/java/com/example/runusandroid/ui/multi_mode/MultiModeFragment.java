@@ -2,11 +2,16 @@ package com.example.runusandroid.ui.multi_mode;
 
 import static android.content.Context.MODE_PRIVATE;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +23,7 @@ import android.widget.ImageButton;
 import android.widget.NumberPicker;
 import android.widget.TimePicker;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -47,18 +53,15 @@ import MultiMode.RoomCreateInfo;
 
 
 public class MultiModeFragment extends Fragment {
-    //public static MultiModeUser user = new MultiModeUser(1, "choco");
     public static MultiModeUser user; // 유저 정보 임시로 더미데이터 활용
-    //public static MultiModeUser user = new MultiModeUser(3, "apple");
-    private final SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
+    public static SocketListenerThread socketListenerThread;
+    private final SocketManager socketManager = SocketManager.getInstance();
+    private long completeButtonLastClickTime = 0;
+    private long createRoomButtonLastClickTime = 0;
     SharedPreferences sharedPreferences;
     Dialog dialog;
-    private Button createRoomButton;
-    private RecyclerView recyclerView;
     private MultiModeAdapter adapter;
-    private List<MultiModeRoom> roomList = new ArrayList<>();
-
-    private MainActivity2 mainActivity2;
+    private final Handler updateHandler = new Handler(Looper.getMainLooper());
 
 
     public MultiModeFragment() {
@@ -104,37 +107,34 @@ public class MultiModeFragment extends Fragment {
                 pickedTime[0] = hour + ":" + minute;
             }
         });
-        completeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String groupName = groupNameEditText.getText().toString();
-                //double distance = Double.parseDouble(distanceEditText.getText().toString());
-                int numRunners = Integer.parseInt(membersEditText.getText().toString());
-                int timePickerCurrentHour = time_picker.getCurrentHour();
-                int timePickerCurrentMinute = time_picker.getCurrentMinute();
-
-                Duration duration = Duration.ofHours(numberPickerHour.getValue()).plusMinutes(numberPickerMinute.getValue());
-                //Duration duration = Duration.ofHours(0).plusMinutes(0).plusSeconds(8);
-                LocalDate today = LocalDate.now();
-                LocalDateTime startTime = LocalDateTime.of(today, LocalTime.of(timePickerCurrentHour, timePickerCurrentMinute));
-                // 현재 시간보다 선택한 시간이 느린 경우 하루 뒤로 설정
-                LocalDateTime now = LocalDateTime.now();
-                if (startTime.isBefore(now)) {
-                    startTime = startTime.plusDays(1);
-                }
-                //RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, 0, LocalDateTime.now().plusSeconds(5), numRunners, duration);
-                RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, 0, startTime, numRunners, duration);
-                new SendRoomInfoTask().execute(roomInfo); //소켓에 연결하여 패킷 전송
-
+        completeButton.setOnClickListener(v -> {
+            if (SystemClock.elapsedRealtime() - completeButtonLastClickTime < 1000){
+                return;
             }
+            completeButtonLastClickTime = SystemClock.elapsedRealtime();
+            String groupName = groupNameEditText.getText().toString();
+            //double distance = Double.parseDouble(distanceEditText.getText().toString());
+            int numRunners = Integer.parseInt(membersEditText.getText().toString());
+            int timePickerCurrentHour = time_picker.getCurrentHour();
+            int timePickerCurrentMinute = time_picker.getCurrentMinute();
+
+            Duration duration = Duration.ofHours(numberPickerHour.getValue()).plusMinutes(numberPickerMinute.getValue());
+            //Duration duration = Duration.ofHours(0).plusMinutes(0).plusSeconds(8);
+            LocalDate today = LocalDate.now();
+            LocalDateTime startTime = LocalDateTime.of(today, LocalTime.of(timePickerCurrentHour, timePickerCurrentMinute));
+            // 현재 시간보다 선택한 시간이 느린 경우 하루 뒤로 설정
+            LocalDateTime now1 = LocalDateTime.now();
+            if (startTime.isBefore(now1)) {
+                startTime = startTime.plusDays(1);
+            }
+            RoomCreateInfo roomInfo = new RoomCreateInfo(groupName, 0, startTime, numRunners, duration);
+            new SendRoomInfoTask().execute(roomInfo); //소켓에 연결하여 패킷 전송
+
         });
 
-        closeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // ImageButton을 클릭하면 모달 레이아웃의 가시성을 변경
-                dialog.dismiss();
-            }
+        closeButton.setOnClickListener(v -> {
+            // ImageButton을 클릭하면 모달 레이아웃의 가시성을 변경
+            dialog.dismiss();
         });
 
         dialog.show();
@@ -142,29 +142,36 @@ public class MultiModeFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
         sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
-        mainActivity2 = (MainActivity2) getActivity();
-        BottomNavigationView navView = mainActivity2.findViewById(R.id.nav_view);
-        navView.setVisibility(View.VISIBLE);
         user = new MultiModeUser((int) sharedPreferences.getLong("userid", 99999), sharedPreferences.getString("nickname", "guest"));
+
         View view = inflater.inflate(R.layout.fragment_multi_mode, container, false);
 
-        recyclerView = view.findViewById(R.id.recyclerView);
-        adapter = new MultiModeAdapter(roomList);
+        RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
+        adapter = new MultiModeAdapter(new ArrayList<MultiModeRoom>());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(adapter);
 
-        createRoomButton = view.findViewById(R.id.createRoomButton);
-        createRoomButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showModal(v.getContext());
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState){
+        super.onViewCreated(view, savedInstanceState);
+        MainActivity2 mainActivity2 = (MainActivity2) getActivity();
+        BottomNavigationView navView = mainActivity2.findViewById(R.id.nav_view);
+        navView.setVisibility(View.VISIBLE);
+
+        Button createRoomButton = view.findViewById(R.id.createRoomButton);
+        createRoomButton.setOnClickListener(v -> {
+            if (SystemClock.elapsedRealtime() - createRoomButtonLastClickTime < 1000){
+                return;
             }
+            createRoomButtonLastClickTime = SystemClock.elapsedRealtime();
+            showModal(v.getContext());
         });
 
-        new GetRoomListTask().execute();
-
-        return view;
     }
 
     private void printRoomListInfo(List<MultiModeRoom> roomList) {
@@ -185,110 +192,77 @@ public class MultiModeFragment extends Fragment {
         }
     }
 
-    private class GetRoomListTask extends AsyncTask<Void, Void, List<MultiModeRoom>> {
+    private class GetRoomListTask extends AsyncTask<Void, Void, Boolean> {
         @Override
-        protected List<MultiModeRoom> doInBackground(Void... voids) {
-            Socket socket = null;
+        protected Boolean doInBackground(Void... voids) {
+            boolean success = true;
             try {
-                socketManager.openSocket(); // 소켓 연결
-
                 ObjectOutputStream oos = socketManager.getOOS();
-                ObjectInputStream ois = socketManager.getOIS();
-
-
-                int dataType = Protocol.ROOM_LIST;
-                Packet requestPacket = new Packet(dataType, user);
+                Packet requestPacket = new Packet(Protocol.ROOM_LIST, user);
+                oos.reset();
                 oos.writeObject(requestPacket);
                 oos.flush();
-
-                Object receivedObject = ois.readObject();
-                if (receivedObject instanceof String) {
-                    // Handle String response if needed
-                    Log.d("Response", "Received response: " + receivedObject);
-
-                } else if (receivedObject instanceof Packet) {
-                    if (((Packet) receivedObject).getProtocol() == Protocol.ROOM_LIST) {
-                        roomList = ((Packet) receivedObject).getRoomList();
-                        Log.d("Response", "Received response: " + roomList.size());
-
-                    } else {
-                        Log.d("Response", "Received response: " + receivedObject);
-                    }
-                }
-            } catch (IOException | ClassNotFoundException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
-            } finally {
-                try {
-                    printRoomListInfo(roomList);
-                    //socket.close();
-                    socketManager.closeSocket();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                success = false;
             }
-
-            return roomList;
+            return success;
         }
-
         @Override
-        protected void onPostExecute(List<MultiModeRoom> result) {
-            super.onPostExecute(result);
-            adapter.setRoomList(roomList);
-            adapter.notifyDataSetChanged();
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
         }
+    }
+
+    public void setAdapter(List<MultiModeRoom> roomList){
+        adapter.setRoomList(roomList);
+        adapter.notifyDataSetChanged();
     }
 
     //소켓에 연결하여 방을 만들고, 해당 방에 입장
     private class SendRoomInfoTask extends AsyncTask<RoomCreateInfo, Void, Boolean> {
-
-        Packet packet;
-
         @Override
         protected Boolean doInBackground(RoomCreateInfo... roomInfo) {
             boolean success = false;
             try {
-                Log.d("response socketManager", socketManager.toString());
-                socketManager.openSocket(); // 소켓 연결
-
                 ObjectOutputStream oos = socketManager.getOOS();
-                ObjectInputStream ois = socketManager.getOIS();
-                int dataType = Protocol.CREATE_ROOM;
-                Packet requestPacket = new Packet(dataType, user, roomInfo[0]); // 서버에 보내는 패킷
+                Packet requestPacket = new Packet(Protocol.CREATE_ROOM, user, roomInfo[0]); // 서버에 보내는 패킷
+                oos.reset();
                 oos.writeObject(requestPacket); //서버로 패킷 전송
                 oos.flush();
-
-                Object receivedObject = ois.readObject(); //서버로부터 패킷 수신
-                if (receivedObject instanceof Packet) {
-                    packet = (Packet) receivedObject;
-
-                    success = true;
-                    Log.d("Response", "Received response: " + receivedObject);
-                }
-            } catch (IOException | ClassNotFoundException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
-
             return success;
         }
-
-        //SendRoomInfoTask의 결과에 따라 작동
         @Override
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             dialog.dismiss();
-            adapter.setRoomList(packet.getRoomList());
-
-            Bundle bundle = new Bundle();
-            bundle.putSerializable("room", packet.getSelectedRoom()); //Bundle에 selectedRoom 저장
-            View rootView = MultiModeFragment.this.getView();
-
-            // NavController를 사용하여 다음 fragment로 이동. 이 때 Bundle에 담긴 정보 전달
-            NavController navController = Navigation.findNavController(rootView);
-            navController.navigate(R.id.navigation_multi_room_wait, bundle);
-
         }
     }
 
+    public void navigateRoomWait(List<MultiModeRoom> roomList, MultiModeRoom room){
+        setAdapter(roomList);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("room", room);
+        NavController navController = Navigation.findNavController(requireView());
+        navController.navigate(R.id.navigation_multi_room_wait, bundle);
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(socketListenerThread==null) {
+            socketListenerThread = new SocketListenerThread(socketManager.getOIS());
+            socketListenerThread.addMultiModeFragment(this);
+            socketListenerThread.addHandler(updateHandler);
+            socketListenerThread.start();
+        }
+        else{
+            socketListenerThread.addMultiModeFragment(this);
+            socketListenerThread.addHandler(updateHandler);
+        }
+        new GetRoomListTask().execute();
+    }
 }

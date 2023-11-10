@@ -3,6 +3,8 @@ package com.example.runusandroid.ui.multi_mode;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
 
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -25,9 +27,10 @@ import MultiMode.Protocol;
 import MultiMode.UserDistance;
 
 public class SocketListenerThread extends Thread implements Serializable { // 소켓이 연결되어 있을 때 서버로부터 오는 이벤트를 캐치하기 위해 사용
-    private final Handler handler;
+    private Handler handler;
     private final ObjectInputStream ois;
-    private final MultiModeRoom selectedRoom;
+    private MultiModeRoom selectedRoom;
+    private transient MultiModeFragment multiModeFragment = null;;
     private transient MultiModeWaitFragment waitFragment = null;
     private transient MultiModePlayFragment playFragment = null;
     private transient MultiModeResultFragment resultFragment = null;
@@ -39,6 +42,9 @@ public class SocketListenerThread extends Thread implements Serializable { // �
         this.waitFragment = waitFragment;
         this.selectedRoom = selectedRoom;
     }
+    public SocketListenerThread(ObjectInputStream ois) {
+        this.ois = ois;
+    }
 
     public void pauseListening() {
         isPaused = true;
@@ -47,7 +53,18 @@ public class SocketListenerThread extends Thread implements Serializable { // �
     public void resumeListening() {
         isPaused = false;
     }
-
+    public void setRoom(MultiModeRoom room) {
+        this.selectedRoom = room;
+    }
+    public void addHandler(Handler handler) {
+        this.handler = handler;
+    }
+    public void addMultiModeFragment(MultiModeFragment multiModeFragment) {
+        this.multiModeFragment = multiModeFragment;
+    }
+    public void addWaitFragment(MultiModeWaitFragment waitFragment) {
+        this.waitFragment = waitFragment;
+    }
     public void addPlayFragment(MultiModePlayFragment playFragment) {
         this.playFragment = playFragment;
     }
@@ -73,101 +90,85 @@ public class SocketListenerThread extends Thread implements Serializable { // �
                 if (receivedObject instanceof Packet) {
                     Packet packet = (Packet) receivedObject;
 
-                    if (packet.getProtocol() == 5 || packet.getProtocol() == 4) {
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                MultiModeRoom room = packet.getSelectedRoom();
-                                MultiModeUser user = packet.getUser();
-                                if (packet.getProtocol() == 5) {
-                                    selectedRoom.enterUser(user);
-                                    waitFragment.addUserNameToWaitingList(user.getNickName());
-                                } else {
-
-                                    selectedRoom.exitUser(user);
-                                    waitFragment.removeUserNameFromWaitingList(user.getNickName());
-                                }
-                                Log.d("event", "user list: " + room.getUserList());
-                                Log.d("event", "user num: " + room.getUserSize());
-                                waitFragment.updateParticipantCount(room.getUserSize(), room.getNumRunners());
-
-                                if (selectedRoom.getOwner().getId() == user.getId()) { //만약 기존 방장이 방을 나가는 경우 방장 변경
-                                    selectedRoom.setRoomOwner(room.getRoomOwner());
-                                    waitFragment.startGame();
-                                }
-
+                    if(packet.getProtocol() == Protocol.ROOM_LIST){
+                        handler.post(() -> {
+                            List<MultiModeRoom> roomList = packet.getRoomList();
+                            multiModeFragment.setAdapter(roomList);
+                            Log.d("roomlist ", "roomlist: "+roomList);
+                        });
+                    } else if (packet.getProtocol() == Protocol.CREATE_ROOM){
+                        handler.post(() -> {
+                            List<MultiModeRoom> roomList = packet.getRoomList();
+                            selectedRoom = packet.getSelectedRoom();
+                            multiModeFragment.navigateRoomWait(roomList, selectedRoom);
+                        });
+                    } else if (packet.getProtocol() == Protocol.EXIT_ROOM ||
+                            packet.getProtocol() == Protocol.UPDATE_ROOM) {
+                        handler.post(() -> {
+                            MultiModeRoom room = packet.getSelectedRoom();
+                            MultiModeUser user = packet.getUser();
+                            if (packet.getProtocol() == Protocol.UPDATE_ROOM) {
+                                room.enterUser(user);
+                                waitFragment.addUserNameToWaitingList(user.getNickName());
+                            } else {
+                                room.exitUser(user);
+                                waitFragment.removeUserNameFromWaitingList(user.getNickName());
+                            }
+                            Log.d("event", "user list: " + room.getUserList());
+                            waitFragment.updateParticipantCount(room.getUserSize(), room.getNumRunners());
+                            if (selectedRoom.getOwner().getId() == user.getId()) { //만약 기존 방장이 방을 나가는 경우 방장 변경
+                                selectedRoom.setRoomOwner(room.getRoomOwner());
+                                waitFragment.startGame();
                             }
                         });
                     } else if (packet.getProtocol() == Protocol.START_GAME) {
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                Bundle bundle = new Bundle();
-                                bundle.putSerializable("room", selectedRoom);
-                                //bundle.putSerializable("socketListenerThread", SocketListenerThread.this);
-                                bundle.putSerializable("startTime", LocalDateTime.now());
-                                NavController navController = Navigation.findNavController(waitFragment.requireView());
-                                Log.d("response", "goto play screen");
-                                navController.navigate(R.id.navigation_multi_room_play, bundle);
-                            }
+                        handler.post(() -> {
+                            Bundle bundle = new Bundle();
+                            bundle.putSerializable("room", selectedRoom);
+                            bundle.putSerializable("startTime", LocalDateTime.now());
+                            NavController navController = Navigation.findNavController(waitFragment.requireView());
+                            navController.navigate(R.id.navigation_multi_room_play, bundle);
                         });
                     } else if (packet.getProtocol() == Protocol.UPDATE_TOP3_STATES) {
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                List<UserDistance> temp = packet.getListTop3UserDistance();
-                                UserDistance[] userDistances = temp.toArray(new UserDistance[temp.size()]);
-                                Log.d("response", "userDistances.length is " + userDistances.length);
-                                for (int i = 0; i < userDistances.length; i++) {
-                                    Log.d("response", "user " + i + " : " + userDistances[i].getUser().getNickName() + " , distance : " + userDistances[i].getDistance());
-                                }
-                                playFragment.updateTop3UserDistance(userDistances);
+                        handler.post(() -> {
+                            List<UserDistance> temp = packet.getListTop3UserDistance();
+                            UserDistance[] userDistances = temp.toArray(new UserDistance[temp.size()]);
+                            Log.d("response", "userDistances.length is " + userDistances.length);
+                            for (int i = 0; i < userDistances.length; i++) {
+                                Log.d("response", "user " + i + " : " + userDistances[i].getUser().getNickName() + " , distance : " + userDistances[i].getDistance());
                             }
+                            playFragment.updateTop3UserDistance(userDistances);
                         });
                     } else if (packet.getProtocol() == Protocol.SAVE_GROUP_HISTORY) {
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    Log.d("response", "got packet and try to save group history");
-                                    List<UserDistance> temp = packet.getListTop3UserDistance();
-                                    UserDistance[] userDistances = temp.toArray(new UserDistance[temp.size()]);
-                                    playFragment.saveGroupHistoryData(userDistances);
-                                } catch (JSONException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            }
-                        });
-
-                    } else if (packet.getProtocol() == Protocol.CLOSE_GAME) {
-                        Log.d("response", "got close game packet!!!!!");
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-
-                                playFragment.timeHandler.removeCallbacks(playFragment.timeRunnable);
-                                playFragment.sendDataHandler.removeCallbacks(playFragment.sendDataRunnable);
-                                Bundle bundle = new Bundle();
-                                bundle.putSerializable("room", selectedRoom);
-                                //bundle.putSerializable("socketListenerThread", SocketListenerThread.this);
+                        handler.post(() -> {
+                            try {
                                 List<UserDistance> temp = packet.getListTop3UserDistance();
                                 UserDistance[] userDistances = temp.toArray(new UserDistance[temp.size()]);
-                                playFragment.userDistances = userDistances;
-//                                bundle.putSerializable("top3UserDistance", packet.getTop3UserDistance());
-//                                bundle.putSerializable("userDistance", playFragment.distance);
-                                Log.d("response", "go to room result screen");
-                                try {
-                                    playFragment.saveHistoryData(packet.getGroupHistoryId());
-                                } catch (JSONException e) {
-                                    throw new RuntimeException(e);
-                                }
-//                                NavController navController = Navigation.findNavController(playFragment.requireView());
-//                                navController.navigate(R.id.navigation_multi_room_result, bundle);
-                                //Log.d("response", packet.getTop3UserDistance() + " ");
-                                Log.d("response", resultFragment + "");
-
-//                                resultFragment.updateTop3UserDistance(packet.getTop3UserDistance());
+                                playFragment.saveGroupHistoryData(userDistances);
+                            } catch (JSONException e) {
+                                throw new RuntimeException(e);
                             }
+                        });
+                    } else if (packet.getProtocol() == Protocol.CLOSE_GAME) {
+                        handler.post(() -> {
+                            playFragment.timeHandler.removeCallbacks(playFragment.timeRunnable);
+                            playFragment.sendDataHandler.removeCallbacks(playFragment.sendDataRunnable);
+                            Bundle bundle = new Bundle();
+                            bundle.putSerializable("room", selectedRoom);
+                            List<UserDistance> temp = packet.getListTop3UserDistance();
+                            playFragment.userDistances = temp.toArray(new UserDistance[temp.size()]);
+                            try {
+                                playFragment.saveHistoryData(packet.getGroupHistoryId());
+                            } catch (JSONException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+                    } else if (packet.getProtocol() == Protocol.CLOSED_ROOM_ERROR) {
+                        handler.post(() -> {
+                            Toast.makeText(multiModeFragment.getActivity(), "존재하지 않는 방입니다.", Toast.LENGTH_SHORT).show();
+                            NavController navController = Navigation.findNavController(waitFragment.requireView());
+                            navController.navigate(R.id.navigation_multi_mode);
+
                         });
                     }
                 }

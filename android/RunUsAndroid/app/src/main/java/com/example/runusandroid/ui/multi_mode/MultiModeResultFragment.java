@@ -49,7 +49,7 @@ public class MultiModeResultFragment extends Fragment {
     Button playLeaveButton;
     Button recordButton;
     TextView distanceResultContentTextView; //API 사용해서 구한 나의 현재 이동 거리
-    SocketListenerThread socketListenerThread = MultiModeWaitFragment.socketListenerThread;
+    SocketListenerThread socketListenerThread = MultiModeFragment.socketListenerThread;
     RecyclerView recyclerView;
     RecordDialog dialog;
     boolean isDialogOpenedBefore = false;
