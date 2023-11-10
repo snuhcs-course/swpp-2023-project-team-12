@@ -96,28 +96,30 @@ public class SocketListenerThread extends Thread implements Serializable { // �
                             multiModeFragment.setAdapter(roomList);
                             Log.d("roomlist ", "roomlist: "+roomList);
                         });
+                    } else if(packet.getProtocol() == Protocol.ENTER_ROOM){
+                        handler.post(() -> {
+                            selectedRoom = packet.getSelectedRoom();
+                            multiModeFragment.navigateRoomWait(selectedRoom);
+                        });
                     } else if (packet.getProtocol() == Protocol.CREATE_ROOM){
                         handler.post(() -> {
-                            List<MultiModeRoom> roomList = packet.getRoomList();
                             selectedRoom = packet.getSelectedRoom();
-                            multiModeFragment.navigateRoomWait(roomList, selectedRoom);
+                            multiModeFragment.navigateRoomWait(selectedRoom);
                         });
                     } else if (packet.getProtocol() == Protocol.EXIT_ROOM ||
                             packet.getProtocol() == Protocol.UPDATE_ROOM) {
                         handler.post(() -> {
-                            MultiModeRoom room = packet.getSelectedRoom();
+                            selectedRoom = packet.getSelectedRoom();
                             MultiModeUser user = packet.getUser();
                             if (packet.getProtocol() == Protocol.UPDATE_ROOM) {
-                                room.enterUser(user);
                                 waitFragment.addUserNameToWaitingList(user.getNickName());
                             } else {
-                                room.exitUser(user);
                                 waitFragment.removeUserNameFromWaitingList(user.getNickName());
                             }
-                            Log.d("event", "user list: " + room.getUserList());
-                            waitFragment.updateParticipantCount(room.getUserSize(), room.getNumRunners());
+                            Log.d("event", "user list: " + selectedRoom.getUserList());
+                            waitFragment.updateParticipantCount(selectedRoom.getUserSize(), selectedRoom.getNumRunners());
                             if (selectedRoom.getOwner().getId() == user.getId()) { //만약 기존 방장이 방을 나가는 경우 방장 변경
-                                selectedRoom.setRoomOwner(room.getRoomOwner());
+                                selectedRoom.setRoomOwner(selectedRoom.getRoomOwner());
                                 waitFragment.startGame();
                             }
                         });
@@ -166,9 +168,12 @@ public class SocketListenerThread extends Thread implements Serializable { // �
                     } else if (packet.getProtocol() == Protocol.CLOSED_ROOM_ERROR) {
                         handler.post(() -> {
                             Toast.makeText(multiModeFragment.getActivity(), "존재하지 않는 방입니다.", Toast.LENGTH_SHORT).show();
-                            NavController navController = Navigation.findNavController(waitFragment.requireView());
+                            NavController navController = Navigation.findNavController(multiModeFragment.requireView());
                             navController.navigate(R.id.navigation_multi_mode);
-
+                        });
+                    } else if(packet.getProtocol() == Protocol.FULL_ROOM_ERROR){
+                        handler.post(() -> {
+                            Toast.makeText(multiModeFragment.getActivity(), "인원이 초과되었습니다.", Toast.LENGTH_SHORT).show();
                         });
                     }
                 }

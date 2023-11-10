@@ -679,7 +679,6 @@ public class MultiModePlayFragment extends Fragment {
             return success;
         }
 
-        //ExitGameTask 실행 결과에 따라 수행
         @Override
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);

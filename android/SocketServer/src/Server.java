@@ -89,12 +89,18 @@ public class Server {
                                 oos.reset();
                                 oos.writeObject(closedRoomPacket);
                                 oos.flush();
+                            } else if(enteredRoom.isRoomFull()){
+                                Packet fullRoomPacket = new Packet(Protocol.FULL_ROOM_ERROR);
+                                oos.reset();
+                                oos.writeObject(fullRoomPacket);
+                                oos.flush();
                             } else {
                                 enteredRoom.enterUser(user);
+                                Packet enterRoomPacket = new Packet(Protocol.ENTER_ROOM, user, enteredRoom);
+                                oos.reset();
+                                oos.writeObject(enterRoomPacket);
+                                oos.flush();
                                 System.out.println(enteredRoom);
-                                //Packet enterRoomPacket = new Packet(Protocol.ENTER_ROOM, RoomManager.getRoomList(), user, enteredRoom);
-                                //oos.writeObject(enterRoomPacket);
-                                //oos.flush();
                                 broadcastToRoomUsers(enteredRoom, new Packet(Protocol.UPDATE_ROOM, user, enteredRoom));
                                 enteredRoom.addOutputStream(oos);
                             }

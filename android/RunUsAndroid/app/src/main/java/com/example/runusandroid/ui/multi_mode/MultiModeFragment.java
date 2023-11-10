@@ -242,8 +242,7 @@ public class MultiModeFragment extends Fragment {
         }
     }
 
-    public void navigateRoomWait(List<MultiModeRoom> roomList, MultiModeRoom room){
-        setAdapter(roomList);
+    public void navigateRoomWait(MultiModeRoom room){
         Bundle bundle = new Bundle();
         bundle.putSerializable("room", room);
         NavController navController = Navigation.findNavController(requireView());

@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -28,10 +29,7 @@ import MultiMode.MultiModeUser;
 import MultiMode.UserDistance;
 
 public class MultiModeResultFragment extends Fragment {
-
-    MultiModeUser user = MultiModeFragment.user;
-    SocketManager socketManager = SocketManager.getInstance();
-    ObjectOutputStream oos;
+    OnBackPressedCallback backPressedCallBack;
     MultiModeRoom selectedRoom;
     float distance = 0;
     ArrayList<Float> speedList;
@@ -55,6 +53,18 @@ public class MultiModeResultFragment extends Fragment {
     boolean isDialogOpenedBefore = false;
     private TextView timeResultContentTextView;
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        backPressedCallBack = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                NavController navController = Navigation.findNavController(requireView());
+                navController.navigate(R.id.navigation_multi_mode);
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
+    }
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -162,10 +172,7 @@ public class MultiModeResultFragment extends Fragment {
                 }
             }
         }
-
-
         progressBar.setProgress(100);
-
     }
 
     @Override
@@ -185,10 +192,12 @@ public class MultiModeResultFragment extends Fragment {
         // "00:00:00" 형태의 문자열로 변환
         String formattedDuration = String.format("%02d:%02d:%02d", hours, minutes, seconds);
 
-
         timeResultContentTextView.setText(formattedDuration);
         Log.d("response", "here is room result screen");
-
-
+    }
+    @Override
+    public void onPause() {
+        super.onPause();
+        backPressedCallBack.remove();
     }
 }

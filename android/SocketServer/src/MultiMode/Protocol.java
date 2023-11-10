@@ -16,5 +16,7 @@ public class Protocol {
     public static final int SAVE_GROUP_HISTORY = 12;
     public static final int CLOSE_GAME = 13;
     public static final int CLOSED_ROOM_ERROR = 14;
+    public static final int FULL_ROOM_ERROR = 15;
+    
 }
 

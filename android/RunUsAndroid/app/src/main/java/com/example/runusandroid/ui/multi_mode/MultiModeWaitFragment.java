@@ -40,6 +40,7 @@ import MultiMode.Protocol;
 public class MultiModeWaitFragment extends Fragment {
 
     SocketListenerThread socketListenerThread = MultiModeFragment.socketListenerThread;
+    OnBackPressedCallback backPressedCallBack;
     private final Handler handler = new Handler(); // 남은 시간 계산 위한 Handler
     private final int updateTimeInSeconds = 1; // 1초마다 업데이트/
     MultiModeUser user = MultiModeFragment.user;
@@ -115,14 +116,13 @@ public class MultiModeWaitFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+        backPressedCallBack = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                Log.d("callback","callback called");
                 new ExitRoomTask().execute();
             }
         };
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
 }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -301,6 +301,7 @@ public class MultiModeWaitFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+        backPressedCallBack.remove();
     }
 
     @Override

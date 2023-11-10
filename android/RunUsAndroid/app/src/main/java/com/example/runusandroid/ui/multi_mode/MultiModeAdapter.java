@@ -89,7 +89,7 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
             enterButtonLastClickTime = SystemClock.elapsedRealtime();
             selectedRoom = roomList.get(position);
             NavController navController = Navigation.findNavController(v);
-            new EnterRoomTask(v.getContext(), navController).execute();
+            new EnterRoomTask().execute();
         });
 
     }
@@ -97,10 +97,6 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
     @Override
     public int getItemCount() {
         return roomList.size();
-    }
-
-    private void showFullRoomToast(Context context) {
-        Toast.makeText(context, "인원이 초과되었습니다.", Toast.LENGTH_SHORT).show();
     }
 
     private void printRoomInfo(MultiModeRoom room) {
@@ -125,32 +121,17 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
 
     //방 입장시 socket을 통해 서버와 연결
     private class EnterRoomTask extends AsyncTask<Void, Void, Boolean> {
-        private final Context mContext;
-        private final NavController navcon;
         private boolean isRoomFull;
-        public EnterRoomTask(Context context, NavController navcon) {
-            this.mContext = context;
-            this.navcon = navcon;
-        }
 
         @Override
         protected Boolean doInBackground(Void... voids) {
             boolean success = true;
-            isRoomFull = false;
             try {
                 ObjectOutputStream oos = socketManager.getOOS(); //서버로 바이트스트림을 직렬화하기 위해 필요.
-                if (selectedRoom.getUserList().size() < selectedRoom.getNumRunners()) {
-                    Packet requestPacket = new Packet(Protocol.ENTER_ROOM, user, selectedRoom);
-                    oos.reset();
-                    oos.writeObject(requestPacket);
-                    oos.flush();
-                    selectedRoom.enterUser(user);
-                    printRoomInfo(selectedRoom);
-                }
-                else{
-                    success = false;
-                    isRoomFull = true;
-                }
+                Packet requestPacket = new Packet(Protocol.ENTER_ROOM, user, selectedRoom);
+                oos.reset();
+                oos.writeObject(requestPacket);
+                oos.flush();
             } catch (IOException e) {
                 e.printStackTrace();
                 success = false;
@@ -161,16 +142,6 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
         @Override
         protected void onPostExecute(Boolean success) { //doInBackground()의 return값에 따라 작업 수행. 룸 리스트 업데이트, 입장하는 방 정보 업데이트
             super.onPostExecute(success);
-            if (success) {
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("room", selectedRoom);
-                navcon.navigate(R.id.navigation_multi_room_wait, bundle);
-            } else {
-                if(isRoomFull) {
-                    showFullRoomToast(mContext); // 방이 이미 꽉 찼다는 Toast 보내기
-                }
-                Log.e("SendPacket", "Failed to send packet!");
-            }
         }
 
     }
