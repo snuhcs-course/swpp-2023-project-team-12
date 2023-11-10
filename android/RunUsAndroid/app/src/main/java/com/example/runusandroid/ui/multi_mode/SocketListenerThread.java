@@ -110,6 +110,7 @@ public class SocketListenerThread extends Thread implements Serializable { // �
                             packet.getProtocol() == Protocol.UPDATE_ROOM) {
                         handler.post(() -> {
                             selectedRoom = packet.getSelectedRoom();
+                            waitFragment.setRoom(selectedRoom);
                             MultiModeUser user = packet.getUser();
                             if (packet.getProtocol() == Protocol.UPDATE_ROOM) {
                                 waitFragment.addUserNameToWaitingList(user.getNickName());
@@ -118,13 +119,10 @@ public class SocketListenerThread extends Thread implements Serializable { // �
                             }
                             Log.d("event", "user list: " + selectedRoom.getUserList());
                             waitFragment.updateParticipantCount(selectedRoom.getUserSize(), selectedRoom.getNumRunners());
-                            if (selectedRoom.getOwner().getId() == user.getId()) { //만약 기존 방장이 방을 나가는 경우 방장 변경
-                                selectedRoom.setRoomOwner(selectedRoom.getRoomOwner());
-                                waitFragment.startGame();
-                            }
                         });
                     } else if (packet.getProtocol() == Protocol.START_GAME) {
                         handler.post(() -> {
+                            Log.d("start game", "start game packet come");
                             Bundle bundle = new Bundle();
                             bundle.putSerializable("room", selectedRoom);
                             bundle.putSerializable("startTime", LocalDateTime.now());

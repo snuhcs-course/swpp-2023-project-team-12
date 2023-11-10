@@ -43,6 +43,7 @@ public class MultiModeWaitFragment extends Fragment {
     OnBackPressedCallback backPressedCallBack;
     private final Handler handler = new Handler(); // 남은 시간 계산 위한 Handler
     private final int updateTimeInSeconds = 1; // 1초마다 업데이트/
+    private boolean isGameStarted = false;
     MultiModeUser user = MultiModeFragment.user;
     SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
     private MultiModeRoom selectedRoom; // MultiModeRoom 객체를 저장할 멤버 변수
@@ -105,10 +106,10 @@ public class MultiModeWaitFragment extends Fragment {
         // startTime이 현재 시간보다 앞선 경우
         if (duration.isNegative() || duration.isZero()) {
             timeRemainingTextView.setText("곧 경기가 시작됩니다");
-            if (selectedRoom.getRoomOwner().getId() == user.getId()) {
+            if (!isGameStarted && selectedRoom.getRoomOwner().getId() == user.getId()) {
+                isGameStarted = true;
                 new StartRoomTask().execute();
             }
-
             // Runnable 종료
         }
     }
@@ -301,12 +302,14 @@ public class MultiModeWaitFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+        Log.d("pause","paused");
         backPressedCallBack.remove();
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        Log.d("destroy","destroyed");
         // 타이머가 더 이상 필요하지 않을 때 핸들러를 제거합니다.
         handler.removeCallbacks(updateTimeRunnable);
     }
@@ -372,6 +375,10 @@ public class MultiModeWaitFragment extends Fragment {
                 Log.d("ExitSendPacket", "Failed to send Start Game packet!");
             }
         }
-
     }
+
+    public void setRoom(MultiModeRoom room){
+        selectedRoom = room;
+    }
+
 }
