@@ -32,3 +32,4 @@ jobs:
       run: |
         cd django
         python manage.py test
+
