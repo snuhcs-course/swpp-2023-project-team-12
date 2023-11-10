@@ -3,7 +3,7 @@ package com.example.runusandroid.ui.single_mode;
 import static android.content.Context.MODE_PRIVATE;
 
 import android.Manifest;
-import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.TimeZone;
 import android.location.Location;
@@ -21,6 +22,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.SeekBar;
@@ -263,9 +265,10 @@ public class SingleModeFragment extends Fragment {
                 //startButton.setVisibility(View.GONE);
 
                 View dialogView = getLayoutInflater().inflate(R.layout.dialog_mission_start, null);
-                AlertDialog dialog = new AlertDialog.Builder(getActivity()).create();
-
-                dialog.setView(dialogView);
+                Dialog dialog = new Dialog(getContext());
+                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                dialog.setContentView(dialogView);
 
                 TextView missionInfo = dialogView.findViewById(R.id.textViewMissionInfo);
 
@@ -436,9 +439,11 @@ public class SingleModeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 View finishDialog = getLayoutInflater().inflate(R.layout.dialog_single_play_finish, null);
-                AlertDialog dialog = new AlertDialog.Builder(getActivity()).create();
+                Dialog dialog = new Dialog(getContext());
+                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
-                dialog.setView(finishDialog);
+                dialog.setContentView(finishDialog);
 
                 Button buttonConfirmClose = finishDialog.findViewById(R.id.buttonConfirmClose);
                 buttonConfirmClose.setOnClickListener(new View.OnClickListener() {
@@ -519,9 +524,12 @@ public class SingleModeFragment extends Fragment {
 
 
                     View finishDialog = getLayoutInflater().inflate(R.layout.dialog_single_play_finish, null);
-                    AlertDialog dialog = new AlertDialog.Builder(getActivity()).create();
+                    Dialog dialog = new Dialog(getContext());
+                    dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
-                    dialog.setView(finishDialog);
+                    dialog.setContentView(finishDialog);
+
 
                     Button buttonConfirmClose = finishDialog.findViewById(R.id.buttonConfirmClose);
                     buttonConfirmClose.setOnClickListener(new View.OnClickListener() {
@@ -752,10 +760,11 @@ public class SingleModeFragment extends Fragment {
             distanceTextView.setText("달린 거리: " + currentDistanceText.getText());
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setView(dialogView);
+        Dialog dialog = new Dialog(getContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.setContentView(dialogView);
 
-        final AlertDialog dialog = builder.create();
 
         confirmButton.setOnClickListener(new View.OnClickListener() {
             @Override
