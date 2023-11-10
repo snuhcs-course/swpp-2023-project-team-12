@@ -56,14 +56,6 @@ public class MultiModeResultFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        backPressedCallBack = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                NavController navController = Navigation.findNavController(requireView());
-                navController.navigate(R.id.navigation_multi_mode);
-            }
-        };
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
     }
     @Nullable
     @Override
@@ -178,6 +170,16 @@ public class MultiModeResultFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+
+        Log.d("create callback","create callback");
+        backPressedCallBack = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                NavController navController = Navigation.findNavController(requireView());
+                navController.navigate(R.id.navigation_multi_mode);
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
         //socketListenerThread = (SocketListenerThread) getArguments().getSerializable("socketListenerThread"); //waitFragment의 socketListenrThread객체 가져와서 이어서 사용
         socketListenerThread.addResultFragment(this);
         socketListenerThread.resumeListening();

@@ -23,6 +23,7 @@ import android.widget.ImageButton;
 import android.widget.NumberPicker;
 import android.widget.TimePicker;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
@@ -56,6 +57,7 @@ public class MultiModeFragment extends Fragment {
     public static MultiModeUser user; // 유저 정보 임시로 더미데이터 활용
     public static SocketListenerThread socketListenerThread;
     private final SocketManager socketManager = SocketManager.getInstance();
+    OnBackPressedCallback backPressedCallBack;
     private long completeButtonLastClickTime = 0;
     private long createRoomButtonLastClickTime = 0;
     SharedPreferences sharedPreferences;
@@ -252,6 +254,14 @@ public class MultiModeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        backPressedCallBack = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                NavController navController = Navigation.findNavController(requireView());
+                navController.navigate(R.id.navigation_home);
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
         if(socketListenerThread==null) {
             socketListenerThread = new SocketListenerThread(socketManager.getOIS());
             socketListenerThread.addMultiModeFragment(this);
@@ -263,5 +273,10 @@ public class MultiModeFragment extends Fragment {
             socketListenerThread.addHandler(updateHandler);
         }
         new GetRoomListTask().execute();
+    }
+    @Override
+    public void onPause() {
+        super.onPause();
+        backPressedCallBack.remove();
     }
 }

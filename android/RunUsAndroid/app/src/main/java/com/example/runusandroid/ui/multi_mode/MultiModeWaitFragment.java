@@ -116,13 +116,6 @@ public class MultiModeWaitFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        backPressedCallBack = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                new ExitRoomTask().execute();
-            }
-        };
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
 }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -292,6 +285,13 @@ public class MultiModeWaitFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        backPressedCallBack = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                new ExitRoomTask().execute();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
         socketManager = SocketManager.getInstance();
         ois = socketManager.getOIS();
         socketListenerThread.addWaitFragment(this);

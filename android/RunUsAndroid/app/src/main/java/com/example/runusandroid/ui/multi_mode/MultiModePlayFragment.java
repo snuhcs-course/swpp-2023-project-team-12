@@ -180,8 +180,6 @@ public class MultiModePlayFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         finishedTask = new SendFinishedTask();
-        socketListenerThread.addPlayFragment(this);
-        socketListenerThread.resumeListening();
         gameStartTime = (LocalDateTime) getArguments().getSerializable("startTime");
         //Log.d("currentTime", gameStartTime + "");
         //경과 시간 업데이트
@@ -223,17 +221,6 @@ public class MultiModePlayFragment extends Fragment {
 
             }
         };
-
-        backPressedCallBack = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                userExit = true;
-                Packet requestPacket = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
-                new ExitGameTask().execute(requestPacket);
-            }
-        };
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
-
         timeHandler.post(timeRunnable);
         selectedRoom = (MultiModeRoom) getArguments().getSerializable("room");
         iterationStartTime = gameStartTime;
@@ -445,13 +432,21 @@ public class MultiModePlayFragment extends Fragment {
     public void onResume() {
         super.onResume();
         //아래 코드에서 resume때 result fragment로 가는 이유?
+        backPressedCallBack = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                userExit = true;
+                Packet requestPacket = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
+                new ExitGameTask().execute(requestPacket);
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
+        socketListenerThread.addPlayFragment(this);
+        socketListenerThread.resumeListening();
+
         transitionToResultFragment();
-//        socketListenerThread = (SocketListenerThread) getArguments().getSerializable("socketListenerThread"); //waitFragment의 socketListenrThread객체 가져와서 이어서 사용
 
         Log.d("response", "start play screen");
-        //top3UpdateHandler.postDelayed(sendDataRunnable, 5000);
-
-        //fusedLocationClient.removeLocationUpdates(locationCallback);
 
         if (ActivityCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
