@@ -15,7 +15,7 @@ public class ExpSystem {
         double exp = 0;
 
         if (singleMode.equals("single")) {
-            exp = 10;//달리기 평균 속도 10km/h(약 2.8m/s)를 default 속도로 설정
+            exp = 100;//달리기 평균 속도 10km/h(약 2.8m/s)를 default 속도로 설정
             long seconds = duration.getSeconds();
             double distanceInMeter = distance * 1000;
             if (seconds == 0) return (int) exp;
@@ -65,7 +65,7 @@ public class ExpSystem {
         return (int) exp;
     }
 
-
+    //등비수열 합공식
     private static double geometricSeries(double exp, double distance) {
         double processedExp = 0;
         for (int i = 0; i < (int) distance; i++) {
@@ -80,7 +80,7 @@ public class ExpSystem {
     public static int getLevel(int exp) {
         int level = 0;
 
-        if (exp > 100000) {
+        if (exp > 300000) {
             level = 10;
         } else if (exp > 200000) {
             level = 9;

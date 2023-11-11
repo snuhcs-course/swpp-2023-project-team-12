@@ -260,7 +260,6 @@
         android:id="@+id/quitButton"
         android:layout_width="130dp"
         android:layout_height="130dp"
-        android:layout_marginTop="60dp"
         android:backgroundTint="#E94334"
         android:fontFamily="@font/pretendardregular"
         android:shape='oval'
@@ -271,7 +270,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guidelineRight"
         app:layout_constraintStart_toStartOf="@+id/guidelineLeft"
-        app:layout_constraintTop_toBottomOf="@id/map" />
+        app:layout_constraintTop_toBottomOf="@id/currentPace" />
 
     <Button
         android:id="@+id/hiddenButton"
