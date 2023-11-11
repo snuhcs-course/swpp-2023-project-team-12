@@ -35,8 +35,6 @@ ALLOWED_HOSTS = [
     ".ap-northeast-2.compute.amazonaws.com",
     "google.com",
     "10.0.2.2",
-    "172.30.1.46",
-    "172.30.1.8",
 ]
 
 
@@ -179,7 +177,7 @@ LOGGING = {
     },
     "root": {
         "handlers": ["console"],
-        "level": "WARNING",
+        "level": "DEBUG",
     },
 }
 
@@ -189,3 +187,7 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "runusnoreply"
 EMAIL_HOST_PASSWORD = "uowq tlzw ckdo ehml"  # 실제 Gmail 비밀번호 입력
+
+MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = "/media/"
+STATIC_URL = "static/"

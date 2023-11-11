@@ -1,5 +1,7 @@
 package com.example.runusandroid;
 
+import static com.example.runusandroid.RetrofitClient.setAuthToken;
+
 import android.Manifest;
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -26,10 +28,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity2 extends AppCompatActivity {
 
+    public UserActivityBroadcastReceiver activityReceiver;
     UserActivityTransitionManager activityManager;
     PendingIntent pendingIntent;
-
-    public UserActivityBroadcastReceiver activityReceiver;
     private ActivityMain2Binding binding;
     private FusedLocationProviderClient fusedLocationClient;
 
@@ -50,6 +51,7 @@ public class MainActivity2 extends AppCompatActivity {
             finish();  // MainActivity2를 종료
         }
 
+        setAuthToken(token);
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
