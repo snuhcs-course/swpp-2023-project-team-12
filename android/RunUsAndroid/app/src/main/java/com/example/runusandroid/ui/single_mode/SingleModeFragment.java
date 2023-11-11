@@ -25,6 +25,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.Chronometer;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -104,6 +105,7 @@ public class SingleModeFragment extends Fragment {
     TextView goalTimeStaticText;
     TextView goalTimeText;
     Button quitButton;
+    LinearLayout currentPace;
     Button startButton;
     private List<LatLng> pathPoints = new ArrayList<>();
     private List<Float> speedList = new ArrayList<>(); // 매 km 마다 속력 (km/h)
@@ -216,7 +218,7 @@ public class SingleModeFragment extends Fragment {
 
         mainActivity = (MainActivity2) getActivity();
         historyApi = RetrofitClient.getClient().create(HistoryApi.class);
-
+        currentPace = binding.currentPace;
         quitButton = binding.quitButton;
         startButton = binding.startButton;
         currentDistanceText = binding.currentDistanceText;
@@ -405,6 +407,7 @@ public class SingleModeFragment extends Fragment {
                         gameStartTime = LocalDateTime.now();
                         lastLocation = null;
                         distance = 0;
+                        currentPace.setVisibility(View.VISIBLE);
                         currentDistanceText.setText("0.00 km");
                         runningNow = true;
                         currentTimeText.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
@@ -427,6 +430,7 @@ public class SingleModeFragment extends Fragment {
                     public void onClick(View v) {
 
                         startButton.setVisibility(View.VISIBLE);
+                        currentPace.setVisibility(View.GONE);
                         dialog.dismiss();
                     }
                 });
@@ -720,7 +724,9 @@ public class SingleModeFragment extends Fragment {
     private void finishPlaySingleMode() {
         runningNow = false;
         quitButton.setVisibility(View.GONE);
+
         startButton.setVisibility(View.VISIBLE);
+        currentPace.setVisibility(View.GONE);
         mainActivity.getLastLocation();
         currentTimeText.stop();
         View dialogView;
