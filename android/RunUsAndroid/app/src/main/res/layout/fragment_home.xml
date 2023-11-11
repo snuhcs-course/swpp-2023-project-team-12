@@ -68,7 +68,7 @@
             android:layout_height="wrap_content"
             android:fontFamily="@font/pretendardregular"
             android:padding="16dp"
-            android:text="오늘의 달리기 기록" />
+            android:text="메인화면 정비중입니다. 감사합니다." />
 
     </androidx.cardview.widget.CardView>
 
