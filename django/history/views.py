@@ -11,8 +11,9 @@ from rest_framework import status
 from .models import history, group_history
 from datetime import datetime, timedelta
 from django.utils import timezone
-from django.http import JsonResponse
 from django.db.models import Sum
+from django.db.models.functions import TruncDay
+from venv import logger
 
 
 # Create your views here.
@@ -119,12 +120,35 @@ class MonthlyDataView(APIView):
         total_distance = data.aggregate(Sum("distance"))["distance__sum"] or 0
         total_time = data.aggregate(Sum("duration"))["duration__sum"] or timedelta(0)
         total_calories = data.aggregate(Sum("calories"))["calories__sum"] or 0
-        serializer = MonthlyDataSerializer(
-            {"distance": total_distance, "time": total_time, "calories": total_calories}
+
+        daily_data = (
+            data.annotate(date=TruncDay("start_time"))
+            .values("date")
+            .annotate(
+                distance=Sum("distance"), time=Sum("duration"), calories=Sum("calories")
+            )
+            .order_by("date")
         )
+        for item in daily_data:
+            item["date"] = item["date"].date()
+            logger.debug(daily_data)
+        response_data = {
+            "total_distance": total_distance,
+            "total_time": total_time,
+            "total_calories": total_calories,
+            "daily_data": list(daily_data),
+        }
+
+        logger.debug(f"Response data before serialization: {response_data}")
+
+        serializer = MonthlyDataSerializer(response_data)
+        serialized_data = serializer.data
+
+        logger.debug(f"Serialized data: {serialized_data}")
         return Response(serializer.data)
 
 
+# NOTE: 잠시 Deperecated된 API
 class DailyDataView(APIView):
     def get(self, request, year, month, day, user_id):
         data = history.objects.filter(
