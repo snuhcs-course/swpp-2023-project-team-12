@@ -9,7 +9,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/pretendardregular"
+        android:fontFamily="@font/pretendardextrablod"
         android:padding="15dp"
         android:text="월별 요약"
         android:textSize="30sp"
@@ -20,8 +20,8 @@
     <FrameLayout
         android:id="@+id/mothlyHistory"
         android:layout_width="375dp"
-        android:layout_height="80dp"
-        android:background="@drawable/round_shape_green"
+        android:layout_height="60dp"
+        android:background="@drawable/round_shape_for_monthly_history"
         app:layout_constraintBottom_toTopOf="@id/historyCalendar"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -42,6 +42,7 @@
                 android:fontFamily="@font/pretendardregular"
                 android:gravity="center"
                 android:text=""
+                android:textColor="@color/white"
                 android:textSize="16sp" />
 
             <TextView
@@ -52,6 +53,7 @@
                 android:fontFamily="@font/pretendardregular"
                 android:gravity="center"
                 android:text=""
+                android:textColor="@color/white"
                 android:textSize="16sp" />
 
             <TextView
@@ -62,22 +64,34 @@
                 android:fontFamily="@font/pretendardregular"
                 android:gravity="center"
                 android:text=""
+                android:textColor="@color/white"
                 android:textSize="16sp" />
 
         </LinearLayout>
     </FrameLayout>
 
-    <CalendarView
+    <com.applandeo.materialcalendarview.CalendarView
         android:id="@+id/historyCalendar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/mothlyHistory" />
+        app:anotherMonthsDaysLabelsColor="@color/white"
+        app:eventsEnabled="true"
+        app:headerColor="@color/white"
+        app:headerLabelColor="@color/black"
+        app:highlightedDaysLabelsColor="@color/black"
+        app:layout_constraintBottom_toTopOf="@+id/dailyHistory"
+        app:layout_constraintTop_toBottomOf="@+id/mothlyHistory"
+        app:selectionColor="#4AA570"
+        app:selectionLabelColor="@color/white"
+        app:todayLabelColor="@color/currentMonthDayColor"
+        app:type="one_day_picker" />
+
 
     <FrameLayout
         android:id="@+id/dailyHistory"
         android:layout_width="375dp"
-        android:layout_height="80dp"
-        android:background="@drawable/round_shape_gray"
+        android:layout_height="60dp"
+        android:background="@drawable/round_shape_for_daily_history"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/historyCalendar">
@@ -97,6 +111,7 @@
                 android:fontFamily="@font/pretendardregular"
                 android:gravity="center"
                 android:text=""
+                android:textColor="#4AA570"
                 android:textSize="16sp" />
 
             <TextView
@@ -107,6 +122,7 @@
                 android:fontFamily="@font/pretendardregular"
                 android:gravity="center"
                 android:text=""
+                android:textColor="#4AA570"
                 android:textSize="16sp" />
 
             <TextView
@@ -117,6 +133,7 @@
                 android:fontFamily="@font/pretendardregular"
                 android:gravity="center"
                 android:text=""
+                android:textColor="#4AA570"
                 android:textSize="16sp" />
 
         </LinearLayout>
