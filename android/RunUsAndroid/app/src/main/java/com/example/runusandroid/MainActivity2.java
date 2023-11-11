@@ -1,5 +1,7 @@
 package com.example.runusandroid;
 
+import static com.example.runusandroid.RetrofitClient.setAuthToken;
+
 import android.Manifest;
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -49,6 +51,7 @@ public class MainActivity2 extends AppCompatActivity {
             finish();  // MainActivity2를 종료
         }
 
+        setAuthToken(token);
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.

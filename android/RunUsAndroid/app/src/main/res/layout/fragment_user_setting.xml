@@ -7,40 +7,36 @@
     tools:context=".ui.user_setting.UserSettingFragment">
 
     <ImageView
-        android:id="@+id/profile_picture_bg"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:background="@drawable/circle_profile_picture"
-        android:scaleType="center"
-        app:layout_constraintBottom_toTopOf="@+id/LogoutBtn"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:id="@+id/profileImage"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_margin="20dp"
+        app:layout_constraintBottom_toTopOf="@+id/changeProfileImageButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/profile_picture"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
-        android:scaleType="fitCenter"
-        app:layout_constraintBottom_toTopOf="@+id/LogoutBtn"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/single_mode" />
-
     <TextView
-        android:id="@+id/text_user_setting"
-        android:layout_width="match_parent"
+        android:id="@+id/TextUserName"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:textAlignment="center"
         android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toEndOf="@id/profileImage"
+        app:layout_constraintTop_toTopOf="@id/profileImage" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/changeProfileImageButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="33dp"
+        android:layout_marginTop="5dp"
+        android:text="사진 변경"
+        app:layout_constraintLeft_toLeftOf="@id/profileImage"
+        app:layout_constraintTop_toBottomOf="@id/profileImage" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/LogoutBtn"
@@ -52,7 +48,7 @@
         android:text="로그아웃"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_user_setting" />
+        app:layout_constraintTop_toBottomOf="@id/changeProfileImageButton" />
 
     <Button
         android:id="@+id/check"
