@@ -70,6 +70,10 @@
         </LinearLayout>
     </FrameLayout>
 
+    <!--이곳을 수정하려면
+    https://github.com/Applandeo/Material-Calendar-View
+    를 참고하세요.
+    -->
     <com.applandeo.materialcalendarview.CalendarView
         android:id="@+id/historyCalendar"
         android:layout_width="match_parent"
