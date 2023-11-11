@@ -20,13 +20,15 @@ class RecentHistorySerializer(serializers.ModelSerializer):
         fields = ("distance", "duration")
 
 
-class MonthlyDataSerializer(serializers.Serializer):
-    distance = serializers.FloatField()
-    time = serializers.DurationField()
-    calories = serializers.FloatField()
-
-
 class DailyDataSerializer(serializers.Serializer):
+    date = serializers.DateField()
     distance = serializers.FloatField()
     time = serializers.DurationField()
     calories = serializers.FloatField()
+
+
+class MonthlyDataSerializer(serializers.Serializer):
+    total_distance = serializers.FloatField()
+    total_time = serializers.DurationField()
+    total_calories = serializers.FloatField()
+    daily_data = DailyDataSerializer(many=True)
