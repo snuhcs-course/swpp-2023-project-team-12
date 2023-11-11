@@ -10,6 +10,8 @@ from PIL import Image
 from io import BytesIO
 from django.core.files.uploadedfile import SimpleUploadedFile
 
+# 되는지 봅시다.
+
 
 def generate_dummy_image():
     image = Image.new("RGB", (100, 100), (255, 255, 255))
