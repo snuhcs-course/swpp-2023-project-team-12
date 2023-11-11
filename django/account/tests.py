@@ -32,8 +32,7 @@ class ProfileImageUploadTest(TestCase):
     def test_profile_image_upload(self):
         """DB에 저장되는지 확인"""
         # 업로드할 이미지 파일 생성
-        current_dir = os.getcwd()
-        image_path = "./media/profile_images/temp_profile.jpeg"  # 테스트용 이미지 파일 경로
+        image_path = "swpp-2023-project-team-12/django/media/profile_images/temp_profile.jpeg"  # 테스트용 이미지 파일 경로
         image = SimpleUploadedFile(
             name="test_image.jpg",
             content=open(image_path, "rb").read(),
