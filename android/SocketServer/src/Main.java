@@ -10,10 +10,7 @@ public class Main {
     static final int EXIT_ROOM = 3;
     public static void main(String[] args) {
         List<MultiModeUser> multiModeUserList = new ArrayList<>();
-        multiModeUserList.add(new MultiModeUser(0, "Jack"));
-        multiModeUserList.add(new MultiModeUser(1, "Alice"));
-        multiModeUserList.add(new MultiModeUser(2, "John"));
-        multiModeUserList.add(new MultiModeUser(3, "Bob"));
+
 
         // 서버와 클라이언트를 별도의 스레드에서 실행
         Thread serverThread = new Thread(() -> {

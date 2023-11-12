@@ -10,14 +10,16 @@ public class MultiModeUser implements Serializable {
     private MultiModeRoom room;
     private Socket socket;
     private String nickname;
+    private String profileImageUrl;
 
     public MultiModeUser(String nickName) {
         this.nickname = nickname;
     }
 
-    public MultiModeUser(int id, String nickname) {
+    public MultiModeUser(int id, String nickname, String profileImageUrl) {
         this.id = id;
         this.nickname = nickname;
+        this.profileImageUrl = profileImageUrl;
     }
 
     public void enterRoom(MultiModeRoom room) {
@@ -64,10 +66,20 @@ public class MultiModeUser implements Serializable {
         return nickname;
     }
 
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public void setProfileImageUrl(String url) {
+        this.profileImageUrl = url;
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         MultiModeUser gameUser = (MultiModeUser) o;
 
