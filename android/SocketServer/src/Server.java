@@ -72,6 +72,10 @@ public class Server {
                         if (((Packet) data).getProtocol() == Protocol.ROOM_LIST) {
                             Packet roomListPacket = new Packet(Protocol.ROOM_LIST, RoomManager.getRoomList());
                             System.out.println("RoomList size is " + RoomManager.getRoomList().size());
+                            System.out.println("First RoomOwner Image: "
+                                    + RoomManager.getRoomList().getFirst().getOwner().getProfileImageUrl() != null
+                                            ? RoomManager.getRoomList().getFirst().getOwner().getProfileImageUrl()
+                                            : "null");
                             oos.reset();
                             oos.writeObject(roomListPacket);
                             oos.flush();
