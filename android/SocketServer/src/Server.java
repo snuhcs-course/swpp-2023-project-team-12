@@ -13,7 +13,7 @@ public class Server {
     private RoomManager roomManager = new RoomManager();
     private ObjectOutputStream oos;
     private static final int PORT = 5001;
-    private static final String SERVER_IP = "172.30.1.31";
+    private static final String SERVER_IP = "0.0.0.0";
     private static int num = 0;
 
     public Server() {
