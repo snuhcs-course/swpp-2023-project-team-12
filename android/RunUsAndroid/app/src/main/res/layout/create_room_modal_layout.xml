@@ -39,7 +39,7 @@
             android:layout_below="@id/buttonClose"
             android:layout_marginTop="10dp"
             android:fontFamily="@font/pretendardsemibold"
-            android:text="시작 시간" />
+            android:text="그룹 명" />
 
         <EditText
             android:id="@+id/editTextGroupName"
