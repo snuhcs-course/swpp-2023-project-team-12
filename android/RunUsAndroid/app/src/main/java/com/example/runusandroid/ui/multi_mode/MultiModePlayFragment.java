@@ -1,20 +1,26 @@
 package com.example.runusandroid.ui.multi_mode;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -55,6 +61,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import Logging.FileLogger;
 import MultiMode.MultiModeRoom;
@@ -70,6 +77,8 @@ import retrofit2.Response;
 public class MultiModePlayFragment extends Fragment {
     static final String START_LOCATION_SERVICE = "start";
     static final String STOP_LOCATION_SERVICE = "stop";
+    private long playLeaveButtonLastClickTime = 0;
+    private long backButtonLastClickTime = 0;
     private final List<LatLng> pathPoints = new ArrayList<>();
     private final List<Float> speedList = new ArrayList<>(); // 매 km 마다 속력 (km/h)
     LocalDateTime iterationStartTime;
@@ -176,12 +185,28 @@ public class MultiModePlayFragment extends Fragment {
     private int groupHistoryId = 999;
     private SendFinishedTask finishedTask;
 
+    private void showExitGameDialog(){
+        @SuppressLint("InflateParams")
+        View exitGameDialog = getLayoutInflater().inflate(R.layout.dialog_multimode_play_finish, null);
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        Objects.requireNonNull(dialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.setContentView(exitGameDialog);
+        Button buttonConfirmPlayExit = exitGameDialog.findViewById(R.id.buttonConfirmPlayExit);
+        buttonConfirmPlayExit.setOnClickListener(v -> {
+            dialog.dismiss();
+            userExit = true;
+            Packet requestPacket = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
+            new ExitGameTask().execute(requestPacket);
+        });
+        dialog.show();
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         finishedTask = new SendFinishedTask();
         gameStartTime = (LocalDateTime) getArguments().getSerializable("startTime");
-        //Log.d("currentTime", gameStartTime + "");
         //경과 시간 업데이트
         timeHandler = new Handler(Looper.getMainLooper());
 
@@ -280,9 +305,11 @@ public class MultiModePlayFragment extends Fragment {
         });
 
         playLeaveButton.setOnClickListener(v -> {
-            userExit = true;
-            Packet requestPacket = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
-            new ExitGameTask().execute(requestPacket);
+            if (SystemClock.elapsedRealtime() - playLeaveButtonLastClickTime < 1000){
+                return;
+            }
+            playLeaveButtonLastClickTime = SystemClock.elapsedRealtime();
+            showExitGameDialog();
         });
 
 //        //TODO: only draw lines if running is started
@@ -435,9 +462,11 @@ public class MultiModePlayFragment extends Fragment {
         backPressedCallBack = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                userExit = true;
-                Packet requestPacket = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
-                new ExitGameTask().execute(requestPacket);
+                if (SystemClock.elapsedRealtime() - backButtonLastClickTime < 1000){
+                    return;
+                }
+                backButtonLastClickTime = SystemClock.elapsedRealtime();
+                showExitGameDialog();
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
@@ -536,12 +565,10 @@ public class MultiModePlayFragment extends Fragment {
             requestData = new GroupHistoryData(selectedRoom.getTitle(), startTimeString, durationInSeconds, selectedRoom.getUserList().size(), firstPlaceUserId, firstPlaceUserDistance);
 
         }
-
         historyApi.postGroupHistoryData(requestData).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    Log.d("response", "Send group History Success");
                     JSONObject responseBody = null;
                     String responseBodyString = null;
                     try {
