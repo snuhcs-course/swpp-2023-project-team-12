@@ -2,17 +2,31 @@
 
 <androidx.appcompat.widget.LinearLayoutCompat
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
         android:layout_height="wrap_content">
-    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
         android:background="@drawable/round_shape_dialog"
         android:padding="16dp">
 
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guidelineh45"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.4" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guidelineh55"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.55" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline5"
@@ -34,6 +48,13 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.3" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.4" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline7"
@@ -102,7 +123,7 @@
             android:layout_margin="5dp"
             android:gravity="center"
             android:padding="5dp"
-            android:text="타임어택"
+            android:text="마라톤 모드"
             android:textStyle="bold"
             android:bufferType="spannable"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
@@ -116,95 +137,90 @@
             android:id="@+id/textViewMissionInfo"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp"
             android:gravity="center"
+            android:layout_margin="5dp"
             android:padding="5dp"
             android:text=""
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
             android:textSize="13dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textViewTitle" />
+            app:layout_constraintTop_toBottomOf="@id/textViewTitle"/>
+
+
+        <EditText
+            android:id="@+id/editTextGoalDistance"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/round_shape_light_gray"
+            android:hint="0"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:gravity="right|center"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            app:layout_constraintBottom_toTopOf="@id/guidelineh55"
+            app:layout_constraintEnd_toStartOf="@id/guideline8"
+            app:layout_constraintStart_toEndOf="@id/guideline5"
+            app:layout_constraintTop_toBottomOf="@id/guidelineh45" />
 
         <TextView
             android:id="@+id/textViewGoalDistance"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:gravity="left"
-            android:text="목표 거리   0km"
-            app:layout_constraintBottom_toTopOf="@id/distanceSeekBar"
-            app:layout_constraintEnd_toStartOf="@id/guideline5"
+            android:gravity="center_vertical"
+            android:text="목표 거리"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            app:layout_constraintBottom_toTopOf="@+id/guidelineh55"
+            app:layout_constraintEnd_toStartOf="@+id/guideline4"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="@+id/guideline1"
-            app:layout_constraintTop_toBottomOf="@id/textViewMissionInfo" />
+            app:layout_constraintTop_toTopOf="@+id/guidelineh45" />
 
+        <TextView
+            android:id="@+id/km"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="km"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            app:layout_constraintBottom_toTopOf="@+id/guidelineh55"
+            app:layout_constraintEnd_toStartOf="@id/guideline9"
+            app:layout_constraintStart_toStartOf="@+id/guideline8"
+            app:layout_constraintTop_toTopOf="@+id/guidelineh45" />
 
         <SeekBar
             android:id="@+id/distanceSeekBar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="12dp"
-            android:max="10"
+            android:max="42195"
             android:maxHeight="6dp"
             android:minHeight="6dp"
-            android:progress="5"
+            android:progress="0"
             android:progressDrawable="@drawable/seekbar_progress"
             android:progressTint="#4AA570"
             android:splitTrack="false"
-            android:thumb="@drawable/seekbar_thumb"
+            android:thumb="@android:color/transparent"
             android:thumbTint="#4AA570"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-
-            app:layout_constraintTop_toBottomOf="@id/textViewGoalDistance"
-            app:layout_constraintBottom_toTopOf="@id/textViewGoalTime"
-            tools:layout_editor_absoluteY="153dp" />
-
-
-        <TextView
-            android:id="@+id/textViewGoalTime"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:gravity="left"
-            android:text="목표 시간   0분"
-            app:layout_constraintBottom_toTopOf="@id/timeSeekBar"
-            app:layout_constraintEnd_toStartOf="@id/guideline5"
-            app:layout_constraintStart_toStartOf="@+id/guideline1"
-            app:layout_constraintTop_toBottomOf="@id/distanceSeekBar" />
-
-        <SeekBar
-            android:id="@+id/timeSeekBar"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="12dp"
-            android:max="10"
-            android:maxHeight="6dp"
-            android:minHeight="6dp"
-            android:progress="5"
-            android:progressDrawable="@drawable/seekbar_progress"
-            android:progressTint="#4AA570"
-            android:splitTrack="false"
-            android:thumb="@drawable/seekbar_thumb"
-            android:thumbTint="#4AA570"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toTopOf="@id/buttonConfirm"
-            app:layout_constraintTop_toBottomOf="@id/textViewGoalTime" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/guidelineh55" />
 
 
         <Button
             android:id="@+id/buttonConfirm"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:backgroundTint="#4AA570"
             android:layout_margin="10dp"
+            android:backgroundTint="#4AA570"
             android:text="설정 완료"
             android:textColor="@color/white"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="@id/guideline3"
-            app:layout_constraintEnd_toEndOf="@id/guideline7"
-            app:layout_constraintTop_toBottomOf="@id/timeSeekBar" />
+            app:layout_constraintEnd_toStartOf="@+id/guideline8"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/guideline2"
+            app:layout_constraintTop_toBottomOf="@id/distanceSeekBar" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.appcompat.widget.LinearLayoutCompat>
