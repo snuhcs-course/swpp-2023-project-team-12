@@ -75,21 +75,21 @@ public class MultiModeFragment extends Fragment {
         NumberPicker numberPickerHour = dialog.findViewById(R.id.hourPicker);
         NumberPicker numberPickerMinute = dialog.findViewById(R.id.minutePicker);
 
-        // 시간 설정: 0 ~ 23
+        // 시간 설정: 0 ~ 4
         numberPickerHour.setMinValue(0);
-        numberPickerHour.setMaxValue(23);
+        numberPickerHour.setMaxValue(4);
         // 분 설정: 0 ~ 59
         numberPickerMinute.setMinValue(0);
         numberPickerMinute.setMaxValue(59);
 
         // 초기값 설정
-        groupNameEditText.setText("Test");
-        LocalTime now = LocalTime.now().plusMinutes(1);
+        groupNameEditText.setText("함께 달려요!");
+        LocalTime now = LocalTime.now().plusMinutes(10);
         time_picker.setHour(now.getHour());
         time_picker.setMinute(now.getMinute());
-        membersEditText.setText("5");
+        membersEditText.setText("10");
         numberPickerHour.setValue(0);
-        numberPickerMinute.setValue(1);
+        numberPickerMinute.setValue(30);
 
         Button completeButton = dialog.findViewById(R.id.buttonComplete);
         final String[] pickedTime = new String[1];

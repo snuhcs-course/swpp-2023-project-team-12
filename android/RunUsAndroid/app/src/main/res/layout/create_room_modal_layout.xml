@@ -10,6 +10,17 @@
         android:orientation="vertical"
         android:padding="20dp">
 
+        <TextView
+            android:id="@+id/roomCreateTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="60dp"
+            android:layout_toLeftOf="@id/buttonClose"
+            android:fontFamily="@font/pretendardextrablod"
+            android:text="방 설정"
+            android:textSize="20sp" />
+
         <ImageButton
             android:id="@+id/buttonClose"
             android:layout_width="wrap_content"
@@ -17,19 +28,30 @@
             android:layout_alignParentEnd="true"
             android:layout_marginTop="10dp"
             android:layout_marginEnd="10dp"
-            android:padding="10dp"
             android:background="@android:color/transparent"
+            android:padding="10dp"
             android:src="@drawable/ic_close" />
         <!-- 그룹명 -->
+        <TextView
+            android:id="@+id/groupNameText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/buttonClose"
+            android:layout_marginTop="10dp"
+            android:fontFamily="@font/pretendardsemibold"
+            android:text="시작 시간" />
+
         <EditText
             android:id="@+id/editTextGroupName"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/buttonClose"
+            android:layout_height="40dp"
+            android:layout_below="@id/groupNameText"
             android:layout_marginBottom="10dp"
+            android:background="@drawable/round_shape_for_field"
             android:fontFamily="@font/pretendardregular"
             android:hint="그룹명"
-            android:inputType="text" />
+            android:inputType="text"
+            android:paddingLeft="10dp" />
 
         <TextView
             android:id="@+id/editStartTime"
@@ -37,14 +59,15 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/editTextGroupName"
             android:layout_marginTop="10dp"
-            android:fontFamily="@font/pretendardregular"
+            android:fontFamily="@font/pretendardsemibold"
             android:text="시작 시간" />
 
         <TimePicker
             android:id="@+id/timePicker"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="170dp"
             android:layout_below="@id/editStartTime"
+            android:background="@drawable/round_shape_for_field"
             android:timePickerMode="spinner" />
 
         <!-- 경기 시간 설정 -->
@@ -54,13 +77,13 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/timePicker"
             android:layout_marginTop="10dp"
-            android:fontFamily="@font/pretendardregular"
+            android:fontFamily="@font/pretendardsemibold"
             android:text="경기 시간" />
 
         <LinearLayout
             android:id="@+id/durationPicker"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:layout_below="@id/durationText"
             android:gravity="center_vertical"
             android:orientation="horizontal">
@@ -70,7 +93,8 @@
                 android:id="@+id/hourPicker"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_weight="0.5"
+                android:background="@drawable/round_shape_for_field"
                 android:descendantFocusability="blocksDescendants" />
 
             <TextView
@@ -83,8 +107,9 @@
             <NumberPicker
                 android:id="@+id/minutePicker"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_height="40dp"
+                android:layout_weight="0.5"
+                android:background="@drawable/round_shape_for_field"
                 android:descendantFocusability="blocksDescendants" />
 
             <TextView
@@ -100,17 +125,19 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/durationPicker"
             android:layout_marginTop="10dp"
-            android:fontFamily="@font/pretendardregular"
+            android:fontFamily="@font/pretendardsemibold"
             android:text="최대 참가 인원" />
 
         <EditText
             android:id="@+id/editTextMembers"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:layout_below="@id/textMembers"
+            android:background="@drawable/round_shape_for_field"
             android:fontFamily="@font/pretendardregular"
             android:hint="인원 (명)"
-            android:inputType="number" />
+            android:inputType="number"
+            android:paddingLeft="10dp" />
 
         <!-- 완료 버튼 -->
         <Button
@@ -118,9 +145,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/editTextMembers"
+            android:layout_marginTop="10dp"
             android:backgroundTint="#4AA570"
-            android:fontFamily="@font/pretendardregular"
-            android:text="완료" />
+            android:fontFamily="@font/pretendardsemibold"
+            android:text="설정 완료" />
 
     </RelativeLayout>
 
