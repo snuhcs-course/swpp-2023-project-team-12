@@ -66,16 +66,20 @@ public class Server {
                         if (user == null)
                             user = connectedUser;
                         System.out.println("protocol : " + ((Packet) data).getProtocol());
-                        if (user != null)
+                        if (user != null){
                             System.out.println("user : " + user.getNickName());
+                            System.out.println("userID : " + user.getNickName());
+                            System.out.println("userImageURL : " + user.getProfileImageUrl());
+                        }
+
 
                         if (((Packet) data).getProtocol() == Protocol.ROOM_LIST) {
                             Packet roomListPacket = new Packet(Protocol.ROOM_LIST, RoomManager.getRoomList());
                             System.out.println("RoomList size is " + RoomManager.getRoomList().size());
-                            System.out.println("First RoomOwner Image: "
-                                    + RoomManager.getRoomList().getFirst().getOwner().getProfileImageUrl() != null
-                                            ? RoomManager.getRoomList().getFirst().getOwner().getProfileImageUrl()
-                                            : "null");
+//                            System.out.println("First RoomOwner Image: "
+//                                    + RoomManager.getRoomList().getFirst().getOwner().getProfileImageUrl() != null
+//                                            ? RoomManager.getRoomList().getFirst().getOwner().getProfileImageUrl()
+//                                            : "null");
                             oos.reset();
                             oos.writeObject(roomListPacket);
                             oos.flush();
@@ -84,6 +88,7 @@ public class Server {
                             System.out.println("create_room request came");
                             RoomCreateInfo roomCreateInfo = ((Packet) data).getRoomCreateInfo();
                             MultiModeRoom selectedRoom = RoomManager.createRoom(user, roomCreateInfo, oos);
+                            System.out.println(RoomManager.getRoomList().get(0).getOwner().getProfileImageUrl());
                             System.out.println(selectedRoom.toString());
                             Packet createRoomPacket = new Packet(Protocol.CREATE_ROOM, RoomManager.getRoomList(),
                                     selectedRoom);
