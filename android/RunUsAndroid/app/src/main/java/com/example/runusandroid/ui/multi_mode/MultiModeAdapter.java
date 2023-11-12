@@ -20,6 +20,7 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.runusandroid.R;
 
 import java.io.IOException;
@@ -92,8 +93,10 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
         Log.d("profile_image", roomOwner.getProfileImageUrl() != null ? roomOwner.getProfileImageUrl() : "");
         Glide.with(holder.itemView.getContext())
                 .load(roomOwner.getProfileImageUrl())
+                .apply(RequestOptions.circleCropTransform())
                 .placeholder(R.drawable.runus_logo) // 프로필 이미지가 없는 경우 디폴트 이미지
                 .into(holder.eventImageView);
+
 
         enterButton.setOnClickListener(v -> {
             if (SystemClock.elapsedRealtime() - enterButtonLastClickTime < 1000) {
@@ -161,7 +164,7 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
 
         @Override
         protected void onPostExecute(Boolean success) { // doInBackground()의 return값에 따라 작업 수행. 룸 리스트 업데이트, 입장하는 방 정보
-                                                        // 업데이트
+            // 업데이트
             super.onPostExecute(success);
         }
 
