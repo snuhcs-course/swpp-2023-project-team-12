@@ -205,10 +205,7 @@ public class MultiModeRoom implements Serializable {
     }
 
     public boolean isRoomFull() {
-        if (roomCreateInfo.getNumRunners() >= userList.size()) {
-            return true;
-        }
-        return false;
+        return userList.size() >= numRunners;
     }
 
     public void updateDistance(UserDistance userDistance) { // 유저의 distance를 업데이트
