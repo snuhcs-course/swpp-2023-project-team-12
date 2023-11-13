@@ -99,6 +99,7 @@ public class SingleModeFragment extends Fragment {
     LocalDateTime iterationStartTime;
     float calories = 0; // TODO: 칼로리 계산
     double distance = 0;
+    long currentTime;
     OnBackPressedCallback backPressedCallBack;
     TextView goalDistanceStaticText;
     TextView goalDistanceText;
@@ -412,8 +413,8 @@ public class SingleModeFragment extends Fragment {
                         runningNow = true;
                         currentTimeText.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
                             public void onChronometerTick(Chronometer chronometer) {
-                                long time = SystemClock.elapsedRealtime() - chronometer.getBase();
-                                chronometer.setText(dateFormat.format(time));
+                                currentTime = SystemClock.elapsedRealtime() - chronometer.getBase();
+                                chronometer.setText(dateFormat.format(currentTime));
                             }
                         });
                         currentTimeText.setBase(SystemClock.elapsedRealtime());
