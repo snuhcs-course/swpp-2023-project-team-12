@@ -40,7 +40,7 @@ public class BackGroundLocationService extends Service {
         public void onLocationResult(LocationResult locationResult) {
             if (locationResult != null) {
                 Location lastLocation = locationResult.getLastLocation();
-                Log.d("test:location", "Location:" + lastLocation.getLatitude() + ", " +lastLocation.getLongitude());
+                //Log.d("test:location", "Location:" + lastLocation.getLatitude() + ", " +lastLocation.getLongitude());
                 double latitude = lastLocation.getLatitude();
                 double longitude = lastLocation.getLongitude();
 

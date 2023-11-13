@@ -1,5 +1,6 @@
 package com.example.runusandroid.ui.multi_mode;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -51,9 +52,11 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
             context = ((ContextWrapper) context).getBaseContext();
         }
 
+        assert context instanceof AppCompatActivity;
         return (AppCompatActivity) context;
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     void setRoomList(List<MultiModeRoom> roomList) {
         this.roomList = roomList;
         notifyDataSetChanged();
@@ -142,10 +145,9 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
         }
     }
 
-    // 방 입장시 socket을 통해 서버와 연결
+    //방 입장시 socket을 통해 서버와 연결
+    @SuppressLint("StaticFieldLeak")
     private class EnterRoomTask extends AsyncTask<Void, Void, Boolean> {
-        private boolean isRoomFull;
-
         @Override
         protected Boolean doInBackground(Void... voids) {
             boolean success = true;
@@ -161,10 +163,8 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
             }
             return success;
         }
-
         @Override
         protected void onPostExecute(Boolean success) { // doInBackground()의 return값에 따라 작업 수행. 룸 리스트 업데이트, 입장하는 방 정보
-            // 업데이트
             super.onPostExecute(success);
         }
 

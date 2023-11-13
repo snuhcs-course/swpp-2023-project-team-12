@@ -1,13 +1,19 @@
 package com.example.runusandroid.ui.multi_mode;
 
+import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -31,6 +37,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import MultiMode.MultiModeRoom;
 import MultiMode.MultiModeUser;
@@ -41,6 +48,8 @@ public class MultiModeWaitFragment extends Fragment {
 
     SocketListenerThread socketListenerThread = MultiModeFragment.socketListenerThread;
     OnBackPressedCallback backPressedCallBack;
+    private long leaveButtonLastClickTime = 0;
+    private long backButtonLastClickTime = 0;
     private final Handler handler = new Handler(); // 남은 시간 계산 위한 Handler
     private final int updateTimeInSeconds = 1; // 1초마다 업데이트/
     private boolean isGameStarted = false;
@@ -114,6 +123,21 @@ public class MultiModeWaitFragment extends Fragment {
         }
     }
 
+    private void showExitDialog(){
+        @SuppressLint("InflateParams")
+        View exitRoomDialog = getLayoutInflater().inflate(R.layout.dialog_multimode_wait_finish, null);
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        Objects.requireNonNull(dialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.setContentView(exitRoomDialog);
+        Button buttonConfirmExitRoom = exitRoomDialog.findViewById(R.id.buttonConfirmExitRoom);
+        buttonConfirmExitRoom.setOnClickListener(v -> {
+            dialog.dismiss();
+            new ExitRoomTask().execute();
+        });
+        dialog.show();
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -160,8 +184,11 @@ public class MultiModeWaitFragment extends Fragment {
         leaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 떠나기 버튼을 눌렀을 때 실행할 동작 추가
-                new ExitRoomTask().execute();
+                if (SystemClock.elapsedRealtime() - leaveButtonLastClickTime < 1000){
+                    return;
+                }
+                leaveButtonLastClickTime = SystemClock.elapsedRealtime();
+                showExitDialog();
             }
         });
         return view;
@@ -289,7 +316,11 @@ public class MultiModeWaitFragment extends Fragment {
         backPressedCallBack = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                new ExitRoomTask().execute();
+                if (SystemClock.elapsedRealtime() - backButtonLastClickTime < 1000){
+                    return;
+                }
+                backButtonLastClickTime = SystemClock.elapsedRealtime();
+                showExitDialog();
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
