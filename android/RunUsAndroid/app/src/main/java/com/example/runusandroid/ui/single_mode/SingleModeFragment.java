@@ -806,6 +806,7 @@ public class SingleModeFragment extends Fragment {
         int gender = sharedPreferences.getInt("gender", 0) - 1;
 
         if (gender < 0) gender = 0;
+        if (gender > 1) gender = 1;
         int age = sharedPreferences.getInt("age", 0) / 10;
 
         float height = sharedPreferences.getFloat("height", 0.0f);
