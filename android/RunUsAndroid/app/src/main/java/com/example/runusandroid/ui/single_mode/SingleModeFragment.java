@@ -326,7 +326,7 @@ public class SingleModeFragment extends Fragment {
         return root;
     }
 
-    private void showModeChoice() {
+    private int showModeChoice() {
         View dialogView = getLayoutInflater().inflate(R.layout.diaglog_mode_choice, null);
         Dialog dialog = new Dialog(getContext());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -388,6 +388,7 @@ public class SingleModeFragment extends Fragment {
             }
         });
 
+        return mode;
 
     }
 
@@ -701,8 +702,8 @@ public class SingleModeFragment extends Fragment {
             }
         });
 
-        float revise_distance = Math.round(goalDistance) / 10.0f;
-        float revise_time = (int) (Math.round(goalTime) / 10.0f);
+        float revise_distance = Math.round(goalDistance) / 20.0f;
+        float revise_time = (int) (Math.round(goalTime) / 20.0f);
         distanceSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -1112,7 +1113,7 @@ public class SingleModeFragment extends Fragment {
         hideBottomNavigation(false);
     }
 
-    private float getCalories(float weight, float pace, float minute){
+    public float getCalories(float weight, float pace, float minute){
         float METs = 0.1f;
         float speed = (1f/pace)*1000; // (m/m)
         if (speed < 100){
@@ -1126,6 +1127,9 @@ public class SingleModeFragment extends Fragment {
         }
         else {
             METs =(2*speed-52f)/27;
+        }
+        if(METs<1){
+            METs = 1f;
         }
         float calories = METs * 3.5f * weight * minute * 5f / 1000f;
 
