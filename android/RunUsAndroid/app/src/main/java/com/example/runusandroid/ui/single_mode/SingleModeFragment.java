@@ -68,6 +68,7 @@ import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.support.common.FileUtil;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.MappedByteBuffer;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -112,12 +113,12 @@ public class SingleModeFragment extends Fragment {
     long currentTime;
     OnBackPressedCallback backPressedCallBack;
     TextView goalDistanceStaticText;
-    TextView goalDistanceText;
-    TextView goalTimeStaticText;
-    TextView goalTimeText;
     Button quitButton;
     LinearLayout currentPace;
     Button startButton;
+    private TextView goalDistanceText;
+    private TextView goalTimeStaticText;
+    private TextView goalTimeText;
     private List<LatLng> pathPoints = new ArrayList<>();
     private List<Float> speedList = new ArrayList<>(); // 매 km 마다 속력 (km/h)
     private HistoryApi historyApi;
@@ -183,19 +184,19 @@ public class SingleModeFragment extends Fragment {
                             // log distance into file
                             FileLogger.logToFileAndLogcat(mainActivity, "test:distance:5sec", "" + location.distanceTo(lastLocation) / (double) 1000);
                             // Below code seems to cause NullPointerException after 10 minutes or so (on Duration.between)
-//                            if ((int) distance != lastDistanceInt) {
-//                                LocalDateTime currentTime = LocalDateTime.now();
-//                                Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
-//                                long secondsDuration = iterationDuration.getSeconds();
-//                                float newPace = (float) (1.0 / (secondsDuration / 3600.0));
-//                                if (newPace > maxSpeed)
-//                                    maxSpeed = newPace;
-//                                if (newPace < minSpeed)
-//                                    minSpeed = newPace;
-//                                speedList.add(newPace);
-//                                iterationStartTime = currentTime;
-//
-//                            }
+                            if ((int) distance != lastDistanceInt) {
+                                LocalDateTime presentTime = LocalDateTime.now();
+                                Duration iterationDuration = Duration.between(iterationStartTime, presentTime);
+                                long secondsDuration = iterationDuration.getSeconds();
+                                float newPace = (float) (1.0 / (secondsDuration / 3600.0));
+                                if (newPace > maxSpeed)
+                                    maxSpeed = newPace;
+                                if (newPace < minSpeed)
+                                    minSpeed = newPace;
+                                speedList.add(newPace);
+                                iterationStartTime = presentTime;
+
+                            }
                             Log.d("test:distance:total", "Distance:" + distance);
                         }
                     }
@@ -243,6 +244,10 @@ public class SingleModeFragment extends Fragment {
         maxSpeed = 0;
         minSpeed = 999;
         runningNow = false;
+        startButton.setVisibility(View.VISIBLE);
+        quitButton.setVisibility(View.GONE);
+
+        hideBottomNavigation(false);
 
         try {
             tfliteModel = FileUtil.loadMappedFile(mainActivity, "231103_model.tflite");
@@ -741,6 +746,7 @@ public class SingleModeFragment extends Fragment {
     }
 
     private void setRunningStart() {
+        iterationStartTime = LocalDateTime.now();
         pathPoints = new ArrayList<>();
         speedList = new ArrayList<>();
         goalDistance = Math.round(goalDistance * 1000) / 1000f;
@@ -1034,10 +1040,7 @@ public class SingleModeFragment extends Fragment {
 
     private void finishPlaySingleMode() {
         runningNow = false;
-        quitButton.setVisibility(View.GONE);
 
-        startButton.setVisibility(View.VISIBLE);
-        currentPace.setVisibility(View.GONE);
         mainActivity.getLastLocation();
         currentTimeText.stop();
         View dialogView;
@@ -1056,10 +1059,6 @@ public class SingleModeFragment extends Fragment {
             }
         }
 
-        goalDistanceStaticText.setText("");
-        goalDistanceText.setText("");
-        goalTimeStaticText.setText("");
-        goalTimeText.setText("");
 
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         if (missionCompleted) {
@@ -1088,6 +1087,29 @@ public class SingleModeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
+                if (speedList != null) {
+                    LocalDateTime currentTime = LocalDateTime.now();
+                    Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
+                    long secondsDuration = iterationDuration.getSeconds();
+                    float newPace = (float) ((distance - (int) distance) / (secondsDuration / 3600.0));
+                    speedList.add(newPace);
+                }
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("goalDistance", goalDistance);
+                bundle.putSerializable("goalTime", goalTime);
+                bundle.putSerializable("currentDistance", distance);
+                bundle.putSerializable("currentTime", currentTime);
+                bundle.putSerializable("calories", calories);
+                bundle.putSerializable("userSpeedList", (Serializable) speedList);
+                bundle.putSerializable("pathPointList", (Serializable) pathPoints);
+                NavController navController = Navigation.findNavController(requireView());
+                navController.navigate(R.id.navigation_single_mode_result, bundle);
+                quitButton.setVisibility(View.GONE);
+                currentPace.setVisibility(View.GONE);
+                goalDistanceStaticText.setText("");
+                goalDistanceText.setText("");
+                goalTimeStaticText.setText("");
+                goalTimeText.setText("");
                 lastLocation = null;
                 distance = 0;
                 currentDistanceText.setText("0.00 km");
@@ -1101,7 +1123,7 @@ public class SingleModeFragment extends Fragment {
             throw new RuntimeException(e);
         }
         getMission();
-        hideBottomNavigation(false);
+
     }
 
     private float getCalories(float weight, float pace, float minute) {

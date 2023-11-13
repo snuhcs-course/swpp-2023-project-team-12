@@ -26,22 +26,17 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
 
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Objects;
 
 import MultiMode.MultiModeRoom;
-import MultiMode.MultiModeUser;
-import MultiMode.Packet;
-import MultiMode.Protocol;
 import MultiMode.UserDistance;
 
 public class MultiModeResultFragment extends Fragment {
-    private long resultLeaveButtonLastClickTime = 0;
-    private long backButtonLastClickTime = 0;
     OnBackPressedCallback backPressedCallBack;
     MultiModeRoom selectedRoom;
+    float calories = 0;
     float distance = 0;
     ArrayList<Float> speedList;
     NavController navController;
@@ -62,9 +57,11 @@ public class MultiModeResultFragment extends Fragment {
     RecyclerView recyclerView;
     RecordDialog dialog;
     boolean isDialogOpenedBefore = false;
+    private long resultLeaveButtonLastClickTime = 0;
+    private long backButtonLastClickTime = 0;
     private TextView timeResultContentTextView;
 
-    private void showExitResultDialog(){
+    private void showExitResultDialog() {
         @SuppressLint("InflateParams")
         View exitResultDialog = getLayoutInflater().inflate(R.layout.dialog_multimode_play_finish, null);
         Dialog dialog = new Dialog(requireContext());
@@ -86,6 +83,7 @@ public class MultiModeResultFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -113,7 +111,7 @@ public class MultiModeResultFragment extends Fragment {
                     dialog.show();
                     if (!isDialogOpenedBefore) {
 
-
+                        dialog.caloriesText.setText(calories + " kcal");
                         speedList = (ArrayList<Float>) getArguments().getSerializable("userSpeedList");
                         Log.d("speedList", speedList.size() + "");
                         double section = 1.0;
@@ -134,9 +132,11 @@ public class MultiModeResultFragment extends Fragment {
 
                                 section++;
                             } else {
-                                float speed = speedList.get((int) section - 1);
-                                dialog.adapter.addItem(new RecordItem(distance - (section - 1), speed));
-                                Log.d("speedList", "second if : " + (section - 1) + " " + speed);
+                                if (speedList.size() > 0) {
+                                    float speed = speedList.get((int) section - 1);
+                                    dialog.adapter.addItem(new RecordItem(distance - (section - 1), speed));
+                                    Log.d("speedList", "second if : " + (section - 1) + " " + speed);
+                                }
                                 section = 1.0;
                                 break;
                             }
@@ -152,7 +152,7 @@ public class MultiModeResultFragment extends Fragment {
         resultLeaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (SystemClock.elapsedRealtime() - resultLeaveButtonLastClickTime < 1000){
+                if (SystemClock.elapsedRealtime() - resultLeaveButtonLastClickTime < 1000) {
                     return;
                 }
                 resultLeaveButtonLastClickTime = SystemClock.elapsedRealtime();
@@ -203,11 +203,11 @@ public class MultiModeResultFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        Log.d("create callback","create callback");
+        Log.d("create callback", "create callback");
         backPressedCallBack = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (SystemClock.elapsedRealtime() - backButtonLastClickTime < 1000){
+                if (SystemClock.elapsedRealtime() - backButtonLastClickTime < 1000) {
                     return;
                 }
                 backButtonLastClickTime = SystemClock.elapsedRealtime();
@@ -232,6 +232,7 @@ public class MultiModeResultFragment extends Fragment {
         timeResultContentTextView.setText(formattedDuration);
         Log.d("response", "here is room result screen");
     }
+
     @Override
     public void onPause() {
         super.onPause();

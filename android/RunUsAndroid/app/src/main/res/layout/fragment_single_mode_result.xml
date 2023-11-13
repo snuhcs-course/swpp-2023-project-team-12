@@ -141,7 +141,7 @@
         app:layout_constraintTop_toBottomOf="@id/goalTimeStaticText" />
 
     <fragment
-        android:id="@+id/map"
+        android:id="@+id/map_result"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="0dp"
         android:layout_height="300dp"
@@ -157,7 +157,7 @@
         android:orientation="vertical"
         app:layout_constraintEnd_toStartOf="@id/guidelineclBottom"
         app:layout_constraintStart_toStartOf="@id/guidelineLeftBottom"
-        app:layout_constraintTop_toBottomOf="@id/map">
+        app:layout_constraintTop_toBottomOf="@id/map_result">
 
         <TextView
             android:id="@+id/currentDistanceStaticText"
@@ -187,7 +187,7 @@
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="@id/guidelinecrBottom"
         app:layout_constraintStart_toStartOf="@id/guidelineclBottom"
-        app:layout_constraintTop_toBottomOf="@id/map">
+        app:layout_constraintTop_toBottomOf="@id/map_result">
 
         <TextView
             android:id="@+id/currentPaceStaticText"
@@ -213,7 +213,7 @@
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="@id/guidelineRightBottom"
         app:layout_constraintStart_toStartOf="@id/guidelinecrBottom"
-        app:layout_constraintTop_toBottomOf="@id/map">
+        app:layout_constraintTop_toBottomOf="@id/map_result">
 
         <TextView
             android:id="@+id/currentTimeStaticText"

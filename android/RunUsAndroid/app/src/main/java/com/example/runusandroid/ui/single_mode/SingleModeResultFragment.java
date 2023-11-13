@@ -1,29 +1,269 @@
 package com.example.runusandroid.ui.single_mode;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.icu.text.DecimalFormat;
+import android.icu.text.SimpleDateFormat;
+import android.icu.util.TimeZone;
+import android.location.Location;
 import android.os.Bundle;
+import android.os.SystemClock;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.Button;
+import android.widget.Chronometer;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+
+import com.example.runusandroid.MainActivity2;
+import com.example.runusandroid.R;
+import com.example.runusandroid.databinding.FragmentSingleModeResultBinding;
+import com.example.runusandroid.ui.multi_mode.RecordDialog;
+import com.example.runusandroid.ui.multi_mode.RecordItem;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolylineOptions;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class SingleModeResultFragment extends Fragment {
-    double distance;
+    private final Location lastLocation = null;
+    GoogleMap mMap;
+    MainActivity2 mainActivity;
+    SimpleDateFormat dateFormat;
+    SingleModeFragment singleModeFragment;
+    RecordDialog dialog;
+    boolean isDialogOpenedBefore = false;
+    NavController navController;
+    OnBackPressedCallback backPressedCallBack;
+    private float calories = 0;
     private float goalDistance;
     private float goalTime;
-    private float currentDistance;
+    private double currentDistance;
     private long currentTime;
-    private final float calories = 0;
+    private List<Float> speedList = new ArrayList<>();
+    private List<LatLng> pathPoints = new ArrayList<>();
+    private LatLng lastPoint;
+    private FragmentSingleModeResultBinding binding;
+    private TextView goalDistanceStaticText;
+    private TextView goalDistanceText;
+    private TextView goalTimeStaticText;
+    private TextView goalTimeText;
+    private Button quitButton;
+    private LinearLayout currentPace;
+    private LinearLayout caloriesLayout;
+    private TextView caloriesText;
+    private Chronometer currentTimeText;
+    private TextView currentDistanceText;
+    private Button paceDetailButton;
+    private boolean isMapReady = true;
+    private long backButtonLastClickTime = 0;
 
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mainActivity = (MainActivity2) getActivity();
+        dateFormat = new SimpleDateFormat("HH:mm:ss");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        goalDistance = (float) getArguments().getSerializable("goalDistance");
+        goalTime = (float) getArguments().getSerializable("goalTime");
+        currentDistance = (double) getArguments().getSerializable("currentDistance");
+        currentTime = (long) getArguments().getSerializable("currentTime");
+        calories = (float) getArguments().getSerializable("calories");
+        speedList = (List<Float>) getArguments().getSerializable("userSpeedList");
+        pathPoints = (List<LatLng>) getArguments().getSerializable("pathPointList");
+        if (pathPoints != null && pathPoints.size() != 0) {
+            Log.d("mMapCheck", "lastpoint is not null");
+            lastPoint = pathPoints.get(pathPoints.size() - 1);
+        }
+
+
     }
 
-//    @Nullable
-//    @Override
-//    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-//
-//    }
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Log.d("mMapCheck", "onCreateView");
+        binding = FragmentSingleModeResultBinding.inflate(inflater, container, false);
+
+        View root = binding.getRoot();
+        currentPace = binding.currentPace;
+        quitButton = binding.quitButton;
+        currentDistanceText = binding.currentDistanceText;
+        currentTimeText = binding.currentTimeText;
+        goalDistanceStaticText = binding.goalDistanceStaticText;
+        goalDistanceText = binding.goalDistanceText;
+        goalTimeStaticText = binding.goalTimeStaticText;
+        goalTimeText = binding.goalTimeText;
+        paceDetailButton = binding.paceDetailButton;
+        dialog = new RecordDialog(requireContext());
+
+        // Finding the visual component displaying the map
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map_result);
+        // Initialize the map
+        mapFragment.getMapAsync(googleMap -> {
+            mMap = googleMap;
+            Log.d("mMapCheck", "mMap is " + mMap);
+
+            // Check the permission and enable the location marker
+            if (ActivityCompat.checkSelfPermission(mainActivity,
+                    Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                mMap.setMyLocationEnabled(true);
+            }
+
+            isMapReady = true;
+
+            updateMap();
+        });
+
+        quitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                showExitResultDialog();
+            }
+        });
+
+        paceDetailButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.show();
+                if (!isDialogOpenedBefore) {
+                    Log.d("speedList", speedList.size() + "");
+                    double section = 1.0;
+                    //for test
+//                    currentDistance = 4.579f;
+//                    speedList = new ArrayList<>();
+//                    speedList.add(12.0f);
+//                    speedList.add(10.0f);
+//                    speedList.add(15.0f);
+//                    speedList.add(20.0f);
+//                    speedList.add(12.0f);
+
+                    while (true) {
+                        if (currentDistance - section >= 0) {
+                            float speed = speedList.get((int) section - 1);
+                            dialog.adapter.addItem(new RecordItem(section, speed));
+                            Log.d("speedList", "first if : " + section + " " + speed);
+
+                            section++;
+                        } else {
+                            if (speedList.size() > 0) {
+                                float speed = speedList.get((int) section - 1);
+                                dialog.adapter.addItem(new RecordItem(currentDistance - (section - 1), speed));
+                                Log.d("speedList", "second if : " + (section - 1) + " " + speed);
+                            }
+                            section = 1.0;
+                            break;
+                        }
+                    }
+                    dialog.adapter.notifyDataSetChanged();
+                    dialog.caloriesText.setText(calories + " kcal");
+                    isDialogOpenedBefore = true;
+                }
+            }
+        });
+
+
+        return root;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d("mMapCheck", "onResume");
+        backPressedCallBack = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (SystemClock.elapsedRealtime() - backButtonLastClickTime < 1000) {
+                    return;
+                }
+                backButtonLastClickTime = SystemClock.elapsedRealtime();
+                showExitResultDialog();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
+
+        goalDistanceText.setText(floatToThirdDeciStr(goalDistance) + "km");
+        currentDistanceText.setText(doubleToThirdDeciStr(currentDistance) + "km");
+        goalTimeText.setText(goalTime + " 분");
+        currentTimeText.setText(dateFormat.format(currentTime));
+        if (isMapReady) {
+            updateMap();
+        }
+
+
+    }
+
+    @Override
+    public void onStart() {
+        Log.d("mMapCheck", "onStart");
+
+        super.onStart();
+
+    }
+
+    private String floatToThirdDeciStr(float num) {
+        DecimalFormat decimalFormat = new DecimalFormat("#.###");
+        return decimalFormat.format(num);
+    }
+
+    private String doubleToThirdDeciStr(double num) {
+        DecimalFormat decimalFormat = new DecimalFormat("#.###");
+        return decimalFormat.format(num);
+    }
+
+    private void updateMap() {
+        if (mMap != null) {
+            Log.d("mMapCheck", "mMap is not null");
+
+            mMap.clear(); // Remove previous polylines
+            mMap.addPolyline(new PolylineOptions().addAll(pathPoints).color(Color.parseColor("#4AA570")).width(10));
+            if (lastPoint != null) {
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lastPoint, 16));
+            }
+        } else {
+            Log.d("mMapCheck", "mMap is null");
+        }
+    }
+
+    private void showExitResultDialog() {
+        @SuppressLint("InflateParams")
+        View exitResultDialog = getLayoutInflater().inflate(R.layout.dialog_multimode_play_finish, null);
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        Objects.requireNonNull(dialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.setContentView(exitResultDialog);
+        Button buttonConfirmPlayExit = exitResultDialog.findViewById(R.id.buttonConfirmPlayExit);
+        buttonConfirmPlayExit.setOnClickListener(v -> {
+            dialog.dismiss();
+            navController = Navigation.findNavController(requireView());
+            navController.navigate(R.id.navigation_single_mode);
+        });
+        TextView textViewExitResult = exitResultDialog.findViewById(R.id.textViewExitGame);
+        textViewExitResult.setText(R.string.MultiModeResultExitMessage);
+        dialog.show();
+    }
 
 
 }
