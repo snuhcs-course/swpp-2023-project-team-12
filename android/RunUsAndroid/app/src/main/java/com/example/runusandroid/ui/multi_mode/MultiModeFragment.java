@@ -29,8 +29,11 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.runusandroid.AccountApi;
 import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
+import com.example.runusandroid.RetrofitClient;
+import com.example.runusandroid.UserProfileResponse;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.IOException;
@@ -47,6 +50,9 @@ import MultiMode.MultiModeUser;
 import MultiMode.Packet;
 import MultiMode.Protocol;
 import MultiMode.RoomCreateInfo;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MultiModeFragment extends Fragment {
     public static MultiModeUser user; // 유저 정보 임시로 더미데이터 활용
@@ -59,6 +65,8 @@ public class MultiModeFragment extends Fragment {
     private long completeButtonLastClickTime = 0;
     private long createRoomButtonLastClickTime = 0;
     private MultiModeAdapter adapter;
+
+    private String imageUrl = "";
 
     public MultiModeFragment() {
     }
@@ -133,12 +141,27 @@ public class MultiModeFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
+        AccountApi accountApi = RetrofitClient.getClient().create(AccountApi.class);
         sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
-        user = new MultiModeUser(
-                (int) sharedPreferences.getLong("userid", 99999),
-                sharedPreferences.getString("nickname", "guest"),
-                sharedPreferences.getString("profile_image", ""));
+        long userId = sharedPreferences.getLong("userid", 99999);
+        String nickName = sharedPreferences.getString("nickname", "guest");
+        user = new MultiModeUser((int) userId, nickName, "");
+        accountApi.getUserProfile(String.valueOf(userId)).enqueue(new Callback<UserProfileResponse>() {
+            @Override
+            public void onResponse(Call<UserProfileResponse> call, Response<UserProfileResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    imageUrl = response.body().getProfileImageUrl();
+                    user = new MultiModeUser((int) userId, nickName, imageUrl);
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<UserProfileResponse> call, Throwable t) {
+                Log.e("UserProfile", "Failed to load user profile", t);
+            }
+        });
+
         Log.d("Profile_image", user.getNickName() + "'s profile_image=" + user.getProfileImageUrl());
 
         View view = inflater.inflate(R.layout.fragment_multi_mode, container, false);
