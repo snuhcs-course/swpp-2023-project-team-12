@@ -62,7 +62,7 @@ public class ExpSystem {
 
 
     //등비수열 합공식
-    private static double geometricSeries(double exp, double distance) {
+    static double geometricSeries(double exp, double distance) {
         double processedExp = 0;
         for (int i = 0; i < (int) distance; i++) {
             processedExp += exp * Math.pow(1.05, i);

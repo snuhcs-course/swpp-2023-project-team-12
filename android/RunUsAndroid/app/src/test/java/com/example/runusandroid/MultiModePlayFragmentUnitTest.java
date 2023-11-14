@@ -45,7 +45,7 @@ public class MultiModePlayFragmentUnitTest {
     @Before
     public void setUp() throws Exception {
         fragment = new MultiModePlayFragment();
-        user = new MultiModeUser(1, "testUser");
+        user = new MultiModeUser(1, "testUser", 0, "");
         distance = 10;
         socketManager = SocketManager.getInstance();
         selectedRoom = new MultiModeRoom();
