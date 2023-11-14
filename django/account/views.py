@@ -107,29 +107,6 @@ class FindUsernameAndSendEmailView(APIView):
         except CustomUser.DoesNotExist:
             return Response({"message": "User not found"}, status=404)
 
-class UpdateExpView(APIView):
-    def patch(self, request):
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user_id = serializer.validated_data["user_id"]
-        exp = serializer.validated_data["exp"]
-
-        try:
-            user = CustomUser.objects.filter(user_id = user_id).last()
-            user.exp = user.exp + exp
-            user.save()
-
-            return Response({
-                "message": "Login Success",
-                "user": {
-                    "exp": user.exp,
-                },
-
-            },
-            status=200,)
-
-        except CustomUser.DoesNotExist:
-            return Response({"message": "User not found"}, status=404)
 
 
 # 임시 비밀번호 생성기
