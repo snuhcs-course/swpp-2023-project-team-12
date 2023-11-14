@@ -48,6 +48,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.example.runusandroid.ExpSystem;
 import com.example.runusandroid.HistoryApi;
 import com.example.runusandroid.HistoryData;
 import com.example.runusandroid.MainActivity2;
@@ -79,6 +80,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import Logging.FileLogger;
 import okhttp3.ResponseBody;
@@ -216,6 +218,7 @@ public class SingleModeFragment extends Fragment {
             }
         }
     };
+    private int isMissionSucceeded = 0;
     private int mode = 0;
     private Interpreter tflite;
     private MappedByteBuffer tfliteModel;
@@ -629,6 +632,7 @@ public class SingleModeFragment extends Fragment {
 
         buttonConfirm.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
+                isMissionSucceeded = 2;
                 setRunningStart();
                 dialog.dismiss();
             }
@@ -739,6 +743,7 @@ public class SingleModeFragment extends Fragment {
         buttonConfirm.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
                 setRunningStart();
+                isMissionSucceeded = 1;
                 dialog.dismiss();
             }
         });
@@ -746,6 +751,7 @@ public class SingleModeFragment extends Fragment {
     }
 
     private void setRunningStart() {
+
         iterationStartTime = LocalDateTime.now();
         pathPoints = new ArrayList<>();
         speedList = new ArrayList<>();
@@ -905,19 +911,47 @@ public class SingleModeFragment extends Fragment {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         String startTimeString = gameStartTime.format(formatter);
         String finishTimeString = LocalDateTime.now().format(formatter);
-        long durationInSeconds = Duration.between(gameStartTime, LocalDateTime.now()).getSeconds();
-
+        Duration duration = Duration.between(gameStartTime, LocalDateTime.now());
+        long durationInSeconds = duration.getSeconds();
         //NOTE: group_history_id에 null을 넣을 수 없어 싱글모드인 경우 -1로 관리
-
+        int exp = ExpSystem.getExp("single", distance, duration, isMissionSucceeded);
         HistoryData requestData = new HistoryData(userId, (float) distance, durationInSeconds,
                 true, startTimeString, finishTimeString, calories, false, maxSpeed, minSpeed,
-                calculateMedian(speedList), speedList, -1);
+                calculateMedian(speedList), speedList, -1, isMissionSucceeded, exp);
 
         historyApi.postHistoryData(requestData).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
                     Log.d("response", "Send History Success");
+                    try {
+                        String responseBodyString = response.body().string();
+                        Log.d("responseData", responseBodyString);
+
+                        JSONObject jsonObject = new JSONObject(responseBodyString);
+
+                        // "exp" 키의 값을 가져오기
+                        JSONObject expObject = jsonObject.getJSONObject("exp");
+                        int updatedExp = expObject.getInt("exp");
+                        int updatedLevel = ExpSystem.getLevel(updatedExp);
+
+                        SharedPreferences sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putInt("exp", updatedExp);
+                        int pastLevel = sharedPreferences.getInt("level", -1);
+                        if (pastLevel < updatedLevel) {
+                            editor.putInt("level", updatedLevel);
+                            showLevelUpDialog(pastLevel, updatedLevel);
+                            Log.d("response", "past level is " + pastLevel + ", and updated level is " + updatedLevel);
+                        }
+                        editor.apply();
+                        Log.d("response", "update_exp is + " + sharedPreferences.getInt("exp", -1));
+
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
                 } else {
                 }
 
@@ -1069,6 +1103,7 @@ public class SingleModeFragment extends Fragment {
             elapsedTimeTextView.setText("달린 시간: " + currentTimeText.getText());
             distanceTextView.setText("달린 거리: " + currentDistanceText.getText());
         } else {
+            isMissionSucceeded *= -1;
             dialogView = inflater.inflate(R.layout.dialog_mission_failure, null);
             confirmButton = dialogView.findViewById(R.id.buttonConfirmFailure);
             TextView elapsedTimeTextView = dialogView.findViewById(R.id.textViewElapsedTimeonFailure);
@@ -1146,6 +1181,21 @@ public class SingleModeFragment extends Fragment {
     private String floatToThirdDeciStr(float num) {
         DecimalFormat decimalFormat = new DecimalFormat("#.###");
         return decimalFormat.format(num);
+    }
+
+    public void showLevelUpDialog(int pastLevel, int updatedLevel) {
+        View levelUpDialogView = getLayoutInflater().inflate(R.layout.dialog_level_up, null);
+        Dialog levelUpDialog = new Dialog(requireContext());
+        levelUpDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        Objects.requireNonNull(levelUpDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        levelUpDialog.setContentView(levelUpDialogView);
+        Button buttonConfirm = levelUpDialog.findViewById(R.id.buttonConfirmLevelUp);
+        buttonConfirm.setOnClickListener(v -> {
+            levelUpDialog.dismiss();
+        });
+        TextView textViewExitResult = levelUpDialogView.findViewById(R.id.textViewLevelUp);
+        textViewExitResult.setText("Level " + pastLevel + "  ->  Level " + updatedLevel);
+        levelUpDialog.show();
     }
 
 }

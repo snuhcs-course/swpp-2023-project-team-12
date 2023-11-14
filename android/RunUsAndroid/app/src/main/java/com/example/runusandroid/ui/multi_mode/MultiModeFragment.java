@@ -138,6 +138,7 @@ public class MultiModeFragment extends Fragment {
         user = new MultiModeUser(
                 (int) sharedPreferences.getLong("userid", 99999),
                 sharedPreferences.getString("nickname", "guest"),
+                sharedPreferences.getInt("level", 0),
                 sharedPreferences.getString("profile_image", ""));
         Log.d("Profile_image", user.getNickName() + "'s profile_image=" + user.getProfileImageUrl());
 

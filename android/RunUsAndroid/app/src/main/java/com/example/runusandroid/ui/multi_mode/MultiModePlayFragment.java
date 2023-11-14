@@ -1,5 +1,7 @@
 package com.example.runusandroid.ui.multi_mode;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -7,6 +9,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -35,6 +38,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.example.runusandroid.ExpSystem;
 import com.example.runusandroid.GroupHistoryData;
 import com.example.runusandroid.HistoryApi;
 import com.example.runusandroid.HistoryData;
@@ -51,7 +55,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.time.Duration;
@@ -63,7 +66,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-import Logging.FileLogger;
 import MultiMode.MultiModeRoom;
 import MultiMode.MultiModeUser;
 import MultiMode.Packet;
@@ -77,12 +79,9 @@ import retrofit2.Response;
 public class MultiModePlayFragment extends Fragment {
     static final String START_LOCATION_SERVICE = "start";
     static final String STOP_LOCATION_SERVICE = "stop";
-    private long playLeaveButtonLastClickTime = 0;
-    private long backButtonLastClickTime = 0;
     private final List<LatLng> pathPoints = new ArrayList<>();
     private final List<Float> speedList = new ArrayList<>(); // 매 km 마다 속력 (km/h)
     LocalDateTime iterationStartTime;
-    private boolean userExit = false;
     MultiModeUser user = MultiModeFragment.user;
     SocketManager socketManager = SocketManager.getInstance();
     OnBackPressedCallback backPressedCallBack;
@@ -111,6 +110,9 @@ public class MultiModePlayFragment extends Fragment {
     Handler sendDataHandler;
     Runnable sendDataRunnable;
     UserDistance[] userDistances;
+    private long playLeaveButtonLastClickTime = 0;
+    private long backButtonLastClickTime = 0;
+    private boolean userExit = false;
     private float minSpeed;
     private float maxSpeed;
     private final BroadcastReceiver locationReceiver = new BroadcastReceiver() {
@@ -185,7 +187,7 @@ public class MultiModePlayFragment extends Fragment {
     private int groupHistoryId = 999;
     private SendFinishedTask finishedTask;
 
-    private void showExitGameDialog(){
+    private void showExitGameDialog() {
         @SuppressLint("InflateParams")
         View exitGameDialog = getLayoutInflater().inflate(R.layout.dialog_multimode_play_finish, null);
         Dialog dialog = new Dialog(requireContext());
@@ -237,7 +239,7 @@ public class MultiModePlayFragment extends Fragment {
                 if (isFinished == 0) {
                     timeHandler.postDelayed(this, 1000);
                 } else if (isFinished == 1) {
-                    if(isVisible() && isAdded()) {
+                    if (isVisible() && isAdded()) {
                         Packet requestPacket = new Packet(Protocol.FINISH_GAME, user, selectedRoom);
                         finishedTask.execute(requestPacket);
                     }
@@ -300,12 +302,12 @@ public class MultiModePlayFragment extends Fragment {
             String lastActivityType = mainActivity.activityReceiver.getLastActivityType();
             String lastTransitionType = mainActivity.activityReceiver.getLastTransitionType();
 
-            Toast.makeText(mainActivity, "last detected : " + lastTransitionType+ " " + lastActivityType +
+            Toast.makeText(mainActivity, "last detected : " + lastTransitionType + " " + lastActivityType +
                     " . isRunning " + isRunning, Toast.LENGTH_LONG).show();
         });
 
         playLeaveButton.setOnClickListener(v -> {
-            if (SystemClock.elapsedRealtime() - playLeaveButtonLastClickTime < 1000){
+            if (SystemClock.elapsedRealtime() - playLeaveButtonLastClickTime < 1000) {
                 return;
             }
             playLeaveButtonLastClickTime = SystemClock.elapsedRealtime();
@@ -462,7 +464,7 @@ public class MultiModePlayFragment extends Fragment {
         backPressedCallBack = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (SystemClock.elapsedRealtime() - backButtonLastClickTime < 1000){
+                if (SystemClock.elapsedRealtime() - backButtonLastClickTime < 1000) {
                     return;
                 }
                 backButtonLastClickTime = SystemClock.elapsedRealtime();
@@ -519,14 +521,50 @@ public class MultiModePlayFragment extends Fragment {
         String startTimeString = selectedRoom.getStartTime().format(formatter);
         String finishTimeString = LocalDateTime.now().format(formatter);
         long durationInSeconds = selectedRoom.getDuration().getSeconds();
+        int place = 0;
+        if (userDistances[0].getUser().getId() == user.getId()) {
+            place = 1;
+        } else if (userDistances.length >= 2 && userDistances[1].getUser().getId() == user.getId()) {
+            place = 2;
+        } else if (userDistances.length >= 3 && userDistances[2].getUser().getId() == user.getId()) {
+            place = 3;
+        }
+        int exp = ExpSystem.getExp("single", distance, selectedRoom.getDuration(), place);
         HistoryData requestData = new HistoryData(user.getId(), distance, durationInSeconds,
-                true, startTimeString, finishTimeString, calories, true, maxSpeed, minSpeed, calculateMedian(speedList), speedList, groupHistoryId);
+                true, startTimeString, finishTimeString, calories, true, maxSpeed, minSpeed, calculateMedian(speedList), speedList, groupHistoryId, 0, exp);
 
         historyApi.postHistoryData(requestData).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    Log.d("response", "Send History Success");
+
+                    try {
+                        Log.d("response", "Send History Success");
+                        String responseBodyString = response.body().string();
+                        Log.d("responseData", responseBodyString);
+                        JSONObject jsonObject = null;
+                        jsonObject = new JSONObject(responseBodyString);
+                        // "exp" 키의 값을 가져오기
+                        JSONObject expObject = jsonObject.getJSONObject("exp");
+                        int updatedExp = expObject.getInt("exp");
+                        SharedPreferences sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putInt("exp", updatedExp);
+                        int updatedLevel = ExpSystem.getLevel(updatedExp);
+                        int pastLevel = sharedPreferences.getInt("level", -1);
+                        if (pastLevel < updatedLevel) {
+                            editor.putInt("level", updatedLevel);
+                            showLevelUpDialog(pastLevel, updatedLevel);
+                        }
+                        editor.apply();
+                        Log.d("response", "update_exp is + " + sharedPreferences.getInt("exp", -1));
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+
+
                     transitionToResultFragment();
                 }
 
@@ -638,6 +676,21 @@ public class MultiModePlayFragment extends Fragment {
             NavController navController = Navigation.findNavController(requireView());
             navController.navigate(R.id.navigation_multi_room_result, bundle);
         }
+    }
+
+    public void showLevelUpDialog(int pastLevel, int updatedLevel) {
+        View levelUpDialogView = getLayoutInflater().inflate(R.layout.dialog_level_up, null);
+        Dialog levelUpDialog = new Dialog(requireContext());
+        levelUpDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        Objects.requireNonNull(levelUpDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        levelUpDialog.setContentView(levelUpDialogView);
+        Button buttonConfirm = levelUpDialog.findViewById(R.id.buttonConfirmLevelUp);
+        buttonConfirm.setOnClickListener(v -> {
+            levelUpDialog.dismiss();
+        });
+        TextView textViewExitResult = levelUpDialogView.findViewById(R.id.textViewLevelUp);
+        textViewExitResult.setText("Level " + pastLevel + "  ->  Level " + updatedLevel);
+        levelUpDialog.show();
     }
 
     public class SendDistanceTask extends AsyncTask<Packet, Void, Boolean> { // 서버에 업데이트할 거리 정보 전송

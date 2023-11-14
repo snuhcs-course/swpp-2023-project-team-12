@@ -16,6 +16,7 @@ class history(models.Model):
   median_speed = models.FloatField(null=True, blank=True)
   group_history_id = models.BigIntegerField(null=True, blank=True)
   sectional_speed = models.TextField()
+  is_mission_succeeded = models.IntegerField(default=0)
   
   def __str__(self):
     return self.user_id

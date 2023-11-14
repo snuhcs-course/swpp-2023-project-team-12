@@ -11,10 +11,11 @@ public class ExpSystem {
     ExpSystem() {
     }
 
-    public static int getExp(String singleMode, float distance, Duration duration, boolean MissonSuccessed) {
+    public static int getExp(String singleMode, double distance, Duration duration, int extraCheckValue) {
         double exp = 0;
 
         if (singleMode.equals("single")) {
+            int MissonSuccessed = extraCheckValue;
             exp = 100;//달리기 평균 속도 10km/h(약 2.8m/s)를 default 속도로 설정
             long seconds = duration.getSeconds();
             double distanceInMeter = distance * 1000;
@@ -28,19 +29,12 @@ public class ExpSystem {
             exp = geometricSeries(exp, distance);
 
             //미션모드를 통해 러닝을 진행하여 성공했을 경우 추가 경험치(미션모드 많이 쓰라고)
-            if (MissonSuccessed) {
+            if (MissonSuccessed > 0) {
                 exp *= 1.1;
             }
-
-        }
-        return (int) exp;
-
-    }
-
-    public static int getExp(String multiMode, float distance, Duration duration, int place) {
-        double exp = 0;
-
-        if (multiMode.equals("multi")) {
+            return (int) exp;
+        } else {
+            int place = extraCheckValue;
             exp = 100;//달리기 평균 속도 10km/h(약 2.8m/s)를 default 속도로 설정
             long seconds = duration.getSeconds();
             double distanceInMeter = distance * 1000;
@@ -60,10 +54,12 @@ public class ExpSystem {
             } else if (place == 3) {
                 exp *= 1.2;
             }
-
+            return (int) exp;
         }
-        return (int) exp;
+
+
     }
+
 
     //등비수열 합공식
     private static double geometricSeries(double exp, double distance) {
