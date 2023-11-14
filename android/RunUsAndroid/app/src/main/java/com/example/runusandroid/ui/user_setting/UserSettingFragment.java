@@ -22,12 +22,14 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.runusandroid.AccountApi;
 import com.example.runusandroid.ImageResponse;
 import com.example.runusandroid.LoginActivity;
 import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
 import com.example.runusandroid.RetrofitClient;
+import com.example.runusandroid.UserProfileResponse;
 import com.example.runusandroid.databinding.FragmentUserSettingBinding;
 
 import java.io.ByteArrayOutputStream;
@@ -54,6 +56,7 @@ public class UserSettingFragment extends Fragment {
         UserSettingViewModel userSettingViewModel = new ViewModelProvider(this).get(UserSettingViewModel.class);
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
         String userName = sharedPreferences.getString("username", "");
+        String userId = String.valueOf(sharedPreferences.getLong("userid", 99999));
         binding = FragmentUserSettingBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         mainActivity = (MainActivity2) getActivity();
@@ -64,11 +67,33 @@ public class UserSettingFragment extends Fragment {
 
         AppCompatButton logoutButton = root.findViewById(R.id.LogoutBtn);
 
-        String profileImageUrl = sharedPreferences.getString("profile_image", null);
+        AccountApi accountApi = RetrofitClient.getClient().create(AccountApi.class);
+
         ImageView profileImageView = root.findViewById(R.id.profileImage);
-        if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
-            Glide.with(this).load(profileImageUrl).into(profileImageView);
-        }
+
+        accountApi.getUserProfile(userId).enqueue(new Callback<UserProfileResponse>() {
+            @Override
+            public void onResponse(Call<UserProfileResponse> call, Response<UserProfileResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String imageUrl = response.body().getProfileImageUrl();
+                    Log.d("prfile", "profile=" + imageUrl);
+                    Glide.with(UserSettingFragment.this)
+                            .load(imageUrl).placeholder(R.drawable.runus_logo)
+                            .apply(RequestOptions.circleCropTransform())
+                            .into(profileImageView);
+                } else {
+                    Glide.with(UserSettingFragment.this)
+                            .load("").placeholder(R.drawable.runus_logo)
+                            .apply(RequestOptions.circleCropTransform())
+                            .into(profileImageView);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserProfileResponse> call, Throwable t) {
+                Log.e("UserProfile", "Failed to load user profile", t);
+            }
+        });
 
         imagePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.GetContent(),
