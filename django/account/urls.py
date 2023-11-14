@@ -20,5 +20,4 @@ urlpatterns = [
     ),
     path("reset_password/", ResetPasswordView.as_view(), name="reset_password"),
     path("profile_image/", ProfileImageView.as_view(), name="profile_image"),
-    path("update_exp/", UpdateExpView.as_view(), name="update_exp"),
 ]
