@@ -80,7 +80,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 
 import Logging.FileLogger;
 import okhttp3.ResponseBody;
@@ -118,6 +117,7 @@ public class SingleModeFragment extends Fragment {
     Button quitButton;
     LinearLayout currentPace;
     Button startButton;
+    private int updatedExp;
     private TextView goalDistanceText;
     private TextView goalTimeStaticText;
     private TextView goalTimeText;
@@ -917,7 +917,7 @@ public class SingleModeFragment extends Fragment {
         int exp = ExpSystem.getExp("single", distance, duration, isMissionSucceeded);
         HistoryData requestData = new HistoryData(userId, (float) distance, durationInSeconds,
                 true, startTimeString, finishTimeString, calories, false, maxSpeed, minSpeed,
-                calculateMedian(speedList), speedList, -1, isMissionSucceeded, exp);
+                calculateMedian(speedList), speedList, -1, isMissionSucceeded, 100000);
 
         historyApi.postHistoryData(requestData).enqueue(new Callback<ResponseBody>() {
             @Override
@@ -932,20 +932,7 @@ public class SingleModeFragment extends Fragment {
 
                         // "exp" 키의 값을 가져오기
                         JSONObject expObject = jsonObject.getJSONObject("exp");
-                        int updatedExp = expObject.getInt("exp");
-                        int updatedLevel = ExpSystem.getLevel(updatedExp);
-
-                        SharedPreferences sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putInt("exp", updatedExp);
-                        int pastLevel = sharedPreferences.getInt("level", -1);
-                        if (pastLevel < updatedLevel) {
-                            editor.putInt("level", updatedLevel);
-                            showLevelUpDialog(pastLevel, updatedLevel);
-                            Log.d("response", "past level is " + pastLevel + ", and updated level is " + updatedLevel);
-                        }
-                        editor.apply();
-                        Log.d("response", "update_exp is + " + sharedPreferences.getInt("exp", -1));
+                        updatedExp = expObject.getInt("exp");
 
                     } catch (IOException e) {
                         throw new RuntimeException(e);
@@ -1130,6 +1117,7 @@ public class SingleModeFragment extends Fragment {
                     speedList.add(newPace);
                 }
                 Bundle bundle = new Bundle();
+                bundle.putSerializable("updatedExp", updatedExp);
                 bundle.putSerializable("goalDistance", goalDistance);
                 bundle.putSerializable("goalTime", goalTime);
                 bundle.putSerializable("currentDistance", distance);
@@ -1183,19 +1171,5 @@ public class SingleModeFragment extends Fragment {
         return decimalFormat.format(num);
     }
 
-    public void showLevelUpDialog(int pastLevel, int updatedLevel) {
-        View levelUpDialogView = getLayoutInflater().inflate(R.layout.dialog_level_up, null);
-        Dialog levelUpDialog = new Dialog(requireContext());
-        levelUpDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        Objects.requireNonNull(levelUpDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        levelUpDialog.setContentView(levelUpDialogView);
-        Button buttonConfirm = levelUpDialog.findViewById(R.id.buttonConfirmLevelUp);
-        buttonConfirm.setOnClickListener(v -> {
-            levelUpDialog.dismiss();
-        });
-        TextView textViewExitResult = levelUpDialogView.findViewById(R.id.textViewLevelUp);
-        textViewExitResult.setText("Level " + pastLevel + "  ->  Level " + updatedLevel);
-        levelUpDialog.show();
-    }
 
 }

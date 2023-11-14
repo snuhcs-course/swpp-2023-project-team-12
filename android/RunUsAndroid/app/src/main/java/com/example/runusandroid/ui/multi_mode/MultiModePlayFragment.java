@@ -1,7 +1,5 @@
 package com.example.runusandroid.ui.multi_mode;
 
-import static android.content.Context.MODE_PRIVATE;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -9,7 +7,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -180,6 +177,7 @@ public class MultiModePlayFragment extends Fragment {
             }
         }
     };
+    private int updatedExp;
     private float medianSpeed;
     private HistoryApi historyApi;
     private TextView timePresentContentTextView;
@@ -531,7 +529,7 @@ public class MultiModePlayFragment extends Fragment {
         }
         int exp = ExpSystem.getExp("single", distance, selectedRoom.getDuration(), place);
         HistoryData requestData = new HistoryData(user.getId(), distance, durationInSeconds,
-                true, startTimeString, finishTimeString, calories, true, maxSpeed, minSpeed, calculateMedian(speedList), speedList, groupHistoryId, 0, exp);
+                true, startTimeString, finishTimeString, calories, true, maxSpeed, minSpeed, calculateMedian(speedList), speedList, groupHistoryId, 0, 200000);
 
         historyApi.postHistoryData(requestData).enqueue(new Callback<ResponseBody>() {
             @Override
@@ -546,18 +544,8 @@ public class MultiModePlayFragment extends Fragment {
                         jsonObject = new JSONObject(responseBodyString);
                         // "exp" 키의 값을 가져오기
                         JSONObject expObject = jsonObject.getJSONObject("exp");
-                        int updatedExp = expObject.getInt("exp");
-                        SharedPreferences sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putInt("exp", updatedExp);
-                        int updatedLevel = ExpSystem.getLevel(updatedExp);
-                        int pastLevel = sharedPreferences.getInt("level", -1);
-                        if (pastLevel < updatedLevel) {
-                            editor.putInt("level", updatedLevel);
-                            showLevelUpDialog(pastLevel, updatedLevel);
-                        }
-                        editor.apply();
-                        Log.d("response", "update_exp is + " + sharedPreferences.getInt("exp", -1));
+                        updatedExp = expObject.getInt("exp");
+
                     } catch (JSONException e) {
                         throw new RuntimeException(e);
                     } catch (IOException e) {
@@ -673,25 +661,12 @@ public class MultiModePlayFragment extends Fragment {
             bundle.putSerializable("top3UserDistance", userDistances);
             bundle.putSerializable("userDistance", distance);
             bundle.putSerializable("userSpeedList", (Serializable) speedList);
+            bundle.putSerializable("updatedExp", updatedExp);
             NavController navController = Navigation.findNavController(requireView());
             navController.navigate(R.id.navigation_multi_room_result, bundle);
         }
     }
 
-    public void showLevelUpDialog(int pastLevel, int updatedLevel) {
-        View levelUpDialogView = getLayoutInflater().inflate(R.layout.dialog_level_up, null);
-        Dialog levelUpDialog = new Dialog(requireContext());
-        levelUpDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        Objects.requireNonNull(levelUpDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        levelUpDialog.setContentView(levelUpDialogView);
-        Button buttonConfirm = levelUpDialog.findViewById(R.id.buttonConfirmLevelUp);
-        buttonConfirm.setOnClickListener(v -> {
-            levelUpDialog.dismiss();
-        });
-        TextView textViewExitResult = levelUpDialogView.findViewById(R.id.textViewLevelUp);
-        textViewExitResult.setText("Level " + pastLevel + "  ->  Level " + updatedLevel);
-        levelUpDialog.show();
-    }
 
     public class SendDistanceTask extends AsyncTask<Packet, Void, Boolean> { // 서버에 업데이트할 거리 정보 전송
         @Override

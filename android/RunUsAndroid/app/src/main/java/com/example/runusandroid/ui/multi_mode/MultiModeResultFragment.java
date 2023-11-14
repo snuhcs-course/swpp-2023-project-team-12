@@ -1,7 +1,10 @@
 package com.example.runusandroid.ui.multi_mode;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -23,6 +26,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.runusandroid.ExpSystem;
 import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
 
@@ -60,6 +64,7 @@ public class MultiModeResultFragment extends Fragment {
     private long resultLeaveButtonLastClickTime = 0;
     private long backButtonLastClickTime = 0;
     private TextView timeResultContentTextView;
+    private int updatedExp;
 
     private void showExitResultDialog() {
         @SuppressLint("InflateParams")
@@ -82,6 +87,8 @@ public class MultiModeResultFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        updatedExp = (int) getArguments().getSerializable("updatedExp");
+
     }
 
     @Nullable
@@ -103,7 +110,18 @@ public class MultiModeResultFragment extends Fragment {
             distanceResultContentTextView = view.findViewById(R.id.distance_present_content);
             timeResultContentTextView = view.findViewById(R.id.time_present_content);
             dialog = new RecordDialog(requireContext()); // requireContext()를 사용하여 컨텍스트 가져옴
-
+            updatedExp = (int) getArguments().getSerializable("updatedExp");
+            SharedPreferences sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putInt("exp", updatedExp);
+            int updatedLevel = ExpSystem.getLevel(updatedExp);
+            int pastLevel = sharedPreferences.getInt("level", -1);
+            if (pastLevel < updatedLevel) {
+                editor.putInt("level", updatedLevel);
+                showLevelUpDialog(pastLevel, updatedLevel);
+            }
+            editor.apply();
+            Log.d("response", "update_exp is + " + sharedPreferences.getInt("exp", -1));
             recordButton = view.findViewById(R.id.record_button);
             recordButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -237,5 +255,20 @@ public class MultiModeResultFragment extends Fragment {
     public void onPause() {
         super.onPause();
         backPressedCallBack.remove();
+    }
+
+    public void showLevelUpDialog(int pastLevel, int updatedLevel) {
+        View levelUpDialogView = getLayoutInflater().inflate(R.layout.dialog_level_up, null);
+        Dialog levelUpDialog = new Dialog(requireContext());
+        levelUpDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        Objects.requireNonNull(levelUpDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        levelUpDialog.setContentView(levelUpDialogView);
+        Button buttonConfirm = levelUpDialog.findViewById(R.id.buttonConfirmLevelUp);
+        buttonConfirm.setOnClickListener(v -> {
+            levelUpDialog.dismiss();
+        });
+        TextView textViewExitResult = levelUpDialogView.findViewById(R.id.textViewLevelUp);
+        textViewExitResult.setText("Level " + pastLevel + "  ->  Level " + updatedLevel);
+        levelUpDialog.show();
     }
 }

@@ -1,8 +1,11 @@
 package com.example.runusandroid.ui.single_mode;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -30,6 +33,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.example.runusandroid.ExpSystem;
 import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
 import com.example.runusandroid.databinding.FragmentSingleModeResultBinding;
@@ -78,6 +82,8 @@ public class SingleModeResultFragment extends Fragment {
     private boolean isMapReady = true;
     private long backButtonLastClickTime = 0;
 
+    private int updatedExp;
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -92,6 +98,7 @@ public class SingleModeResultFragment extends Fragment {
         calories = (float) getArguments().getSerializable("calories");
         speedList = (List<Float>) getArguments().getSerializable("userSpeedList");
         pathPoints = (List<LatLng>) getArguments().getSerializable("pathPointList");
+        updatedExp = (int) getArguments().getSerializable("updatedExp");
         if (pathPoints != null && pathPoints.size() != 0) {
             Log.d("mMapCheck", "lastpoint is not null");
             lastPoint = pathPoints.get(pathPoints.size() - 1);
@@ -117,6 +124,21 @@ public class SingleModeResultFragment extends Fragment {
         goalTimeText = binding.goalTimeText;
         paceDetailButton = binding.paceDetailButton;
         dialog = new RecordDialog(requireContext());
+
+        int updatedLevel = ExpSystem.getLevel(updatedExp);
+
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("exp", updatedExp);
+        int pastLevel = sharedPreferences.getInt("level", -1);
+        if (pastLevel < updatedLevel) {
+            editor.putInt("level", updatedLevel);
+            showLevelUpDialog(pastLevel, updatedLevel);
+            Log.d("response", "past level is " + pastLevel + ", and updated level is " + updatedLevel);
+        }
+        editor.apply();
+        Log.d("response", "update_exp is + " + sharedPreferences.getInt("exp", -1));
+
 
         // Finding the visual component displaying the map
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map_result);
@@ -265,5 +287,19 @@ public class SingleModeResultFragment extends Fragment {
         dialog.show();
     }
 
+    public void showLevelUpDialog(int pastLevel, int updatedLevel) {
+        View levelUpDialogView = getLayoutInflater().inflate(R.layout.dialog_level_up, null);
+        Dialog levelUpDialog = new Dialog(requireContext());
+        levelUpDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        Objects.requireNonNull(levelUpDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        levelUpDialog.setContentView(levelUpDialogView);
+        Button buttonConfirm = levelUpDialog.findViewById(R.id.buttonConfirmLevelUp);
+        buttonConfirm.setOnClickListener(v -> {
+            levelUpDialog.dismiss();
+        });
+        TextView textViewExitResult = levelUpDialogView.findViewById(R.id.textViewLevelUp);
+        textViewExitResult.setText("Level " + pastLevel + "  ->  Level " + updatedLevel);
+        levelUpDialog.show();
+    }
 
 }

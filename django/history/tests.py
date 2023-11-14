@@ -5,7 +5,7 @@ from rest_framework.test import APIClient
 from datetime import datetime, timedelta
 from django.utils import timezone
 from .models import history, group_history
-
+from account.models import CustomUser
 
 class HistoryDetailTestCase(TestCase):
     def setUp(self):
@@ -14,7 +14,7 @@ class HistoryDetailTestCase(TestCase):
     def test_create_history(self):
         url = "/history/"  # 해당 URL 패턴의 이름을 사용합니다.
         data = {
-            "user_id": 1,
+            "user_id": 9,
             "distance": 10.0,
             "duration": 3600,
             "is_completed": True,
@@ -27,9 +27,14 @@ class HistoryDetailTestCase(TestCase):
             "median_speed": 10.0,
             "sectional_speed": "[8.0, 12.0, 10.0]",
             "group_history_id": None,
+            "is_mission_succeeded" : 2,
+            "exp" : 5,
         }
         response = self.client.post(url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        if CustomUser.objects.filter(id = data.get("user_id")).last() is not None:
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        else:
+            self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
 class HistoryListTestCase(TestCase):

@@ -58,8 +58,12 @@ class HistoryDetail(APIView):
             is_mission_succeeded=is_mission_succeeded,
         )
         user = CustomUser.objects.filter(id = user_id).last()
-        user.exp = user.exp + exp
-        user.save()
+        if user is not None:
+            user.exp = user.exp + exp
+            user.save()
+        else:
+            return Response({"message": "User not found"}, status=404)
+
         serializer = HistorySerializer(history_instance)
         print({"history" : serializer.data, "exp" : user.exp})
         return Response({"history" : serializer.data, "exp" : {"exp" : user.exp}}, status=status.HTTP_201_CREATED)
