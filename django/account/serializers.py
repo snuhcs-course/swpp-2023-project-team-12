@@ -86,3 +86,17 @@ class EmailSerializer(serializers.Serializer):
 class ResetPasswordSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     email = serializers.EmailField(required=True)
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    profile_image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CustomUser
+        fields = ["username", "profile_image_url"]
+
+    def get_profile_image_url(self, obj):
+        request = self.context.get("request")
+        if obj.profile_image and hasattr(obj.profile_image, "url"):
+            return request.build_absolute_uri(obj.profile_image.url)
+        return None

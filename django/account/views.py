@@ -164,3 +164,13 @@ class ProfileImageView(APIView):
         else:
             logger.error(f"Serializer errors: {serializer.errors}")
             return Response(serializer.errors, status=400)
+
+
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id=None):
+        user = get_object_or_404(CustomUser, id=user_id) if user_id else request.user
+        logger.debug(f"send profile url: {user.profile_image.url}")
+        serializer = UserProfileSerializer(user, context={"request": request})
+        return Response(serializer.data)
