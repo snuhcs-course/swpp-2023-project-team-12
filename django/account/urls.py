@@ -5,7 +5,6 @@ from .views import (
     ResetPasswordView,
     SignupView,
     LoginView,
-    UpdateExpView,
 )
 from . import views
 
