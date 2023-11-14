@@ -3,12 +3,14 @@ import secrets
 import string
 from venv import logger
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 from account.models import CustomUser
 from .serializers import (
     EmailSerializer,
     ResetPasswordSerializer,
     UserCreateSerializer,
     LoginSerializer,
+    UserProfileSerializer,
 )
 from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -20,7 +22,6 @@ from django.core.mail import send_mail
 from django.db import transaction
 from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import UserProfileImageSerializer
-from django.core.files.storage import default_storage
 
 
 # Create your views here.
@@ -46,9 +47,7 @@ class LoginView(APIView):
         refresh_token = str(token)
         access_token = str(token.access_token)
         if user.profile_image and user.profile_image.name:
-            profile_image_url = (
-                settings.MEDIA_URL + "profile_images/" + user.profile_image.name
-            )
+            profile_image_url = settings.MEDIA_URL + user.profile_image.name
         else:
             profile_image_url = settings.MEDIA_URL + "temp_profile.jpeg"
         response = Response(
