@@ -29,10 +29,11 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/UserSettingTitle" />
 
-    <de.hdodenhof.circleimageview.CircleImageView
+    <ImageView
         android:id="@+id/profileImage"
         android:layout_width="150dp"
         android:layout_height="150dp"
+        android:src="@drawable/profile_image_for_multi"
         app:layout_constraintBottom_toTopOf="@+id/changeProfileImageButton"
         app:layout_constraintStart_toStartOf="@id/TextUserName"
         app:layout_constraintTop_toBottomOf="@id/TextUserName" />
