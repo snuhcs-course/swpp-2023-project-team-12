@@ -10,8 +10,7 @@
         android:id="@+id/nav_view"
         android:layout_width="0dp"
         android:layout_height="80dp"
-        android:background="#FFFFFF"
-        app:itemActiveIndicatorStyle="@style/Custom.Indicator"
+        app:itemActiveIndicatorStyle="?android:attr/windowBackground"
         app:itemTextAppearanceActiveBoldEnabled="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -21,14 +20,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:menu="@menu/bottom_nav_menu" />
 
-    <View
-        android:id="@+id/black_line"
-        android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:background="#B3B3B3"
-        app:layout_constraintBottom_toTopOf="@id/nav_view"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
     <fragment
         android:id="@+id/nav_host_fragment_activity_main2"

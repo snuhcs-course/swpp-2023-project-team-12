@@ -6,6 +6,18 @@
     android:layout_height="match_parent"
     tools:context=".ui.single_mode.SingleModeFragment">
 
+    <TextView
+        android:id="@+id/resultText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/pretendardsemibold"
+        android:gravity="center"
+        android:text="러닝 결과"
+        android:textSize="20sp"
+        app:layout_constraintTop_toTopOf="parent"
+
+        />
 
     <TextView
         android:id="@+id/textSingleMode"
@@ -99,11 +111,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/pretendardregular"
-        android:paddingTop="30dp"
+        android:paddingTop="15dp"
         android:text="목표 거리"
         app:layout_constraintEnd_toStartOf="@id/guidelineCenter"
         app:layout_constraintStart_toStartOf="@id/guidelineLeft"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/resultText" />
 
     <TextView
         android:id="@+id/goalDistanceText"
@@ -112,7 +124,7 @@
         android:fontFamily="@font/pretendardregular"
         android:paddingTop="2dp"
         android:paddingBottom="30dp"
-        android:text="-"
+        android:text="--"
         app:layout_constraintEnd_toStartOf="@id/guidelineCenter"
         app:layout_constraintStart_toStartOf="@id/guidelineLeft"
         app:layout_constraintTop_toBottomOf="@id/goalDistanceStaticText" />
@@ -122,11 +134,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/pretendardregular"
-        android:paddingTop="30dp"
+        android:paddingTop="15dp"
         android:text="목표 시간"
         app:layout_constraintEnd_toStartOf="@id/guidelineRight"
         app:layout_constraintStart_toStartOf="@id/guidelineCenter"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/resultText" />
+
 
     <TextView
         android:id="@+id/goalTimeText"
@@ -135,7 +148,7 @@
         android:fontFamily="@font/pretendardregular"
         android:paddingTop="2dp"
         android:paddingBottom="30dp"
-        android:text="-"
+        android:text="--"
         app:layout_constraintEnd_toStartOf="@id/guidelineRight"
         app:layout_constraintStart_toStartOf="@id/guidelineCenter"
         app:layout_constraintTop_toBottomOf="@id/goalTimeStaticText" />
@@ -236,14 +249,15 @@
     </LinearLayout>
 
 
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/quitButton"
         android:layout_width="130dp"
         android:layout_height="130dp"
-        android:backgroundTint="#E94334"
+        android:background="@drawable/result_quit_button"
         android:fontFamily="@font/pretendardregular"
         android:shape='oval'
         android:text="돌아가기"
+        android:textColor="#000000"
         android:textSize="20dp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
