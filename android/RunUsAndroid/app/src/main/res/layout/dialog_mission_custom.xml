@@ -159,6 +159,7 @@
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
             android:layout_marginBottom="25dp"
+            android:padding="10dp"
             android:background="@android:color/transparent"
             android:src="@drawable/ic_close"
             app:layout_constraintBottom_toTopOf="@id/textViewTitle"
@@ -175,6 +176,7 @@
             android:gravity="center"
             android:padding="5dp"
             android:text="커스텀 모드"
+
             android:textStyle="bold"
             android:bufferType="spannable"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
