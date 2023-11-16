@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
@@ -152,7 +151,7 @@ public class SingleModeFragment extends Fragment {
                         mMap.clear(); // Remove previous polylines
                         mMap.addPolyline(new PolylineOptions().addAll(pathPoints).color(Color.parseColor("#4AA570")).width(10));
                         if (newPoint != null) {
-                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 16));
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 20));
                         }
                     }
 
@@ -565,62 +564,32 @@ public class SingleModeFragment extends Fragment {
         boolean enoughHistory = modelInput[4][2] != 0;
         if (!enoughHistory) {
             setStandard();
+            goalDistance *= 1.5;
+        }
+        else{
+            goalDistance *= 1.5;
+            float max_distance = 0;
+            for (int i=0; i<modelInput.length; i++){
+                float tmp_distance = modelInput[i][0]*7.019781e+00f+1.207809e+01f;
+                if(tmp_distance>max_distance){
+                    max_distance = tmp_distance;
+                }
+            }
+            if (goalDistance>2*max_distance){
+                goalDistance = goalDistance*0.6f + max_distance*0.4f;
+            }
+            else if (goalDistance<max_distance){
+                goalDistance = max_distance * 1.2f;
+            }
         }
 
-        goalDistance *= 1.2;
 
-        EditText textDistance = dialogView.findViewById(R.id.editTextGoalDistance);
+
         SeekBar distanceSeekBar = dialogView.findViewById(R.id.distanceSeekBar);
-
-        textDistance.setText(floatToThirdDeciStr(goalDistance));
-        distanceSeekBar.setProgress((int) goalDistance*1000);
-
         Button buttonConfirm = dialogView.findViewById(R.id.buttonConfirm);
-        textDistance.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-
-                if (s != null && !s.toString().equals("")) {
-                    try {
-                        String distanceText = s.toString();
-                        float new_distance = (float) Double.parseDouble(distanceText);
-                        goalDistance = new_distance;
-                        if (new_distance > 42.195) {
-                            distanceSeekBar.setProgress((int)(42195));
-                        }
-                        else{
-                            distanceSeekBar.setProgress((int)(new_distance*1000));
-                        }
-                        textDistance.setSelection(textDistance.getText().length());
-                    } catch (NumberFormatException e) {
-                        String distanceText = s.toString();
-                        Log.e("editText check", distanceText);
-                        e.printStackTrace();
-                    }
-                }
-                else {
-                    int new_distance = 0;
-                    goalDistance = new_distance;
-                    distanceSeekBar.setProgress(new_distance);
-                }
-
-
-            }
-        });
-
         ImageButton buttonClose = dialogView.findViewById(R.id.buttonClose);
+        TextView distanceTextView = dialogView.findViewById(R.id.textViewGoalDistance);
+        distanceTextView.setText("목표 거리   "+floatToThirdDeciStr(goalDistance) + "km");
 
         buttonClose.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -636,6 +605,27 @@ public class SingleModeFragment extends Fragment {
                 dialog.dismiss();
             }
         });
+
+        float revise_distance = Math.round(goalDistance) / 20.0f;
+
+        distanceSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+                float new_distance = goalDistance + (progress-5)*revise_distance;
+                distanceTextView.setText("목표 거리   "+String.format(floatToThirdDeciStr(new_distance)) + "km");
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+
 
 
         dialog.show();
@@ -662,23 +652,25 @@ public class SingleModeFragment extends Fragment {
         if (!enoughHistory) {
             setStandard();
 
-            missionInfo.setText("5회 러닝 전에는 " + nickname + "님과 비슷한 그룹의 평균 러닝이 추천돼요!");
+            missionInfo.setText("5회 러닝 전에는 " + nickname + "님과 비슷한 그룹의 \n평균 러닝이 추천돼요!");
         }
+        else{
+            float lastDistance = modelInput[0][1] * 7.019781e+00f + 1.207809e+01f;
+            float lastTime = modelInput[0][2] * 6.457635e-01f + 1.156572e+00f;
 
+            if (goalDistance / goalTime > lastDistance * 1.1 / lastTime) {
+                missionInfo.setText(nickname + "님, 오늘은 더 바람을 느끼며 달려 보세요! \n 지난 기록보다 높은 목표를 추천해 드렸어요.");
+            } else if (goalDistance / goalTime < lastDistance * 0.9 / lastTime) {
+                missionInfo.setText(nickname + "님, 오늘은 쉬어가는 러닝을 가져 보세요! \n 지난 기록보다 편한 목표를 추천해 드렸어요.");
+            } else {
+                missionInfo.setText("러닝은 꾸준함이 생명! \n 지난 러닝의 감각을 계속해서 익혀 보세요.");
+            }
+        }
 
         dialog.show();
 
 
-        float lastDistance = modelInput[0][1] * 7.019781e+00f + 1.207809e+01f;
-        float lastTime = modelInput[0][2] * 6.457635e-01f + 1.156572e+00f;
 
-        if (goalDistance / goalTime > lastDistance * 1.1 / lastTime) {
-            missionInfo.setText(nickname + "님, 오늘은 더 바람을 느끼며 달려 보세요! \n 지난 기록보다 높은 목표를 추천해 드렸어요.");
-        } else if (goalDistance / goalTime < lastDistance * 0.9 / lastTime) {
-            missionInfo.setText(nickname + "님, 오늘은 쉬어가는 러닝을 가져 보세요! \n 지난 기록보다 편한 목표를 추천해 드렸어요.");
-        } else {
-            missionInfo.setText("러닝은 꾸준함이 생명! \n 지난 러닝의 감각을 계속해서 익혀 보세요.");
-        }
 
 
         Button buttonConfirm = dialogView.findViewById(R.id.buttonConfirm);
