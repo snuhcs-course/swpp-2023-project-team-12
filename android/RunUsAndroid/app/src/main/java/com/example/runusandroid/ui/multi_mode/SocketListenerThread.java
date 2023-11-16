@@ -3,7 +3,6 @@ package com.example.runusandroid.ui.multi_mode;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.navigation.NavController;
@@ -27,10 +26,10 @@ import MultiMode.Protocol;
 import MultiMode.UserDistance;
 
 public class SocketListenerThread extends Thread implements Serializable { // 소켓이 연결되어 있을 때 서버로부터 오는 이벤트를 캐치하기 위해 사용
-    private Handler handler;
     private final ObjectInputStream ois;
+    private Handler handler;
     private MultiModeRoom selectedRoom;
-    private transient MultiModeFragment multiModeFragment = null;;
+    private transient MultiModeFragment multiModeFragment = null;
     private transient MultiModeWaitFragment waitFragment = null;
     private transient MultiModePlayFragment playFragment = null;
     private transient MultiModeResultFragment resultFragment = null;
@@ -42,6 +41,7 @@ public class SocketListenerThread extends Thread implements Serializable { // �
         this.waitFragment = waitFragment;
         this.selectedRoom = selectedRoom;
     }
+
     public SocketListenerThread(ObjectInputStream ois) {
         this.ois = ois;
     }
@@ -53,18 +53,23 @@ public class SocketListenerThread extends Thread implements Serializable { // �
     public void resumeListening() {
         isPaused = false;
     }
+
     public void setRoom(MultiModeRoom room) {
         this.selectedRoom = room;
     }
+
     public void addHandler(Handler handler) {
         this.handler = handler;
     }
+
     public void addMultiModeFragment(MultiModeFragment multiModeFragment) {
         this.multiModeFragment = multiModeFragment;
     }
+
     public void addWaitFragment(MultiModeWaitFragment waitFragment) {
         this.waitFragment = waitFragment;
     }
+
     public void addPlayFragment(MultiModePlayFragment playFragment) {
         this.playFragment = playFragment;
     }
@@ -90,18 +95,18 @@ public class SocketListenerThread extends Thread implements Serializable { // �
                 if (receivedObject instanceof Packet) {
                     Packet packet = (Packet) receivedObject;
 
-                    if(packet.getProtocol() == Protocol.ROOM_LIST){
+                    if (packet.getProtocol() == Protocol.ROOM_LIST) {
                         handler.post(() -> {
                             List<MultiModeRoom> roomList = packet.getRoomList();
                             multiModeFragment.setAdapter(roomList);
-                            Log.d("roomlist ", "roomlist: "+roomList);
+                            Log.d("roomlist ", "roomlist: " + roomList);
                         });
-                    } else if(packet.getProtocol() == Protocol.ENTER_ROOM){
+                    } else if (packet.getProtocol() == Protocol.ENTER_ROOM) {
                         handler.post(() -> {
                             selectedRoom = packet.getSelectedRoom();
                             multiModeFragment.navigateRoomWait(selectedRoom);
                         });
-                    } else if (packet.getProtocol() == Protocol.CREATE_ROOM){
+                    } else if (packet.getProtocol() == Protocol.CREATE_ROOM) {
                         handler.post(() -> {
                             selectedRoom = packet.getSelectedRoom();
                             multiModeFragment.navigateRoomWait(selectedRoom);
@@ -113,7 +118,7 @@ public class SocketListenerThread extends Thread implements Serializable { // �
                             waitFragment.setRoom(selectedRoom);
                             MultiModeUser user = packet.getUser();
                             if (packet.getProtocol() == Protocol.UPDATE_ROOM) {
-                                waitFragment.addUserNameToWaitingList(user.getNickName());
+                                waitFragment.addUserNameToWaitingList(user);
                             } else {
                                 waitFragment.removeUserNameFromWaitingList(user.getNickName());
                             }
@@ -123,14 +128,13 @@ public class SocketListenerThread extends Thread implements Serializable { // �
                     } else if (packet.getProtocol() == Protocol.START_GAME) {
                         handler.post(() -> {
                             Log.d("start game", "start game packet come");
-                            if(waitFragment.isFragmentVisible) {
+                            if (waitFragment.isFragmentVisible) {
                                 Bundle bundle = new Bundle();
                                 bundle.putSerializable("room", selectedRoom);
                                 bundle.putSerializable("startTime", LocalDateTime.now());
                                 NavController navController = Navigation.findNavController(waitFragment.requireView());
                                 navController.navigate(R.id.navigation_multi_room_play, bundle);
-                            }
-                            else{
+                            } else {
                                 waitFragment.exitGameInBackground();
                             }
                         });
@@ -174,7 +178,7 @@ public class SocketListenerThread extends Thread implements Serializable { // �
                             NavController navController = Navigation.findNavController(multiModeFragment.requireView());
                             navController.navigate(R.id.navigation_multi_mode);
                         });
-                    } else if(packet.getProtocol() == Protocol.FULL_ROOM_ERROR){
+                    } else if (packet.getProtocol() == Protocol.FULL_ROOM_ERROR) {
                         handler.post(() -> {
                             Toast.makeText(multiModeFragment.getActivity(), "인원이 초과되었습니다.", Toast.LENGTH_SHORT).show();
                         });
