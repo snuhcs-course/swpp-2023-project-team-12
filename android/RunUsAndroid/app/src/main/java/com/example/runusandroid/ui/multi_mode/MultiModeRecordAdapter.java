@@ -35,7 +35,7 @@ public class MultiModeRecordAdapter extends RecyclerView.Adapter<MultiModeRecord
         return items.size();
     }
 
-    void addItem(RecordItem item) {
+    public void addItem(RecordItem item) {
         items.add(item);
     }
 

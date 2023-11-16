@@ -145,13 +145,14 @@ public class MultiModeFragment extends Fragment {
         sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
         long userId = sharedPreferences.getLong("userid", 99999);
         String nickName = sharedPreferences.getString("nickname", "guest");
-        user = new MultiModeUser((int) userId, nickName, "");
+        int level = sharedPreferences.getInt("level", 0);
+        user = new MultiModeUser((int) userId, nickName, level, "");
         accountApi.getUserProfile(String.valueOf(userId)).enqueue(new Callback<UserProfileResponse>() {
             @Override
             public void onResponse(Call<UserProfileResponse> call, Response<UserProfileResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     imageUrl = response.body().getProfileImageUrl();
-                    user = new MultiModeUser((int) userId, nickName, imageUrl);
+                    user = new MultiModeUser((int) userId, nickName, level, imageUrl);
                 }
 
             }
@@ -161,7 +162,6 @@ public class MultiModeFragment extends Fragment {
                 Log.e("UserProfile", "Failed to load user profile", t);
             }
         });
-
         Log.d("Profile_image", user.getNickName() + "'s profile_image=" + user.getProfileImageUrl());
 
         View view = inflater.inflate(R.layout.fragment_multi_mode, container, false);

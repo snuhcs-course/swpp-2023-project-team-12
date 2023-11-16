@@ -3,6 +3,7 @@
     <string name="title_activity_main2">MainActivity2</string>
     <string name="title_home">홈</string>
     <string name="title_single_mode">싱글모드</string>
+    <string name="title_single_mode_result">싱글모드결과</string>
     <string name="title_multi_mode">멀티모드</string>
     <string name="title_multi_mode_wait">MultiModeWait</string>
     <string name="title_multi_mode_play">MultiModePlay</string>

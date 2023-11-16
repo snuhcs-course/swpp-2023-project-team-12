@@ -63,6 +63,7 @@ class LoginView(APIView):
                     "height": user.height,
                     "weight": user.weight,
                     "age": user.age,
+                    "exp": user.exp,
                     "profile_image": profile_image_url if user.profile_image else None,
                 },
                 "jwt_token": {
@@ -104,6 +105,7 @@ class FindUsernameAndSendEmailView(APIView):
             return Response({"message": "Email sent successfully"})
         except CustomUser.DoesNotExist:
             return Response({"message": "User not found"}, status=404)
+
 
 
 # 임시 비밀번호 생성기

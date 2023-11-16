@@ -14,6 +14,7 @@ from django.utils import timezone
 from django.db.models import Sum
 from django.db.models.functions import TruncDay
 from venv import logger
+from account.models import CustomUser
 
 
 # Create your views here.
@@ -38,6 +39,8 @@ class HistoryDetail(APIView):
         median_speed = request.data.get("median_speed")
         sectional_speed = request.data.get("sectional_speed")
         group_history_id = request.data.get("group_history_id")
+        is_mission_succeeded = request.data.get("is_mission_succeeded")
+        exp = request.data.get("exp")
         history_instance = history.objects.create(
             user_id=user_id,
             distance=distance,
@@ -52,10 +55,18 @@ class HistoryDetail(APIView):
             median_speed=median_speed,
             sectional_speed=sectional_speed,
             group_history_id=group_history_id,
+            is_mission_succeeded=is_mission_succeeded,
         )
+        user = CustomUser.objects.filter(id = user_id).last()
+        if user is not None:
+            user.exp = user.exp + exp
+            user.save()
+        else:
+            return Response({"message": "User not found"}, status=404)
+
         serializer = HistorySerializer(history_instance)
-        print(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        print({"history" : serializer.data, "exp" : user.exp})
+        return Response({"history" : serializer.data, "exp" : {"exp" : user.exp}}, status=status.HTTP_201_CREATED)
 
 
 class RecentHistory(APIView):

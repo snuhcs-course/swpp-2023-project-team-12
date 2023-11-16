@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,9 +18,11 @@ public class RecordDialog extends Dialog implements View.OnClickListener {
 
     public Context context;
     public ImageButton closeButton;
-    RecyclerView recyclerView;
+    public LinearLayout caloriesLayout;
 
-    MultiModeRecordAdapter adapter;
+    public TextView caloriesText;
+    public MultiModeRecordAdapter adapter;
+    RecyclerView recyclerView;
 
     public RecordDialog(Context context) {
         super(context);
@@ -30,7 +34,8 @@ public class RecordDialog extends Dialog implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.running_record_modal_layout);
-
+        caloriesLayout = findViewById(R.id.calories);
+        caloriesText = findViewById(R.id.caloriesText);
         closeButton = findViewById(R.id.buttonClose);
         closeButton.setOnClickListener(this);
 
