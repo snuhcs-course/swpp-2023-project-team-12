@@ -123,11 +123,16 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
                     } else if (packet.getProtocol() == Protocol.START_GAME) {
                         handler.post(() -> {
                             Log.d("start game", "start game packet come");
-                            Bundle bundle = new Bundle();
-                            bundle.putSerializable("room", selectedRoom);
-                            bundle.putSerializable("startTime", LocalDateTime.now());
-                            NavController navController = Navigation.findNavController(waitFragment.requireView());
-                            navController.navigate(R.id.navigation_multi_room_play, bundle);
+                            if(waitFragment.isFragmentVisible) {
+                                Bundle bundle = new Bundle();
+                                bundle.putSerializable("room", selectedRoom);
+                                bundle.putSerializable("startTime", LocalDateTime.now());
+                                NavController navController = Navigation.findNavController(waitFragment.requireView());
+                                navController.navigate(R.id.navigation_multi_room_play, bundle);
+                            }
+                            else{
+                                waitFragment.exitGameInBackground();
+                            }
                         });
                     } else if (packet.getProtocol() == Protocol.UPDATE_TOP3_STATES) {
                         handler.post(() -> {
