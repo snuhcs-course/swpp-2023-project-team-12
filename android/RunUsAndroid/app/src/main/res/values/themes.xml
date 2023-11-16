@@ -3,7 +3,7 @@
     <style name="Base.Theme.RunUsAndroid" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
-        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimary">@color/white</item>
         <item name="android:textViewStyle">@style/pretendardTextView</item>
         <item name="android:buttonStyle">@style/pretendardButton</item>
         <item name="android:editTextStyle">@style/pretendardEditText</item>
