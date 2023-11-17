@@ -12,7 +12,7 @@
         android:fontFamily="@font/pretendardregular"
         android:gravity="start"
         android:text="달린 구간(km)"
-        android:textSize="20dp" />
+        android:textSize="15dp" />
 
     <TextView
         android:id="@+id/average_pace"
@@ -22,5 +22,5 @@
         android:fontFamily="@font/pretendardregular"
         android:gravity="end"
         android:text="페이스"
-        android:textSize="20dp" />
+        android:textSize="15dp" />
 </LinearLayout>

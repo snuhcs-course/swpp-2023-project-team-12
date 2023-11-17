@@ -5,6 +5,7 @@ from .views import (
     ResetPasswordView,
     SignupView,
     LoginView,
+    UserProfileView,
 )
 from . import views
 
@@ -19,4 +20,9 @@ urlpatterns = [
     ),
     path("reset_password/", ResetPasswordView.as_view(), name="reset_password"),
     path("profile_image/", ProfileImageView.as_view(), name="profile_image"),
+    path(
+        "user_profile/<int:user_id>/",
+        UserProfileView.as_view(),
+        name="user_profile",
+    ),
 ]

@@ -45,7 +45,7 @@ public class MultiModePlayFragmentUnitTest {
     @Before
     public void setUp() throws Exception {
         fragment = new MultiModePlayFragment();
-        user = new MultiModeUser(1, "testUser");
+        user = new MultiModeUser(1, "testUser", 0, "");
         distance = 10;
         socketManager = SocketManager.getInstance();
         selectedRoom = new MultiModeRoom();
@@ -166,7 +166,7 @@ public class MultiModePlayFragmentUnitTest {
     public void testPostHistoryData() {
 
         try {
-            HistoryData requestData = new HistoryData(1, 10.0f, 3600, true, "2023-11-03T13:06:33", "2023-11-03T13:06:33", 500, true, 15.0f, 0, 10.0f, new ArrayList<>(), 1);
+            HistoryData requestData = new HistoryData(1, 10.0f, 3600, true, "2023-11-03T13:06:33", "2023-11-03T13:06:33", 500, true, 15.0f, 0, 10.0f, new ArrayList<>(), 1, 0, 5);
             Call<ResponseBody> call = historyApi.postHistoryData(requestData);
             Response<ResponseBody> response = call.execute();
 

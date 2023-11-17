@@ -7,6 +7,7 @@ public class MultiModeUser implements Serializable {
     private static final long serialVersionUID = 2194848L;
 
     private long id;
+    private int level;
     private MultiModeRoom room;
     private Socket socket;
     private String nickname;
@@ -16,9 +17,10 @@ public class MultiModeUser implements Serializable {
         this.nickname = nickname;
     }
 
-    public MultiModeUser(int id, String nickname, String profileImageUrl) {
+    public MultiModeUser(int id, String nickname, int level, String profileImageUrl) {
         this.id = id;
         this.nickname = nickname;
+        this.level = level;
         this.profileImageUrl = profileImageUrl;
     }
 
@@ -72,6 +74,10 @@ public class MultiModeUser implements Serializable {
 
     public void setProfileImageUrl(String url) {
         this.profileImageUrl = url;
+    }
+
+    public int getLevel() {
+        return level;
     }
 
     @Override

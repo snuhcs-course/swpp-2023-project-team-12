@@ -20,6 +20,11 @@
     <fragment
         android:id="@+id/navigation_single_mode"
         android:name="com.example.runusandroid.ui.single_mode.SingleModeFragment"
+        android:label="@string/title_single_mode_result"
+        tools:layout="@layout/fragment_single_mode_result" />
+    <fragment
+        android:id="@+id/navigation_single_mode_result"
+        android:name="com.example.runusandroid.ui.single_mode.SingleModeResultFragment"
         android:label="@string/title_single_mode"
         tools:layout="@layout/fragment_single_mode" />
 

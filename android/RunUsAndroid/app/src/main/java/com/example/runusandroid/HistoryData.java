@@ -35,6 +35,12 @@ public class HistoryData {
     @SerializedName("group_history_id")
     long group_history_id;
 
+    @SerializedName("is_mission_succeeded")
+    int is_mission_succeeded;
+
+    @SerializedName("exp")
+    int exp;
+
     public HistoryData(
             long user_id,
             float distance,
@@ -48,7 +54,9 @@ public class HistoryData {
             float min_speed,
             float median_speed,
             List<Float> sectional_record,
-            long group_history_id
+            long group_history_id,
+            int is_mission_succeeded,
+            int exp
     ) throws JSONException {
         this.user_id = user_id;
         this.distance = distance;
@@ -65,5 +73,7 @@ public class HistoryData {
         String jsonSectionalRecord = gson.toJson(sectional_record);
         this.sectional_record = jsonSectionalRecord;
         this.group_history_id = group_history_id;
+        this.is_mission_succeeded = is_mission_succeeded;
+        this.exp = exp;
     }
 }

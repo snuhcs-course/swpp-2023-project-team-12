@@ -15,6 +15,7 @@ class MyUserManager(UserManager):
         height,
         weight,
         age,
+        exp,
         **extra_fields
     ):
         if not nickname:
@@ -33,6 +34,7 @@ class MyUserManager(UserManager):
             height=height,
             weight=weight,
             age=age,
+            exp=exp,
         )
         user.set_password(password)
         user.save()
@@ -50,6 +52,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     height = models.FloatField(default=0)
     weight = models.FloatField(default=0)
     age = models.IntegerField(default=20)
+    exp = models.IntegerField(default=0)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     profile_image = models.ImageField(
