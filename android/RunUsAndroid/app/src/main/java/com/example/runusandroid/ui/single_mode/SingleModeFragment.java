@@ -451,6 +451,11 @@ public class SingleModeFragment extends Fragment {
                     try {
                         String distanceText = s.toString();
                         nowGoalDistance = (float) Double.parseDouble(distanceText);
+                        if (((int)(nowGoalDistance*10))/10f != nowGoalDistance){
+                            Log.e("TEXT", String.valueOf(nowGoalDistance)+ " / "+ String.valueOf(Math.round(nowGoalDistance*10)/10f));
+                            nowGoalDistance = ((int)(nowGoalDistance*10))/10f;
+                            textDistance.setText(String.valueOf(nowGoalDistance));
+                        }
                         textDistance.setSelection(textDistance.getText().length());
                     } catch (NumberFormatException e) {
                         String distanceText = s.toString();
@@ -522,6 +527,11 @@ public class SingleModeFragment extends Fragment {
                     try {
                         String minuteText = s.toString();
                         int newMinute =Integer.parseInt(minuteText);
+                        if (newMinute>59) {
+                            newMinute = 59;
+                            textMinute.setText("59");
+                            textMinute.setSelection(2);
+                        }
                         nowGoalTime = Integer.parseInt(textHour.getText().toString())*60+newMinute;
                     } catch (NumberFormatException e) {
                         String distanceText = s.toString();
@@ -551,10 +561,10 @@ public class SingleModeFragment extends Fragment {
 
         buttonConfirm.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-                setRunningStart();
                 goalDistance = nowGoalDistance;
                 goalTime = nowGoalTime;
                 dialog.dismiss();
+                setRunningStart();
             }
         });
 
@@ -629,7 +639,6 @@ public class SingleModeFragment extends Fragment {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
                 nowGoalDistance = fixed_distance + (progress-4)*revise_distance;
-                Log.e("Revise", "original distance : "+fixed_distance+", revise : "+revise_distance);
                 distanceTextView.setText("목표 거리   "+String.format(floatTo1stDecimal(nowGoalDistance)) + "km");
 
             }
@@ -755,10 +764,10 @@ public class SingleModeFragment extends Fragment {
 
         buttonConfirm.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-                setRunningStart();
                 goalDistance = nowGoalDistance;
                 goalTime = nowGoalTime;
                 isMissionSucceeded = 1;
+                setRunningStart();
                 dialog.dismiss();
             }
         });
