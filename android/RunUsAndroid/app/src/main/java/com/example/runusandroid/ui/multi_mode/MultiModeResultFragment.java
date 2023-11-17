@@ -1,10 +1,19 @@
 package com.example.runusandroid.ui.multi_mode;
 
+import static android.content.Context.MODE_PRIVATE;
+
+import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -17,20 +26,21 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.runusandroid.ExpSystem;
 import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
 
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Objects;
 
 import MultiMode.MultiModeRoom;
-import MultiMode.MultiModeUser;
 import MultiMode.UserDistance;
 
 public class MultiModeResultFragment extends Fragment {
     OnBackPressedCallback backPressedCallBack;
     MultiModeRoom selectedRoom;
+    float calories = 0;
     float distance = 0;
     ArrayList<Float> speedList;
     NavController navController;
@@ -44,19 +54,43 @@ public class MultiModeResultFragment extends Fragment {
     TextView bronzeDistanceTextView;
     TextView bronzeNickNameTextView;
     ProgressBar progressBar;
-    Button playLeaveButton;
+    Button resultLeaveButton;
     Button recordButton;
     TextView distanceResultContentTextView; //API 사용해서 구한 나의 현재 이동 거리
     SocketListenerThread socketListenerThread = MultiModeFragment.socketListenerThread;
     RecyclerView recyclerView;
     RecordDialog dialog;
     boolean isDialogOpenedBefore = false;
+    private long resultLeaveButtonLastClickTime = 0;
+    private long backButtonLastClickTime = 0;
     private TextView timeResultContentTextView;
+    private int updatedExp;
+
+    private void showExitResultDialog() {
+        @SuppressLint("InflateParams")
+        View exitResultDialog = getLayoutInflater().inflate(R.layout.dialog_multimode_play_finish, null);
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        Objects.requireNonNull(dialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.setContentView(exitResultDialog);
+        Button buttonConfirmPlayExit = exitResultDialog.findViewById(R.id.buttonConfirmPlayExit);
+        buttonConfirmPlayExit.setOnClickListener(v -> {
+            dialog.dismiss();
+            navController = Navigation.findNavController(requireView());
+            navController.navigate(R.id.navigation_multi_mode);
+        });
+        TextView textViewExitResult = exitResultDialog.findViewById(R.id.textViewExitGame);
+        textViewExitResult.setText(R.string.MultiModeResultExitMessage);
+        dialog.show();
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        updatedExp = (int) getArguments().getSerializable("updatedExp");
+
     }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -72,11 +106,22 @@ public class MultiModeResultFragment extends Fragment {
             bronzeNickNameTextView = view.findViewById(R.id.bronze_nickname);
             bronzeDistanceTextView = view.findViewById(R.id.bronze_distance);
             progressBar = view.findViewById(R.id.linear_progress_bar);
-            playLeaveButton = view.findViewById(R.id.result_leaveButton);
+            resultLeaveButton = view.findViewById(R.id.result_leaveButton);
             distanceResultContentTextView = view.findViewById(R.id.distance_present_content);
             timeResultContentTextView = view.findViewById(R.id.time_present_content);
             dialog = new RecordDialog(requireContext()); // requireContext()를 사용하여 컨텍스트 가져옴
-
+            updatedExp = (int) getArguments().getSerializable("updatedExp");
+            SharedPreferences sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putInt("exp", updatedExp);
+            int updatedLevel = ExpSystem.getLevel(updatedExp);
+            int pastLevel = sharedPreferences.getInt("level", -1);
+            if (pastLevel < updatedLevel) {
+                editor.putInt("level", updatedLevel);
+                showLevelUpDialog(pastLevel, updatedLevel);
+            }
+            editor.apply();
+            Log.d("response", "update_exp is + " + sharedPreferences.getInt("exp", -1));
             recordButton = view.findViewById(R.id.record_button);
             recordButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -84,7 +129,7 @@ public class MultiModeResultFragment extends Fragment {
                     dialog.show();
                     if (!isDialogOpenedBefore) {
 
-
+                        dialog.caloriesText.setText(calories + " kcal");
                         speedList = (ArrayList<Float>) getArguments().getSerializable("userSpeedList");
                         Log.d("speedList", speedList.size() + "");
                         double section = 1.0;
@@ -105,9 +150,11 @@ public class MultiModeResultFragment extends Fragment {
 
                                 section++;
                             } else {
-                                float speed = speedList.get((int) section - 1);
-                                dialog.adapter.addItem(new RecordItem(distance - (section - 1), speed));
-                                Log.d("speedList", "second if : " + (section - 1) + " " + speed);
+                                if (speedList.size() > 0) {
+                                    float speed = speedList.get((int) section - 1);
+                                    dialog.adapter.addItem(new RecordItem(distance - (section - 1), speed));
+                                    Log.d("speedList", "second if : " + (section - 1) + " " + speed);
+                                }
                                 section = 1.0;
                                 break;
                             }
@@ -120,11 +167,14 @@ public class MultiModeResultFragment extends Fragment {
 
         }
 
-        playLeaveButton.setOnClickListener(new View.OnClickListener() {
+        resultLeaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                navController = Navigation.findNavController(v);
-                navController.navigate(R.id.navigation_multi_mode);
+                if (SystemClock.elapsedRealtime() - resultLeaveButtonLastClickTime < 1000) {
+                    return;
+                }
+                resultLeaveButtonLastClickTime = SystemClock.elapsedRealtime();
+                showExitResultDialog();
             }
         });
 
@@ -171,18 +221,21 @@ public class MultiModeResultFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        Log.d("create callback","create callback");
+        Log.d("create callback", "create callback");
         backPressedCallBack = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                NavController navController = Navigation.findNavController(requireView());
-                navController.navigate(R.id.navigation_multi_mode);
+                if (SystemClock.elapsedRealtime() - backButtonLastClickTime < 1000) {
+                    return;
+                }
+                backButtonLastClickTime = SystemClock.elapsedRealtime();
+                showExitResultDialog();
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
-        //socketListenerThread = (SocketListenerThread) getArguments().getSerializable("socketListenerThread"); //waitFragment의 socketListenrThread객체 가져와서 이어서 사용
         socketListenerThread.addResultFragment(this);
         socketListenerThread.resumeListening();
+
         UserDistance[] top3UserDistance = (UserDistance[]) getArguments().getSerializable("top3UserDistance");
         updateTop3UserDistance(top3UserDistance);
         distance = (float) getArguments().getSerializable("userDistance");
@@ -197,9 +250,25 @@ public class MultiModeResultFragment extends Fragment {
         timeResultContentTextView.setText(formattedDuration);
         Log.d("response", "here is room result screen");
     }
+
     @Override
     public void onPause() {
         super.onPause();
         backPressedCallBack.remove();
+    }
+
+    public void showLevelUpDialog(int pastLevel, int updatedLevel) {
+        View levelUpDialogView = getLayoutInflater().inflate(R.layout.dialog_level_up, null);
+        Dialog levelUpDialog = new Dialog(requireContext());
+        levelUpDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        Objects.requireNonNull(levelUpDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        levelUpDialog.setContentView(levelUpDialogView);
+        Button buttonConfirm = levelUpDialog.findViewById(R.id.buttonConfirmLevelUp);
+        buttonConfirm.setOnClickListener(v -> {
+            levelUpDialog.dismiss();
+        });
+        TextView textViewExitResult = levelUpDialogView.findViewById(R.id.textViewLevelUp);
+        textViewExitResult.setText("Level " + pastLevel + "  ->  Level " + updatedLevel);
+        levelUpDialog.show();
     }
 }

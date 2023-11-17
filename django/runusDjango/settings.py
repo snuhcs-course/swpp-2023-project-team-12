@@ -186,8 +186,7 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "runusnoreply"
-EMAIL_HOST_PASSWORD = "uowq tlzw ckdo ehml"  # 실제 Gmail 비밀번호 입력
-
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = "/media/"
 STATIC_URL = "static/"

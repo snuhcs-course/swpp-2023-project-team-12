@@ -11,8 +11,10 @@ from rest_framework import status
 from .models import history, group_history
 from datetime import datetime, timedelta
 from django.utils import timezone
-from django.http import JsonResponse
 from django.db.models import Sum
+from django.db.models.functions import TruncDay
+from venv import logger
+from account.models import CustomUser
 
 
 # Create your views here.
@@ -37,6 +39,8 @@ class HistoryDetail(APIView):
         median_speed = request.data.get("median_speed")
         sectional_speed = request.data.get("sectional_speed")
         group_history_id = request.data.get("group_history_id")
+        is_mission_succeeded = request.data.get("is_mission_succeeded")
+        exp = request.data.get("exp")
         history_instance = history.objects.create(
             user_id=user_id,
             distance=distance,
@@ -51,10 +55,18 @@ class HistoryDetail(APIView):
             median_speed=median_speed,
             sectional_speed=sectional_speed,
             group_history_id=group_history_id,
+            is_mission_succeeded=is_mission_succeeded,
         )
+        user = CustomUser.objects.filter(id = user_id).last()
+        if user is not None:
+            user.exp = user.exp + exp
+            user.save()
+        else:
+            return Response({"message": "User not found"}, status=404)
+
         serializer = HistorySerializer(history_instance)
-        print(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        print({"history" : serializer.data, "exp" : user.exp})
+        return Response({"history" : serializer.data, "exp" : {"exp" : user.exp}}, status=status.HTTP_201_CREATED)
 
 
 class RecentHistory(APIView):
@@ -119,12 +131,35 @@ class MonthlyDataView(APIView):
         total_distance = data.aggregate(Sum("distance"))["distance__sum"] or 0
         total_time = data.aggregate(Sum("duration"))["duration__sum"] or timedelta(0)
         total_calories = data.aggregate(Sum("calories"))["calories__sum"] or 0
-        serializer = MonthlyDataSerializer(
-            {"distance": total_distance, "time": total_time, "calories": total_calories}
+
+        daily_data = (
+            data.annotate(date=TruncDay("start_time"))
+            .values("date")
+            .annotate(
+                distance=Sum("distance"), time=Sum("duration"), calories=Sum("calories")
+            )
+            .order_by("date")
         )
+        for item in daily_data:
+            item["date"] = item["date"].date()
+            logger.debug(daily_data)
+        response_data = {
+            "total_distance": total_distance,
+            "total_time": total_time,
+            "total_calories": total_calories,
+            "daily_data": list(daily_data),
+        }
+
+        logger.debug(f"Response data before serialization: {response_data}")
+
+        serializer = MonthlyDataSerializer(response_data)
+        serialized_data = serializer.data
+
+        logger.debug(f"Serialized data: {serialized_data}")
         return Response(serializer.data)
 
 
+# NOTE: 잠시 Deperecated된 API
 class DailyDataView(APIView):
     def get(self, request, year, month, day, user_id):
         data = history.objects.filter(

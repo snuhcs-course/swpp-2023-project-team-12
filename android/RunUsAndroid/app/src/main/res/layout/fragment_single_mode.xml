@@ -240,14 +240,15 @@
     </LinearLayout>
 
 
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/startButton"
         android:layout_width="130dp"
         android:layout_height="130dp"
-        android:backgroundTint="#4AA570"
+        android:background="@drawable/singlemode_start_button"
         android:fontFamily="@font/pretendardregular"
         android:shape='oval'
         android:text="시작"
+        android:textColor="#FFFFFF"
         android:textSize="25dp"
         android:textStyle="bold"
         android:visibility="visible"
@@ -257,14 +258,15 @@
         app:layout_constraintTop_toBottomOf="@id/map"
         tools:layout_editor_absoluteY="541dp" />
 
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/quitButton"
         android:layout_width="130dp"
         android:layout_height="130dp"
-        android:backgroundTint="#E94334"
+        android:background="@drawable/single_mode_quit_button"
         android:fontFamily="@font/pretendardregular"
         android:shape='oval'
         android:text="종료"
+        android:textColor="#FFFFFF"
         android:textSize="25dp"
         android:textStyle="bold"
         android:visibility="gone"

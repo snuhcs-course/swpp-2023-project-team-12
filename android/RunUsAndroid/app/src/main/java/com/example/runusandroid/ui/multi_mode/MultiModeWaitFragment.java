@@ -1,13 +1,19 @@
 package com.example.runusandroid.ui.multi_mode;
 
+import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -31,6 +37,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import MultiMode.MultiModeRoom;
 import MultiMode.MultiModeUser;
@@ -41,9 +48,13 @@ public class MultiModeWaitFragment extends Fragment {
 
     SocketListenerThread socketListenerThread = MultiModeFragment.socketListenerThread;
     OnBackPressedCallback backPressedCallBack;
+    private long leaveButtonLastClickTime = 0;
+    private long backButtonLastClickTime = 0;
     private final Handler handler = new Handler(); // 남은 시간 계산 위한 Handler
     private final int updateTimeInSeconds = 1; // 1초마다 업데이트/
     private boolean isGameStarted = false;
+    public boolean isFragmentVisible = true;
+    private boolean navRoomListWhenResumed = false;
     MultiModeUser user = MultiModeFragment.user;
     SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
     private MultiModeRoom selectedRoom; // MultiModeRoom 객체를 저장할 멤버 변수
@@ -114,6 +125,21 @@ public class MultiModeWaitFragment extends Fragment {
         }
     }
 
+    private void showExitDialog(){
+        @SuppressLint("InflateParams")
+        View exitRoomDialog = getLayoutInflater().inflate(R.layout.dialog_multimode_wait_finish, null);
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        Objects.requireNonNull(dialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.setContentView(exitRoomDialog);
+        Button buttonConfirmExitRoom = exitRoomDialog.findViewById(R.id.buttonConfirmExitRoom);
+        buttonConfirmExitRoom.setOnClickListener(v -> {
+            dialog.dismiss();
+            new ExitRoomTask().execute();
+        });
+        dialog.show();
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -160,8 +186,11 @@ public class MultiModeWaitFragment extends Fragment {
         leaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 떠나기 버튼을 눌렀을 때 실행할 동작 추가
-                new ExitRoomTask().execute();
+                if (SystemClock.elapsedRealtime() - leaveButtonLastClickTime < 1000){
+                    return;
+                }
+                leaveButtonLastClickTime = SystemClock.elapsedRealtime();
+                showExitDialog();
             }
         });
         return view;
@@ -283,26 +312,43 @@ public class MultiModeWaitFragment extends Fragment {
         }
     }
 
+    public void exitGameInBackground(){
+        new ExitGameInBackgroundTask().execute();
+        navRoomListWhenResumed = true;
+    }
+
     @Override
     public void onResume() {
         super.onResume();
-        backPressedCallBack = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                new ExitRoomTask().execute();
-            }
-        };
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
-        socketManager = SocketManager.getInstance();
-        ois = socketManager.getOIS();
-        socketListenerThread.addWaitFragment(this);
-        socketListenerThread.setRoom(selectedRoom);
+        if(navRoomListWhenResumed){
+            NavController navController = Navigation.findNavController(requireView());
+            navController.navigate(R.id.navigation_multi_mode);
+        }
+        else {
+            backPressedCallBack = new OnBackPressedCallback(true) {
+                @Override
+                public void handleOnBackPressed() {
+                    if (SystemClock.elapsedRealtime() - backButtonLastClickTime < 1000) {
+                        return;
+                    }
+                    backButtonLastClickTime = SystemClock.elapsedRealtime();
+                    showExitDialog();
+                }
+            };
+            requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
+            socketManager = SocketManager.getInstance();
+            ois = socketManager.getOIS();
+            socketListenerThread.addWaitFragment(this);
+            socketListenerThread.setRoom(selectedRoom);
+            isFragmentVisible = true;
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
         Log.d("pause","paused");
+        isFragmentVisible = false;
         backPressedCallBack.remove();
     }
 
@@ -341,6 +387,36 @@ public class MultiModeWaitFragment extends Fragment {
                 NavController navController = Navigation.findNavController(requireView());
                 navController.navigate(R.id.navigation_multi_mode);
                 Log.d("exitroomSendPacket", "Packet sent successfully!");
+            } else {
+                Log.d("ExitSendPacket", "Failed to send packet!");
+            }
+        }
+
+    }
+
+    private class ExitGameInBackgroundTask extends AsyncTask<Void, Void, Boolean> {
+        @Override
+        public Boolean doInBackground(Void... voids) {
+            boolean success = true;
+            try {
+                Packet requestPacket = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
+                ObjectOutputStream oos = socketManager.getOOS();
+                oos.reset();
+                oos.writeObject(requestPacket);
+                oos.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+                success = false;
+            }
+            return success;
+        }
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (success) {
+                //NavController navController = Navigation.findNavController(requireView());
+                //navController.navigate(R.id.navigation_multi_mode);
+                Log.d("ExitGameBackSendPacket", "Packet sent successfully!");
             } else {
                 Log.d("ExitSendPacket", "Failed to send packet!");
             }

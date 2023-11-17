@@ -48,6 +48,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.example.runusandroid.ExpSystem;
 import com.example.runusandroid.HistoryApi;
 import com.example.runusandroid.HistoryData;
 import com.example.runusandroid.MainActivity2;
@@ -68,6 +69,7 @@ import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.support.common.FileUtil;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.MappedByteBuffer;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -99,6 +101,7 @@ public class SingleModeFragment extends Fragment {
             Manifest.permission.ACCESS_COARSE_LOCATION
     };
     private final float[][] standard = {{2.41f, 2.38f, 2.32f, 2.21f}, {2.04f, 1.96f, 1.88f, 1.79f}};
+    private final boolean timeLimitLess = true;
     Chronometer currentTimeText;
     TextView currentDistanceText;
     TextView currentPaceText;
@@ -108,6 +111,7 @@ public class SingleModeFragment extends Fragment {
     LocalDateTime iterationStartTime;
     float calories = 0; // TODO: 칼로리 계산
     double distance = 0;
+    long currentTime;
     OnBackPressedCallback backPressedCallBack;
     TextView goalDistanceStaticText;
     TextView goalDistanceText;
@@ -116,6 +120,7 @@ public class SingleModeFragment extends Fragment {
     Button quitButton;
     LinearLayout currentPace;
     Button startButton;
+    private int updatedExp;
     private List<LatLng> pathPoints = new ArrayList<>();
     private List<Float> speedList = new ArrayList<>(); // 매 km 마다 속력 (km/h)
     private HistoryApi historyApi;
@@ -129,9 +134,6 @@ public class SingleModeFragment extends Fragment {
     private float goalTime;
     private float nowGoalTime;
     private boolean runningNow;
-    private int mode = 0;
-
-
     private final BroadcastReceiver locationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -218,10 +220,11 @@ public class SingleModeFragment extends Fragment {
             }
         }
     };
+    private int isMissionSucceeded = 0;
+    private int mode = 0;
     private Interpreter tflite;
     private MappedByteBuffer tfliteModel;
     private boolean startlocation = false;
-    private boolean timeLimitLess = true;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -246,6 +249,10 @@ public class SingleModeFragment extends Fragment {
         maxSpeed = 0;
         minSpeed = 999;
         runningNow = false;
+        startButton.setVisibility(View.VISIBLE);
+        quitButton.setVisibility(View.GONE);
+
+        hideBottomNavigation(false);
 
         try {
             tfliteModel = FileUtil.loadMappedFile(mainActivity, "231103_model.tflite");
@@ -450,8 +457,7 @@ public class SingleModeFragment extends Fragment {
                         Log.e("editText check", distanceText);
                         e.printStackTrace();
                     }
-                }
-                else {
+                } else {
                     int new_distance = 0;
                     nowGoalDistance = new_distance;
                 }
@@ -610,6 +616,7 @@ public class SingleModeFragment extends Fragment {
             public void onClick(View v) {
                 dialog.dismiss();
                 goalDistance = nowGoalDistance;
+                isMissionSucceeded = 2;
                 setRunningStart();
             }
         });
@@ -640,7 +647,7 @@ public class SingleModeFragment extends Fragment {
 
     }
 
-    private void showTimeAttackDialog(){
+    private void showTimeAttackDialog() {
 
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_mission_timeattack, null);
         Dialog dialog = new Dialog(getContext());
@@ -690,7 +697,7 @@ public class SingleModeFragment extends Fragment {
         SeekBar timeSeekBar = dialogView.findViewById(R.id.timeSeekBar);
         TextView timeTextView = dialogView.findViewById(R.id.textViewGoalTime);
 
-        timeTextView.setText("목표 시간   "+(int) goalTime + "분");
+        timeTextView.setText("목표 시간   " + (int) goalTime + "분");
 
         ImageButton buttonClose = dialogView.findViewById(R.id.buttonClose);
 
@@ -745,6 +752,7 @@ public class SingleModeFragment extends Fragment {
                 setRunningStart();
                 goalDistance = nowGoalDistance;
                 goalTime = nowGoalTime;
+                isMissionSucceeded = 1;
                 dialog.dismiss();
             }
         });
@@ -752,16 +760,17 @@ public class SingleModeFragment extends Fragment {
     }
 
     private void setRunningStart() {
+
+        iterationStartTime = LocalDateTime.now();
         pathPoints = new ArrayList<>();
         speedList = new ArrayList<>();
-        goalDistance = Math.round(goalDistance*1000)/1000f;
+        goalDistance = Math.round(goalDistance * 1000) / 1000f;
 
         goalDistanceStaticText.setText("목표 거리");
         goalTimeStaticText.setText("목표 시간");
-        if(mode == 2){
+        if (mode == 2) {
             goalTimeText.setText("--");
-        }
-        else{
+        } else {
             goalTimeText.setText(goalTime + " 분");
         }
         goalDistanceText.setText(floatTo1stDecimal(goalDistance) + " km");
@@ -779,8 +788,8 @@ public class SingleModeFragment extends Fragment {
         runningNow = true;
         currentTimeText.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
             public void onChronometerTick(Chronometer chronometer) {
-                long time = SystemClock.elapsedRealtime() - chronometer.getBase();
-                chronometer.setText(dateFormat.format(time));
+                currentTime = SystemClock.elapsedRealtime() - chronometer.getBase();
+                chronometer.setText(dateFormat.format(currentTime));
             }
         });
         currentTimeText.setBase(SystemClock.elapsedRealtime());
@@ -790,10 +799,10 @@ public class SingleModeFragment extends Fragment {
         hideBottomNavigation(true);
     }
 
-    private void setTextBold(TextView wantView, String[] words){
+    private void setTextBold(TextView wantView, String[] words) {
         String originalString = wantView.getText().toString();
         SpannableStringBuilder spannableString = new SpannableStringBuilder(originalString);
-        for (int i=0; i<words.length; i++){
+        for (int i = 0; i < words.length; i++) {
             String wantWord = words[i];
             int start = originalString.indexOf(wantWord);
             int end = start + wantWord.length();
@@ -912,19 +921,34 @@ public class SingleModeFragment extends Fragment {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         String startTimeString = gameStartTime.format(formatter);
         String finishTimeString = LocalDateTime.now().format(formatter);
-        long durationInSeconds = Duration.between(gameStartTime, LocalDateTime.now()).getSeconds();
-
+        Duration duration = Duration.between(gameStartTime, LocalDateTime.now());
+        long durationInSeconds = duration.getSeconds();
         //NOTE: group_history_id에 null을 넣을 수 없어 싱글모드인 경우 -1로 관리
-
+        int exp = ExpSystem.getExp("single", distance, duration, isMissionSucceeded);
         HistoryData requestData = new HistoryData(userId, (float) distance, durationInSeconds,
                 true, startTimeString, finishTimeString, calories, false, maxSpeed, minSpeed,
-                calculateMedian(speedList), speedList, -1);
+                calculateMedian(speedList), speedList, -1, isMissionSucceeded, 100000);
 
         historyApi.postHistoryData(requestData).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
                     Log.d("response", "Send History Success");
+                    try {
+                        String responseBodyString = response.body().string();
+                        Log.d("responseData", responseBodyString);
+
+                        JSONObject jsonObject = new JSONObject(responseBodyString);
+
+                        // "exp" 키의 값을 가져오기
+                        JSONObject expObject = jsonObject.getJSONObject("exp");
+                        updatedExp = expObject.getInt("exp");
+
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
                 } else {
                 }
 
@@ -1003,7 +1027,7 @@ public class SingleModeFragment extends Fragment {
                         String inputString = convertArrayToString(modelInput);
                         tflite.run(modelInput, modelOutput);
                         goalDistance = modelOutput[0][0] * 7.019781e+00f + 1.207809e+01f;
-                        goalTime = (int)(modelOutput[0][1] * 6.457635e-01f + 1.156572e+00f);
+                        goalTime = (int) (modelOutput[0][1] * 6.457635e-01f + 1.156572e+00f);
 
 
                         if (goalDistance / goalTime >= 1.3 * wholeDistance / wholeTime) {
@@ -1047,10 +1071,7 @@ public class SingleModeFragment extends Fragment {
 
     private void finishPlaySingleMode() {
         runningNow = false;
-        quitButton.setVisibility(View.GONE);
 
-        startButton.setVisibility(View.VISIBLE);
-        currentPace.setVisibility(View.GONE);
         mainActivity.getLastLocation();
         currentTimeText.stop();
         View dialogView;
@@ -1058,21 +1079,17 @@ public class SingleModeFragment extends Fragment {
         boolean missionCompleted = false;
         float wholeDistance = Float.valueOf((String) currentDistanceText.getText().subSequence(0, currentDistanceText.getText().length() - 2));
         float wholeTime = (float) Duration.between(gameStartTime, LocalDateTime.now()).getSeconds();
-        if (mode==2) {
+        if (mode == 2) {
             if (wholeDistance >= goalDistance) {
                 missionCompleted = true;
             }
         } else {
             if (wholeDistance >= goalDistance && wholeTime <= goalTime * 60) {
-                Log.e("Mission completed", String.valueOf(wholeDistance)+" "+String.valueOf(goalDistance)+" "+String.valueOf(wholeTime)+" "+String.valueOf(goalTime*60));
+                Log.e("Mission completed", wholeDistance + " " + goalDistance + " " + wholeTime + " " + goalTime * 60);
                 missionCompleted = true;
             }
         }
 
-        goalDistanceStaticText.setText("");
-        goalDistanceText.setText("");
-        goalTimeStaticText.setText("");
-        goalTimeText.setText("");
 
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         if (missionCompleted) {
@@ -1083,6 +1100,7 @@ public class SingleModeFragment extends Fragment {
             elapsedTimeTextView.setText("달린 시간: " + currentTimeText.getText());
             distanceTextView.setText("달린 거리: " + currentDistanceText.getText());
         } else {
+            isMissionSucceeded *= -1;
             dialogView = inflater.inflate(R.layout.dialog_mission_failure, null);
             confirmButton = dialogView.findViewById(R.id.buttonConfirmFailure);
             TextView elapsedTimeTextView = dialogView.findViewById(R.id.textViewElapsedTimeonFailure);
@@ -1101,6 +1119,30 @@ public class SingleModeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
+                if (speedList != null) {
+                    LocalDateTime currentTime = LocalDateTime.now();
+                    Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
+                    long secondsDuration = iterationDuration.getSeconds();
+                    float newPace = (float) ((distance - (int) distance) / (secondsDuration / 3600.0));
+                    speedList.add(newPace);
+                }
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("updatedExp", updatedExp);
+                bundle.putSerializable("goalDistance", goalDistance);
+                bundle.putSerializable("goalTime", goalTime);
+                bundle.putSerializable("currentDistance", distance);
+                bundle.putSerializable("currentTime", currentTime);
+                bundle.putSerializable("calories", calories);
+                bundle.putSerializable("userSpeedList", (Serializable) speedList);
+                bundle.putSerializable("pathPointList", (Serializable) pathPoints);
+                NavController navController = Navigation.findNavController(requireView());
+                navController.navigate(R.id.navigation_single_mode_result, bundle);
+                quitButton.setVisibility(View.GONE);
+                currentPace.setVisibility(View.GONE);
+                goalDistanceStaticText.setText("");
+                goalDistanceText.setText("");
+                goalTimeStaticText.setText("");
+                goalTimeText.setText("");
                 lastLocation = null;
                 distance = 0;
                 currentDistanceText.setText("0.00 km");
@@ -1114,23 +1156,20 @@ public class SingleModeFragment extends Fragment {
             throw new RuntimeException(e);
         }
         getMission();
-        hideBottomNavigation(false);
+
     }
 
-    public float getCalories(float weight, float pace, float minute){
+    public float getCalories(float weight, float pace, float minute) {
         float METs = 0.1f;
-        float speed = (1f/pace)*1000; // (m/m)
-        if (speed < 100){
-            METs = speed/30f+2.0f/3.0f;
-        }
-        else if (speed<107){
-            METs = (speed-72f)/7f;
-        }
-        else if (speed<134){
-            METs = (speed-62f)/9f;
-        }
-        else {
-            METs =(2*speed-52f)/27;
+        float speed = (1f / pace) * 1000; // (m/m)
+        if (speed < 100) {
+            METs = speed / 30f + 2.0f / 3.0f;
+        } else if (speed < 107) {
+            METs = (speed - 72f) / 7f;
+        } else if (speed < 134) {
+            METs = (speed - 62f) / 9f;
+        } else {
+            METs = (2 * speed - 52f) / 27;
         }
         if(METs<1){
             METs = 1f;

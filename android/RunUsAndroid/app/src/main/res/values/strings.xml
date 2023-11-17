@@ -3,6 +3,7 @@
     <string name="title_activity_main2">MainActivity2</string>
     <string name="title_home">홈</string>
     <string name="title_single_mode">싱글모드</string>
+    <string name="title_single_mode_result">싱글모드결과</string>
     <string name="title_multi_mode">멀티모드</string>
     <string name="title_multi_mode_wait">MultiModeWait</string>
     <string name="title_multi_mode_play">MultiModePlay</string>
@@ -10,4 +11,8 @@
     <string name="title_user_setting">환경설정</string>
     <string name="leaveButtonText">떠나기</string>
     <string name="title_multi_mode_result" />
+    <string name="MultiModeExitRoomMessage">방에서 나가시겠습니까?</string>
+    <string name="ConfirmMessage">확인</string>
+    <string name="MultiModePlayExitMessage">게임이 진행중입니다.\n 게임에서 나가시겠습니까?</string>
+    <string name="MultiModeResultExitMessage">로비로 돌아가시겠습니까?</string>
 </resources>

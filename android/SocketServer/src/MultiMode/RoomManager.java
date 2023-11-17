@@ -1,4 +1,5 @@
 package MultiMode;
+
 import java.io.*;
 import java.net.*;
 import java.io.Serializable;
@@ -9,18 +10,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RoomManager implements Serializable {
     private static List<MultiModeRoom> roomList; // 방의 리스트
     private static List<MultiModeRoom> inGameRoomList;
-    private static AtomicInteger atomicInteger; //방 ID 만들기 위한 AtomicInteger
+    private static AtomicInteger atomicInteger; // 방 ID 만들기 위한 AtomicInteger
 
     static {
         roomList = new ArrayList<MultiModeRoom>();
         inGameRoomList = new ArrayList<MultiModeRoom>();
         atomicInteger = new AtomicInteger();
     }
-    public RoomManager(){
+
+    public RoomManager() {
 
     }
 
-    public static MultiModeRoom createRoom(MultiModeUser owner, RoomCreateInfo roomCreateInfo, ObjectOutputStream o){
+    public static MultiModeRoom createRoom(MultiModeUser owner, RoomCreateInfo roomCreateInfo, ObjectOutputStream o) {
         int roomId = atomicInteger.incrementAndGet();
 
         MultiModeRoom room = new MultiModeRoom(roomId, roomCreateInfo);
@@ -31,7 +33,6 @@ public class RoomManager implements Serializable {
         System.out.println("Room Created, RoomId is " + roomId);
         return room;
     }
-
 
     public static MultiModeRoom getRoom(MultiModeRoom room) {
         for (MultiModeRoom r : roomList) {
@@ -69,9 +70,9 @@ public class RoomManager implements Serializable {
         return null;
     }
 
-    public static void updateRoom(MultiModeRoom room){
-        for(MultiModeRoom mroom : roomList){
-            if(mroom.getId() == room.getId()){
+    public static void updateRoom(MultiModeRoom room) {
+        for (MultiModeRoom mroom : roomList) {
+            if (mroom.getId() == room.getId()) {
                 mroom.setUserList(room.getUserList());
                 mroom.setRoomOwner(room.getRoomOwner());
                 break;
@@ -79,12 +80,11 @@ public class RoomManager implements Serializable {
         }
     }
 
-
-    public static void removeRoom(MultiModeRoom room){
+    public static void removeRoom(MultiModeRoom room) {
         room.close();
         MultiModeRoom removeRoom = null;
-        for(MultiModeRoom mroom : roomList){
-            if(mroom.getId() == room.getId()){
+        for (MultiModeRoom mroom : roomList) {
+            if (mroom.getId() == room.getId()) {
                 removeRoom = mroom;
             }
         }
@@ -92,11 +92,11 @@ public class RoomManager implements Serializable {
         System.out.println("Room Deleted");
     }
 
-    public static void removeInGameRoom(MultiModeRoom room){
+    public static void removeInGameRoom(MultiModeRoom room) {
         room.close();
         MultiModeRoom removeRoom = null;
-        for(MultiModeRoom mroom : inGameRoomList){
-            if(mroom.getId() == room.getId()){
+        for (MultiModeRoom mroom : inGameRoomList) {
+            if (mroom.getId() == room.getId()) {
                 removeRoom = mroom;
             }
         }
@@ -104,10 +104,10 @@ public class RoomManager implements Serializable {
         System.out.println("Room Deleted");
     }
 
-    public static void startRoom(MultiModeRoom room){
+    public static void startRoom(MultiModeRoom room) {
         MultiModeRoom removeRoom = null;
-        for(MultiModeRoom mroom : roomList){
-            if(mroom.getId() == room.getId()){
+        for (MultiModeRoom mroom : roomList) {
+            if (mroom.getId() == room.getId()) {
                 removeRoom = mroom;
             }
         }
@@ -115,11 +115,11 @@ public class RoomManager implements Serializable {
         inGameRoomList.add(removeRoom);
     }
 
-    public static int roomCount(){
+    public static int roomCount() {
         return roomList.size();
     }
 
-    public static List<MultiModeRoom> getRoomList(){
+    public static List<MultiModeRoom> getRoomList() {
         return roomList;
     }
 }

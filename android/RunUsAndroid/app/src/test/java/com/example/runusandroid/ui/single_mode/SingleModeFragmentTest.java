@@ -1,7 +1,4 @@
 package com.example.runusandroid.ui.single_mode;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.example.runusandroid.HistoryApi;
 import com.example.runusandroid.HistoryData;
@@ -37,7 +34,7 @@ public class SingleModeFragmentTest extends TestCase {
     @Test
     public void testSaveHistoryDataOnSingleMode() {
         try {
-            HistoryData requestData = new HistoryData(1, 10.0f, 3600, true, "2023-11-03T13:06:33", "2023-11-03T13:06:33", 500, false, 15.0f, 0, 10.0f, new ArrayList<>(), -1);
+            HistoryData requestData = new HistoryData(1, 10.0f, 3600, true, "2023-11-03T13:06:33", "2023-11-03T13:06:33", 500, false, 15.0f, 0, 10.0f, new ArrayList<>(), -1, 0, 5);
             Call<ResponseBody> call = historyApi.postHistoryData(requestData);
             Response<ResponseBody> response = call.execute();
 

@@ -18,13 +18,15 @@ public class Packet implements Serializable { //서버와 통신하기 위해 �
     private long groupHistoryId; //db에 저장된 히스토리 id
     public int temp;
 
-    public Packet(int protocol) {
-        this.protocol = protocol;
-    }
+
 
     public Packet(int protocol, MultiModeUser user) {
         this.protocol = protocol;
         this.user = user;
+    }
+
+    public Packet(int protocol) {
+        this.protocol = protocol;
     }
 
     public Packet(int protocol, MultiModeRoom selectedRoom) {

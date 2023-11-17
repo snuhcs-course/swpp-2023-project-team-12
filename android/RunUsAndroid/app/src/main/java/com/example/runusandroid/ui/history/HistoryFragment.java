@@ -3,24 +3,33 @@ package com.example.runusandroid.ui.history;
 import static android.content.Context.MODE_PRIVATE;
 
 import android.content.SharedPreferences;
+import android.icu.text.SimpleDateFormat;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CalendarView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.applandeo.materialcalendarview.CalendarView;
+import com.applandeo.materialcalendarview.EventDay;
+import com.applandeo.materialcalendarview.listeners.OnDayClickListener;
 import com.example.runusandroid.HistoryApi;
 import com.example.runusandroid.HistoryDataforRendering;
+import com.example.runusandroid.R;
 import com.example.runusandroid.RetrofitClient;
 import com.example.runusandroid.databinding.FragmentHistoryBinding;
 
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -28,8 +37,13 @@ import retrofit2.Response;
 
 public class HistoryFragment extends Fragment {
 
+    private final List<HistoryDataforRendering.DailyData> monthlyData = new ArrayList<>();
     private FragmentHistoryBinding binding;
     private HistoryApi historyApi;
+    private TextView Distance;
+    private TextView Time;
+    private TextView Kcal;
+    private CalendarView calendarView;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -40,110 +54,39 @@ public class HistoryFragment extends Fragment {
         binding = FragmentHistoryBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        final CalendarView calendarView = binding.historyCalendar;
+        calendarView = binding.historyCalendar;
 
-        final TextView totalDistance = binding.totalDistance;
-        final TextView totalTime = binding.totalTime;
-        final TextView totalKcal = binding.totalKcal;
-
-        final TextView dailyDistance = binding.dailyDistance;
-        final TextView dailyTime = binding.dailyTime;
-        final TextView dailyKcal = binding.dailyKcal;
+        Distance = binding.dailyDistance;
+        Time = binding.dailyTime;
+        Kcal = binding.dailyKcal;
         historyApi = RetrofitClient.getClient().create(HistoryApi.class);
 
-        Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+        Calendar currentCalendar = Calendar.getInstance();
+        int currentYear = currentCalendar.get(Calendar.YEAR);
+        int currentMonth = currentCalendar.get(Calendar.MONTH) + 1; // Java의 Calendar는 월이 0부터 시작
 
-        // NOTE: 디폴트로 오늘 날짜 보여주기 위함
-        historyApi.getMonthlyData(year, month + 1, userId).enqueue(new Callback<HistoryDataforRendering>() {
-            @Override
-            public void onResponse(Call<HistoryDataforRendering> call, Response<HistoryDataforRendering> response) {
-                if (response.isSuccessful()) {
-                    Log.d("HistoryApi", "Response Success");
-                    HistoryDataforRendering data = response.body();
-                    totalDistance.setText("이달의 거리\n" + String.format("%.2f", data.getDistance()) + " km");
-                    totalTime.setText("이달의 시간\n" + data.getTime());
-                    totalKcal.setText("이달의 칼로리\n" + String.format("%.1f", data.getCalories()) + " kcal");
-                }
-            }
+        loadMonthlyData(currentYear, currentMonth, userId, () -> {
+        });
 
+        calendarView.setOnForwardPageChangeListener(() -> {
+            Calendar nextMonth = calendarView.getCurrentPageDate();
+            loadMonthlyData(nextMonth.get(Calendar.YEAR), nextMonth.get(Calendar.MONTH) + 1, userId, null);
+        });
+
+        calendarView.setOnPreviousPageChangeListener(() -> {
+            Calendar previousMonth = calendarView.getCurrentPageDate();
+            loadMonthlyData(previousMonth.get(Calendar.YEAR), previousMonth.get(Calendar.MONTH) + 1, userId, null);
+        });
+
+        calendarView.setOnDayClickListener(new OnDayClickListener() {
             @Override
-            public void onFailure(Call<HistoryDataforRendering> call, Throwable t) {
-                Log.d("HistoryApi", "Response Failed");
-                // 오류 처리
+            public void onDayClick(EventDay eventDay) {
+                loadDailyData(eventDay.getCalendar().get(Calendar.YEAR),
+                        eventDay.getCalendar().get(Calendar.MONTH) + 1,
+                        eventDay.getCalendar().get(Calendar.DAY_OF_MONTH));
             }
         });
 
-        // NOTE: 디폴트로 오늘 날짜 보여주기 위함
-        historyApi.getDailyData(year, month + 1, dayOfMonth, userId).enqueue(new Callback<HistoryDataforRendering>() {
-            @Override
-            public void onResponse(Call<HistoryDataforRendering> call, Response<HistoryDataforRendering> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    Log.d("HistoryAPI", "Response received");
-                    HistoryDataforRendering data = response.body();
-                    dailyDistance.setText("거리\n" + String.format("%.2f", data.getDistance()) + " km");
-                    dailyTime.setText("시간\n" + data.getTime());
-                    dailyKcal.setText("칼로리\n" + String.format("%.1f", data.getCalories()) + " kcal");
-                }
-            }
-
-            @Override
-            public void onFailure(Call<HistoryDataforRendering> call, Throwable t) {
-                Log.d("HistoryAPI", "Response Failed");
-                // 오류 처리
-            }
-        });
-
-        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
-            @Override
-            public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
-                Log.d("CalendarView", "Date changed: Year: " + year + " Month: " + month + " Day: " + dayOfMonth);
-                // 월별 데이터 요청
-                historyApi.getMonthlyData(year, month + 1, userId).enqueue(new Callback<HistoryDataforRendering>() {
-                    @Override
-                    public void onResponse(Call<HistoryDataforRendering> call,
-                                           Response<HistoryDataforRendering> response) {
-                        if (response.isSuccessful()) {
-                            Log.d("HistoryApi", "Response Success");
-                            HistoryDataforRendering data = response.body();
-                            totalDistance.setText("이달의 거리\n" + String.format("%.2f", data.getDistance()) + " km");
-                            totalTime.setText("이달의 시간\n" + data.getTime());
-                            totalKcal.setText("이달의 칼로리\n" + String.format("%.1f", data.getCalories()) + " kcal");
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<HistoryDataforRendering> call, Throwable t) {
-                        Log.d("HistoryApi", "Response Failed");
-                        // 오류 처리
-                    }
-                });
-
-                // 일별 데이터 요청
-                historyApi.getDailyData(year, month + 1, dayOfMonth, userId)
-                        .enqueue(new Callback<HistoryDataforRendering>() {
-                            @Override
-                            public void onResponse(Call<HistoryDataforRendering> call,
-                                                   Response<HistoryDataforRendering> response) {
-                                if (response.isSuccessful() && response.body() != null) {
-                                    Log.d("HistoryAPI", "Response received");
-                                    HistoryDataforRendering data = response.body();
-                                    dailyDistance.setText("거리\n" + String.format("%.2f", data.getDistance()) + " km");
-                                    dailyTime.setText("시간\n" + data.getTime());
-                                    dailyKcal.setText("칼로리\n" + String.format("%.1f", data.getCalories()) + " kcal");
-                                }
-                            }
-
-                            @Override
-                            public void onFailure(Call<HistoryDataforRendering> call, Throwable t) {
-                                Log.d("HistoryAPI", "Response Failed");
-                                // 오류 처리
-                            }
-                        });
-            }
-        });
 
         return root;
     }
@@ -154,4 +97,119 @@ public class HistoryFragment extends Fragment {
         binding = null;
     }
 
+    private void loadMonthlyData(int year, int month, long userId, Runnable onLoaded) {
+        historyApi.getMonthlyData(year, month, userId).enqueue(new Callback<HistoryDataforRendering>() {
+            @Override
+            public void onResponse(Call<HistoryDataforRendering> call, Response<HistoryDataforRendering> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    HistoryDataforRendering data = response.body();
+                    updateUIWithMonthlyData(data);
+                    monthlyData.clear();
+                    if (data.getDailyData() != null) {
+                        monthlyData.addAll(data.getDailyData());
+                        addMarkerToDaysWithHistory(monthlyData);
+                    }
+                    if (onLoaded != null) {
+                        onLoaded.run(); // 추가적인 작업 수행
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<HistoryDataforRendering> call, Throwable t) {
+                Log.e("HistoryFragment", "Error loading monthly data", t);
+            }
+        });
+    }
+
+    private void updateUIWithMonthlyData(HistoryDataforRendering data) {
+        // 이번 달의 총 거리, 시간, 칼로리 업데이트
+        Distance.setText("총 거리\n" + String.format("%.1f", data.getTotalDistance()) + " km");
+        Time.setText("총 시간\n" + formatDuration(data.getTotalTime()));
+        Kcal.setText("총 칼로리\n" + (int) data.getTotalCalories() + " kcal");
+    }
+
+    private void loadDailyData(int year, int month, int day) {
+        HistoryDataforRendering.DailyData dailyData = findDailyData(year, month, day);
+        if (dailyData != null) {
+            updateUIWithDailyData(dailyData);
+        } else {
+            resetDailyUI(); // 히스토리가 없는 날짜에 대한 UI 리셋
+        }
+    }
+
+    private Calendar parseStringToCalendar(String dateString) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        try {
+            Date date = format.parse(dateString);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            return calendar;
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+    private void updateUIWithDailyData(HistoryDataforRendering.DailyData data) {
+        if (data != null) {
+            Distance.setText("거리\n" + String.format("%.1f", data.getDistance()) + " km");
+            Time.setText("시간\n" + formatDuration(data.getTime()));
+            Kcal.setText("칼로리\n" + (int) data.getCalories() + " kcal");
+        } else {
+            resetDailyUI();
+        }
+    }
+
+
+    private HistoryDataforRendering.DailyData findDailyData(int year, int month, int day) {
+        if (monthlyData == null) {
+            return null;
+        }
+        for (HistoryDataforRendering.DailyData data : monthlyData) {
+            Calendar dataCalendar = parseStringToCalendar(data.getDate());
+            if (dataCalendar != null &&
+                    dataCalendar.get(Calendar.YEAR) == year &&
+                    dataCalendar.get(Calendar.MONTH) == (month - 1) && // 월 비교 조정
+                    dataCalendar.get(Calendar.DAY_OF_MONTH) == day) {
+                return data;
+            }
+        }
+        return null;
+    }
+
+    private String formatDuration(String duration) {
+        // "HH:mm:ss" 형식의 문자열을 "시간 분"으로 변환
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+            Date date = sdf.parse(duration);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            int hours = calendar.get(Calendar.HOUR_OF_DAY);
+            int minutes = calendar.get(Calendar.MINUTE);
+            return hours + "시간 " + minutes + "분";
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return "0시간 0분";
+        }
+    }
+
+    private void addMarkerToDaysWithHistory(List<HistoryDataforRendering.DailyData> dailyData) {
+        List<EventDay> events = new ArrayList<>();
+        for (HistoryDataforRendering.DailyData dayData : dailyData) {
+            Calendar calendar = parseStringToCalendar(dayData.getDate());
+            if (calendar != null) {
+                events.add(new EventDay(calendar, R.drawable.marker_default));
+            }
+        }
+        calendarView.setEvents(events);
+    }
+
+
+    private void resetDailyUI() {
+        Distance.setText("거리\n0.0 km");
+        Time.setText("시간\n0시간 0분");
+        Kcal.setText("칼로리\n0 kcal");
+    }
 }

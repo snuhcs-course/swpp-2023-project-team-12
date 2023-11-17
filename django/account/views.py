@@ -3,12 +3,14 @@ import secrets
 import string
 from venv import logger
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 from account.models import CustomUser
 from .serializers import (
     EmailSerializer,
     ResetPasswordSerializer,
     UserCreateSerializer,
     LoginSerializer,
+    UserProfileSerializer,
 )
 from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -20,7 +22,6 @@ from django.core.mail import send_mail
 from django.db import transaction
 from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import UserProfileImageSerializer
-from django.core.files.storage import default_storage
 
 
 # Create your views here.
@@ -46,9 +47,7 @@ class LoginView(APIView):
         refresh_token = str(token)
         access_token = str(token.access_token)
         if user.profile_image and user.profile_image.name:
-            profile_image_url = (
-                settings.MEDIA_URL + "profile_images/" + user.profile_image.name
-            )
+            profile_image_url = settings.MEDIA_URL + user.profile_image.name
         else:
             profile_image_url = settings.MEDIA_URL + "temp_profile.jpeg"
         response = Response(
@@ -64,6 +63,7 @@ class LoginView(APIView):
                     "height": user.height,
                     "weight": user.weight,
                     "age": user.age,
+                    "exp": user.exp,
                     "profile_image": profile_image_url if user.profile_image else None,
                 },
                 "jwt_token": {
@@ -105,6 +105,7 @@ class FindUsernameAndSendEmailView(APIView):
             return Response({"message": "Email sent successfully"})
         except CustomUser.DoesNotExist:
             return Response({"message": "User not found"}, status=404)
+
 
 
 # 임시 비밀번호 생성기
@@ -165,3 +166,13 @@ class ProfileImageView(APIView):
         else:
             logger.error(f"Serializer errors: {serializer.errors}")
             return Response(serializer.errors, status=400)
+
+
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id=None):
+        user = get_object_or_404(CustomUser, id=user_id) if user_id else request.user
+        logger.debug(f"send profile url: {user.profile_image.url}")
+        serializer = UserProfileSerializer(user, context={"request": request})
+        return Response(serializer.data)

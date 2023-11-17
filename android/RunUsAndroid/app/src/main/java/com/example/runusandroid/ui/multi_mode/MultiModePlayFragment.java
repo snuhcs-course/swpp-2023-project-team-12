@@ -1,20 +1,26 @@
 package com.example.runusandroid.ui.multi_mode;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -29,6 +35,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.example.runusandroid.ExpSystem;
 import com.example.runusandroid.GroupHistoryData;
 import com.example.runusandroid.HistoryApi;
 import com.example.runusandroid.HistoryData;
@@ -45,7 +52,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.time.Duration;
@@ -55,8 +61,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
-import Logging.FileLogger;
 import MultiMode.MultiModeRoom;
 import MultiMode.MultiModeUser;
 import MultiMode.Packet;
@@ -73,7 +79,6 @@ public class MultiModePlayFragment extends Fragment {
     private final List<LatLng> pathPoints = new ArrayList<>();
     private final List<Float> speedList = new ArrayList<>(); // 매 km 마다 속력 (km/h)
     LocalDateTime iterationStartTime;
-    private boolean userExit = false;
     MultiModeUser user = MultiModeFragment.user;
     SocketManager socketManager = SocketManager.getInstance();
     OnBackPressedCallback backPressedCallBack;
@@ -102,6 +107,9 @@ public class MultiModePlayFragment extends Fragment {
     Handler sendDataHandler;
     Runnable sendDataRunnable;
     UserDistance[] userDistances;
+    private long playLeaveButtonLastClickTime = 0;
+    private long backButtonLastClickTime = 0;
+    private boolean userExit = false;
     private float minSpeed;
     private float maxSpeed;
     private final BroadcastReceiver locationReceiver = new BroadcastReceiver() {
@@ -169,6 +177,7 @@ public class MultiModePlayFragment extends Fragment {
             }
         }
     };
+    private int updatedExp;
     private float medianSpeed;
     private HistoryApi historyApi;
     private TextView timePresentContentTextView;
@@ -176,12 +185,28 @@ public class MultiModePlayFragment extends Fragment {
     private int groupHistoryId = 999;
     private SendFinishedTask finishedTask;
 
+    private void showExitGameDialog() {
+        @SuppressLint("InflateParams")
+        View exitGameDialog = getLayoutInflater().inflate(R.layout.dialog_multimode_play_finish, null);
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        Objects.requireNonNull(dialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.setContentView(exitGameDialog);
+        Button buttonConfirmPlayExit = exitGameDialog.findViewById(R.id.buttonConfirmPlayExit);
+        buttonConfirmPlayExit.setOnClickListener(v -> {
+            dialog.dismiss();
+            userExit = true;
+            Packet requestPacket = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
+            new ExitGameTask().execute(requestPacket);
+        });
+        dialog.show();
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         finishedTask = new SendFinishedTask();
         gameStartTime = (LocalDateTime) getArguments().getSerializable("startTime");
-        //Log.d("currentTime", gameStartTime + "");
         //경과 시간 업데이트
         timeHandler = new Handler(Looper.getMainLooper());
 
@@ -212,7 +237,7 @@ public class MultiModePlayFragment extends Fragment {
                 if (isFinished == 0) {
                     timeHandler.postDelayed(this, 1000);
                 } else if (isFinished == 1) {
-                    if(isVisible() && isAdded()) {
+                    if (isVisible() && isAdded()) {
                         Packet requestPacket = new Packet(Protocol.FINISH_GAME, user, selectedRoom);
                         finishedTask.execute(requestPacket);
                     }
@@ -275,14 +300,16 @@ public class MultiModePlayFragment extends Fragment {
             String lastActivityType = mainActivity.activityReceiver.getLastActivityType();
             String lastTransitionType = mainActivity.activityReceiver.getLastTransitionType();
 
-            Toast.makeText(mainActivity, "last detected : " + lastTransitionType+ " " + lastActivityType +
+            Toast.makeText(mainActivity, "last detected : " + lastTransitionType + " " + lastActivityType +
                     " . isRunning " + isRunning, Toast.LENGTH_LONG).show();
         });
 
         playLeaveButton.setOnClickListener(v -> {
-            userExit = true;
-            Packet requestPacket = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
-            new ExitGameTask().execute(requestPacket);
+            if (SystemClock.elapsedRealtime() - playLeaveButtonLastClickTime < 1000) {
+                return;
+            }
+            playLeaveButtonLastClickTime = SystemClock.elapsedRealtime();
+            showExitGameDialog();
         });
 
 //        //TODO: only draw lines if running is started
@@ -435,9 +462,11 @@ public class MultiModePlayFragment extends Fragment {
         backPressedCallBack = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                userExit = true;
-                Packet requestPacket = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
-                new ExitGameTask().execute(requestPacket);
+                if (SystemClock.elapsedRealtime() - backButtonLastClickTime < 1000) {
+                    return;
+                }
+                backButtonLastClickTime = SystemClock.elapsedRealtime();
+                showExitGameDialog();
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
@@ -490,14 +519,40 @@ public class MultiModePlayFragment extends Fragment {
         String startTimeString = selectedRoom.getStartTime().format(formatter);
         String finishTimeString = LocalDateTime.now().format(formatter);
         long durationInSeconds = selectedRoom.getDuration().getSeconds();
+        int place = 0;
+        if (userDistances[0].getUser().getId() == user.getId()) {
+            place = 1;
+        } else if (userDistances.length >= 2 && userDistances[1].getUser().getId() == user.getId()) {
+            place = 2;
+        } else if (userDistances.length >= 3 && userDistances[2].getUser().getId() == user.getId()) {
+            place = 3;
+        }
+        int exp = ExpSystem.getExp("single", distance, selectedRoom.getDuration(), place);
         HistoryData requestData = new HistoryData(user.getId(), distance, durationInSeconds,
-                true, startTimeString, finishTimeString, calories, true, maxSpeed, minSpeed, calculateMedian(speedList), speedList, groupHistoryId);
+                true, startTimeString, finishTimeString, calories, true, maxSpeed, minSpeed, calculateMedian(speedList), speedList, groupHistoryId, 0, 200000);
 
         historyApi.postHistoryData(requestData).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    Log.d("response", "Send History Success");
+
+                    try {
+                        Log.d("response", "Send History Success");
+                        String responseBodyString = response.body().string();
+                        Log.d("responseData", responseBodyString);
+                        JSONObject jsonObject = null;
+                        jsonObject = new JSONObject(responseBodyString);
+                        // "exp" 키의 값을 가져오기
+                        JSONObject expObject = jsonObject.getJSONObject("exp");
+                        updatedExp = expObject.getInt("exp");
+
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+
+
                     transitionToResultFragment();
                 }
 
@@ -536,12 +591,10 @@ public class MultiModePlayFragment extends Fragment {
             requestData = new GroupHistoryData(selectedRoom.getTitle(), startTimeString, durationInSeconds, selectedRoom.getUserList().size(), firstPlaceUserId, firstPlaceUserDistance);
 
         }
-
         historyApi.postGroupHistoryData(requestData).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    Log.d("response", "Send group History Success");
                     JSONObject responseBody = null;
                     String responseBodyString = null;
                     try {
@@ -608,10 +661,12 @@ public class MultiModePlayFragment extends Fragment {
             bundle.putSerializable("top3UserDistance", userDistances);
             bundle.putSerializable("userDistance", distance);
             bundle.putSerializable("userSpeedList", (Serializable) speedList);
+            bundle.putSerializable("updatedExp", updatedExp);
             NavController navController = Navigation.findNavController(requireView());
             navController.navigate(R.id.navigation_multi_room_result, bundle);
         }
     }
+
 
     public class SendDistanceTask extends AsyncTask<Packet, Void, Boolean> { // 서버에 업데이트할 거리 정보 전송
         @Override

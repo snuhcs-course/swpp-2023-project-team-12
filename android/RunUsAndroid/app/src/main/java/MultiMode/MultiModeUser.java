@@ -7,17 +7,21 @@ public class MultiModeUser implements Serializable {
     private static final long serialVersionUID = 2194848L;
 
     private long id;
+    private int level;
     private MultiModeRoom room;
     private Socket socket;
     private String nickname;
+    private String profileImageUrl;
 
     public MultiModeUser(String nickName) {
         this.nickname = nickname;
     }
 
-    public MultiModeUser(int id, String nickname) {
+    public MultiModeUser(int id, String nickname, int level, String profileImageUrl) {
         this.id = id;
         this.nickname = nickname;
+        this.level = level;
+        this.profileImageUrl = profileImageUrl;
     }
 
     public void enterRoom(MultiModeRoom room) {
@@ -64,10 +68,20 @@ public class MultiModeUser implements Serializable {
         return nickname;
     }
 
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public void setProfileImageUrl(String url) {
+        this.profileImageUrl = url;
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         MultiModeUser gameUser = (MultiModeUser) o;
 

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 그림자 효과 -->
+    <item>
+        <shape>
+            <solid android:color="#20000000" />
+            <corners android:radius="12dp" />
+            <padding
+                android:bottom="2dp"
+                android:right="1dp" />
+        </shape>
+    </item>
+
+    <!-- 버튼 배경 -->
+    <item
+        android:left="2dp"
+        android:top="2dp">
+        <shape>
+            <solid android:color="#EBF6EF" />
+            <stroke
+                android:width="2dp"
+                android:color="#4AA570" />
+            <corners android:radius="10dp" />
+            <size
+                android:width="50dp"
+                android:height="50dp" />
+        </shape>
+    </item>
+
+</layer-list>

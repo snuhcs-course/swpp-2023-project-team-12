@@ -4,7 +4,22 @@
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
         <item name="colorPrimary">@color/primary</item>
+        <item name="android:textViewStyle">@style/pretendardTextView</item>
+        <item name="android:buttonStyle">@style/pretendardButton</item>
+        <item name="android:editTextStyle">@style/pretendardEditText</item>
     </style>
 
     <style name="Theme.RunUsAndroid" parent="Base.Theme.RunUsAndroid" />
+
+    <style name="pretendardTextView" parent="android:Widget.TextView">
+        <item name="android:fontFamily">@font/pretendardregular</item>
+    </style>
+
+    <style name="pretendardButton" parent="android:Widget.Button">
+        <item name="android:fontFamily">@font/pretendardregular</item>
+    </style>
+
+    <style name="pretendardEditText" parent="android:Widget.EditText">
+        <item name="android:fontFamily">@font/pretendardregular</item>
+    </style>
 </resources>
