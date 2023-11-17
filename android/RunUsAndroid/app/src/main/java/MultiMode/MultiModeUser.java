@@ -76,6 +76,10 @@ public class MultiModeUser implements Serializable {
         this.profileImageUrl = url;
     }
 
+    public int getLevel() {
+        return level;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o)
