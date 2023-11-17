@@ -71,6 +71,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     androidTestImplementation 'androidx.test:runner:1.4.0'
     androidTestImplementation 'androidx.test:rules:1.4.0'
+    androidTestImplementation "androidx.navigation:navigation-testing:2.5.3"
 
     implementation "androidx.work:work-runtime:2.7.1"
     implementation "androidx.concurrent:concurrent-listenablefuture-callback:1.0.0-beta01"
