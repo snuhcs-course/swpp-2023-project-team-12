@@ -77,11 +77,24 @@ public class SingleModeFragmentTest extends TestCase {
         assertEquals(3.0f, median, 0.01);
     }
 
+
+
     @Test
     public void testConvertTimetoHour() {
         String timeString = "01:00:00";
         float testedValue = fragment.convertTimetoHour(timeString);
         float expectedValue = 1f;
         assertEquals(expectedValue, testedValue, 0.001);
+    }
+
+    @Test
+    public void testGetCaloriesWithExampleCase() {
+        float weight = 70;
+        float pace = 1*1000/161f;
+        float minute = 60;
+        float expectedCalories = 735;
+        float testedCalories = fragment.getCalories(weight, pace, minute);
+
+        assertEquals(expectedCalories, testedCalories, 0.001);
     }
 }
