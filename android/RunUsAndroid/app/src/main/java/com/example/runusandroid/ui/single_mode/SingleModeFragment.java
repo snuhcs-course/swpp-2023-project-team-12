@@ -621,13 +621,15 @@ public class SingleModeFragment extends Fragment {
             }
         });
 
-        float revise_distance = Math.round(goalDistance*1.5) / 20.0f;
+        final float revise_distance = Math.round(nowGoalDistance/2f) / 10f;
+        float fixed_distance = nowGoalDistance;
 
         distanceSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-                nowGoalDistance = goalDistance + (progress-4)*revise_distance;
+                nowGoalDistance = fixed_distance + (progress-4)*revise_distance;
+                Log.e("Revise", "original distance : "+fixed_distance+", revise : "+revise_distance);
                 distanceTextView.setText("목표 거리   "+String.format(floatTo1stDecimal(nowGoalDistance)) + "km");
 
             }
@@ -682,6 +684,7 @@ public class SingleModeFragment extends Fragment {
                 missionInfo.setText("러닝은 꾸준함이 생명! \n 지난 러닝의 감각을 계속해서 익혀 보세요.");
             }
         }
+        nowGoalTime = goalTime;
 
         dialog.show();
 
@@ -697,7 +700,7 @@ public class SingleModeFragment extends Fragment {
         SeekBar timeSeekBar = dialogView.findViewById(R.id.timeSeekBar);
         TextView timeTextView = dialogView.findViewById(R.id.textViewGoalTime);
 
-        timeTextView.setText("목표 시간   " + (int) goalTime + "분");
+        timeTextView.setText("목표 시간   " + (int) nowGoalTime + "분");
 
         ImageButton buttonClose = dialogView.findViewById(R.id.buttonClose);
 
@@ -709,13 +712,16 @@ public class SingleModeFragment extends Fragment {
             }
         });
 
-        float revise_distance = Math.round(goalDistance) / 20.0f;
-        float revise_time = (int) (Math.round(goalTime) / 20.0f) + ((int)(Math.round(goalTime) / 20.0f)==0?1:0);
+        final float revise_distance = Math.round(nowGoalDistance/2f) / 10f;
+        final float fixed_distance = nowGoalDistance;
+        final float revise_time = (int) (Math.round(nowGoalTime) / 20.0f) + ((int)(Math.round(nowGoalTime) / 20.0f)==0?1:0);
+
         distanceSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-                nowGoalDistance = goalDistance + (progress-4)*revise_distance;
+                nowGoalDistance = fixed_distance + (progress-4)*revise_distance;
+                Log.e("Revise", "original distance : "+fixed_distance+", revise : "+revise_distance);
                 distanceTextView.setText("목표 거리   "+String.format(floatTo1stDecimal(nowGoalDistance)) + "km");
 
             }
