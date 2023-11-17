@@ -40,12 +40,9 @@ public class HistoryFragment extends Fragment {
     private final List<HistoryDataforRendering.DailyData> monthlyData = new ArrayList<>();
     private FragmentHistoryBinding binding;
     private HistoryApi historyApi;
-    private TextView totalDistance;
-    private TextView totalTime;
-    private TextView totalKcal;
-    private TextView dailyDistance;
-    private TextView dailyTime;
-    private TextView dailyKcal;
+    private TextView Distance;
+    private TextView Time;
+    private TextView Kcal;
     private CalendarView calendarView;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -59,22 +56,16 @@ public class HistoryFragment extends Fragment {
 
         calendarView = binding.historyCalendar;
 
-        totalDistance = binding.totalDistance;
-        totalTime = binding.totalTime;
-        totalKcal = binding.totalKcal;
-
-        dailyDistance = binding.dailyDistance;
-        dailyTime = binding.dailyTime;
-        dailyKcal = binding.dailyKcal;
+        Distance = binding.dailyDistance;
+        Time = binding.dailyTime;
+        Kcal = binding.dailyKcal;
         historyApi = RetrofitClient.getClient().create(HistoryApi.class);
 
         Calendar currentCalendar = Calendar.getInstance();
         int currentYear = currentCalendar.get(Calendar.YEAR);
         int currentMonth = currentCalendar.get(Calendar.MONTH) + 1; // Java의 Calendar는 월이 0부터 시작
-        int currentDay = currentCalendar.get(Calendar.DAY_OF_MONTH);
 
         loadMonthlyData(currentYear, currentMonth, userId, () -> {
-            loadDailyData(currentYear, currentMonth, currentDay); // 현재 날짜의 데일리 데이터 로드
         });
 
         calendarView.setOnForwardPageChangeListener(() -> {
@@ -133,9 +124,9 @@ public class HistoryFragment extends Fragment {
 
     private void updateUIWithMonthlyData(HistoryDataforRendering data) {
         // 이번 달의 총 거리, 시간, 칼로리 업데이트
-        totalDistance.setText("총 거리\n" + String.format("%.1f", data.getTotalDistance()) + " km");
-        totalTime.setText("총 시간\n" + formatDuration(data.getTotalTime()));
-        totalKcal.setText("총 칼로리\n" + (int) data.getTotalCalories() + " kcal");
+        Distance.setText("총 거리\n" + String.format("%.1f", data.getTotalDistance()) + " km");
+        Time.setText("총 시간\n" + formatDuration(data.getTotalTime()));
+        Kcal.setText("총 칼로리\n" + (int) data.getTotalCalories() + " kcal");
     }
 
     private void loadDailyData(int year, int month, int day) {
@@ -163,9 +154,9 @@ public class HistoryFragment extends Fragment {
 
     private void updateUIWithDailyData(HistoryDataforRendering.DailyData data) {
         if (data != null) {
-            dailyDistance.setText("거리\n" + String.format("%.1f", data.getDistance()) + " km");
-            dailyTime.setText("시간\n" + formatDuration(data.getTime()));
-            dailyKcal.setText("칼로리\n" + (int) data.getCalories() + " kcal");
+            Distance.setText("거리\n" + String.format("%.1f", data.getDistance()) + " km");
+            Time.setText("시간\n" + formatDuration(data.getTime()));
+            Kcal.setText("칼로리\n" + (int) data.getCalories() + " kcal");
         } else {
             resetDailyUI();
         }
@@ -217,8 +208,8 @@ public class HistoryFragment extends Fragment {
 
 
     private void resetDailyUI() {
-        dailyDistance.setText("거리\n0.0 km");
-        dailyTime.setText("시간\n0시간 0분");
-        dailyKcal.setText("칼로리\n0 kcal");
+        Distance.setText("거리\n0.0 km");
+        Time.setText("시간\n0시간 0분");
+        Kcal.setText("칼로리\n0 kcal");
     }
 }
