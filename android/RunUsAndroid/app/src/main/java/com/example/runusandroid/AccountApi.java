@@ -29,4 +29,7 @@ public interface AccountApi {
 
     @GET("/account/user_profile/{user_id}/")
     Call<UserProfileResponse> getUserProfile(@Path("user_id") String userId);
+
+    @POST("/account/auth/refresh/")
+    Call<ResponseBody> refreshToken(@Body RefreshTokenData data);
 }

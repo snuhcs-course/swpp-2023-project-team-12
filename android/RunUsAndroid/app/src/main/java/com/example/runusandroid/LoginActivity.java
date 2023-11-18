@@ -1,6 +1,6 @@
 package com.example.runusandroid;
 
-import static com.example.runusandroid.RetrofitClient.setAuthToken;
+import static com.example.runusandroid.RetrofitClient.*;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -119,6 +119,8 @@ public class LoginActivity extends AppCompatActivity {
             }
         };
 
+        resetAuthToken();
+
         // '비밀번호 찾기' 부분에 클릭 이벤트 추가
         String linkText = "비밀번호 찾기";
         int start = ssforpw.toString().indexOf(linkText);
@@ -160,9 +162,11 @@ public class LoginActivity extends AppCompatActivity {
                                 int age = userObject.getInt("age");
                                 int exp = userObject.getInt("exp");
                                 int level = ExpSystem.getLevel(exp);
+                                long lastLoginTime = System.currentTimeMillis();
                                 Log.d("exp", "user's exp is " + exp);
 
                                 String token = responseBody.getJSONObject("jwt_token").getString("access_token");
+                                String refreshToken = responseBody.getJSONObject("jwt_token").getString("refresh_token");
 
                                 setAuthToken(token);
                                 // 로그인 성공 시 SharePreferences에 유저 정보 및 토큰 저장
@@ -170,6 +174,7 @@ public class LoginActivity extends AppCompatActivity {
                                 SharedPreferences.Editor editor = sharedPreferences.edit();
                                 editor.putLong("userid", user_id);
                                 editor.putString("token", token);
+                                editor.putString("refresh_token", refreshToken);
                                 editor.putString("username", username);
                                 editor.putString("nickname", nickname);
                                 editor.putString("email", email);
@@ -181,6 +186,7 @@ public class LoginActivity extends AppCompatActivity {
                                 editor.putInt("age", age);
                                 editor.putInt("exp", exp);
                                 editor.putInt("level", level);
+                                editor.putLong("lastLoginTime", lastLoginTime);
                                 editor.apply();
                                 Intent intent = new Intent(LoginActivity.this, MainActivity2.class);
                                 startActivity(intent);
