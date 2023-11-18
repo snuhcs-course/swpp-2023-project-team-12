@@ -1,9 +1,6 @@
 package com.example.runusandroid;
 
-import static com.example.runusandroid.RetrofitClient.setAuthToken;
-
 import android.Manifest;
-import android.accounts.Account;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
