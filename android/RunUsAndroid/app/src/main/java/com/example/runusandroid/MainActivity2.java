@@ -3,6 +3,7 @@ package com.example.runusandroid;
 import static com.example.runusandroid.RetrofitClient.setAuthToken;
 
 import android.Manifest;
+import android.accounts.Account;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -44,15 +45,19 @@ public class MainActivity2 extends AppCompatActivity {
 
         SharedPreferences sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE);
         String token = sharedPreferences.getString("token", null);
+        Long lastLoginTime = sharedPreferences.getLong("lastLoginTime", 0);
+        Long currentTime = System.currentTimeMillis();
+        double elapsedTime = (currentTime - lastLoginTime)/1000.0;
 
-        if (token == null) {
+        if (elapsedTime >= 432000 || token == null) {
             // 토큰이 저장되어 있지 않으면 로그인되어 있지 않다고 판단하고 LoginActivity로 전환
             Intent intent = new Intent(MainActivity2.this, LoginActivity.class);
             startActivity(intent);
             finish();  // MainActivity2를 종료
         }
+        AccountAPIFactory accountFactory = AccountAPIFactory.getInstance();
+        accountFactory.refreshToken(this);
 
-        setAuthToken(token);
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.

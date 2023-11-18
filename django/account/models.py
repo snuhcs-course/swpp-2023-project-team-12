@@ -15,7 +15,6 @@ class MyUserManager(UserManager):
         height,
         weight,
         age,
-        exp,
         **extra_fields
     ):
         if not nickname:
@@ -34,7 +33,7 @@ class MyUserManager(UserManager):
             height=height,
             weight=weight,
             age=age,
-            exp=exp,
+            exp=0,
         )
         user.set_password(password)
         user.save()

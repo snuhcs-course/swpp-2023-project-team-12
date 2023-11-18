@@ -35,6 +35,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.example.runusandroid.AccountAPIFactory;
 import com.example.runusandroid.ExpSystem;
 import com.example.runusandroid.GroupHistoryData;
 import com.example.runusandroid.HistoryApi;
@@ -239,6 +240,8 @@ public class MultiModePlayFragment extends Fragment {
                 } else if (isFinished == 1) {
                     if (isVisible() && isAdded()) {
                         Packet requestPacket = new Packet(Protocol.FINISH_GAME, user, selectedRoom);
+                        AccountAPIFactory accountFactory = AccountAPIFactory.getInstance();
+                        accountFactory.refreshToken(MultiModePlayFragment.this.requireContext());
                         finishedTask.execute(requestPacket);
                     }
                     isFinished = 2;
@@ -490,6 +493,8 @@ public class MultiModePlayFragment extends Fragment {
         getActivity().startForegroundService(intent);
         LocalBroadcastManager.getInstance(requireContext()).registerReceiver(locationReceiver, new IntentFilter("location_update"));
 
+        AccountAPIFactory accountFactory = AccountAPIFactory.getInstance();
+        accountFactory.refreshToken(this.requireContext());
         //fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
 
     }

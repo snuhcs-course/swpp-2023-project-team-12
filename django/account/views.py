@@ -26,6 +26,8 @@ from .serializers import UserProfileImageSerializer
 
 # Create your views here.
 class SignupView(APIView):
+    authentication_classes = []
+    permission_classes = []
     serializer_class = UserCreateSerializer
 
     def post(self, request):
@@ -37,6 +39,8 @@ class SignupView(APIView):
 
 
 class LoginView(APIView):
+    authentication_classes = []
+    permission_classes = []
     serializer_class = LoginSerializer
 
     def post(self, request):
