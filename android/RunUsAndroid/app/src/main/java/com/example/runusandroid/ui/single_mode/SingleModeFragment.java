@@ -48,6 +48,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.example.runusandroid.ActivityRecognition.RunningState;
 import com.example.runusandroid.ExpSystem;
 import com.example.runusandroid.HistoryApi;
 import com.example.runusandroid.HistoryData;
@@ -55,6 +56,7 @@ import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
 import com.example.runusandroid.RetrofitClient;
 import com.example.runusandroid.databinding.FragmentSingleModeBinding;
+import com.example.runusandroid.ActivityRecognition.RunningState;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -160,7 +162,7 @@ public class SingleModeFragment extends Fragment {
                     }
 
                     // get distance
-                    if (newPoint != null && mainActivity.activityReceiver.getIsRunning()) {
+                    if (newPoint != null && RunningState.getIsRunning()) {
                         // first few points might be noisy
                         if (pathPoints.size() > 5) {
                             Location lastLocation = new Location("");
@@ -272,9 +274,10 @@ public class SingleModeFragment extends Fragment {
         hiddenButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                boolean isRunning = mainActivity.activityReceiver.getIsRunning();
-                String lastActivityType = mainActivity.activityReceiver.getLastActivityType();
-                String lastTransitionType = mainActivity.activityReceiver.getLastTransitionType();
+
+                boolean isRunning = RunningState.getIsRunning();
+                String lastActivityType = RunningState.getLastActivityType();
+                String lastTransitionType = RunningState.getLastTransitionType();
 
                 Toast.makeText(mainActivity, "last detected : " + lastTransitionType + " " + lastActivityType +
                         " . isRunning " + isRunning, Toast.LENGTH_LONG).show();
@@ -906,12 +909,12 @@ public class SingleModeFragment extends Fragment {
             if (ActivityCompat.checkSelfPermission(mainActivity,
                     Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-                        1000);
+                        1001);
             }
             if (ActivityCompat.checkSelfPermission(mainActivity,
                     Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        1000);
+                        1002);
             }
             Intent intent = new Intent(getContext(), BackGroundLocationService.class);
             intent.setAction(START_LOCATION_SERVICE);

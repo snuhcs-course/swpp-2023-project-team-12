@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -34,6 +35,7 @@ public class MainActivity2 extends AppCompatActivity {
     private ActivityMain2Binding binding;
     private FusedLocationProviderClient fusedLocationClient;
     public NavController navController;
+    private PermissionSupport permission;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,27 +64,29 @@ public class MainActivity2 extends AppCompatActivity {
         // menu should be considered as top level destinations.
         navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main2);
         NavigationUI.setupWithNavController(binding.navView, navController);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
-                    != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACTIVITY_RECOGNITION}, 1000);
-            }
-        }
-        // Request location permission
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1000);
-        }
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1000);
-        }
-        if (Build.VERSION.SDK_INT >= 33) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                    != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1000);
-            }
-        }
+        permissionCheck();
+        // REMOVAL : permission check moved to PermissionSupport.java
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
+//                    != PackageManager.PERMISSION_GRANTED) {
+//                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACTIVITY_RECOGNITION}, 1001);
+//            }
+//        }
+//        // Request location permission
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+//                != PackageManager.PERMISSION_GRANTED) {
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1002);
+//        }
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+//                != PackageManager.PERMISSION_GRANTED) {
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1003);
+//        }
+//        if (Build.VERSION.SDK_INT >= 33) {
+//            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+//                    != PackageManager.PERMISSION_GRANTED) {
+//                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1004);
+//            }
+//        }
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -94,17 +98,18 @@ public class MainActivity2 extends AppCompatActivity {
                 PendingIntent.FLAG_MUTABLE
         );
         activityReceiver = new UserActivityBroadcastReceiver();
-
-        createNotificationChannel();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     protected void onStart() {
         super.onStart();
+        Log.d("test:lifecycle:main", "onStart");
+        // REMOVAL : move to onRequestPermissionsResult on MainActivity2.java
         activityManager.registerActivityTransitions(pendingIntent);
         IntentFilter filter = new IntentFilter(UserActivityTransitionManager.CUSTOM_INTENT_USER_ACTION);
         this.registerReceiver(activityReceiver, filter, RECEIVER_EXPORTED);
+
     }
 
 
@@ -123,11 +128,11 @@ public class MainActivity2 extends AppCompatActivity {
     public void getLastLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1000);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1003);
         }
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1000);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1004);
         }
         fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
             // Handle location update here
@@ -149,6 +154,32 @@ public class MainActivity2 extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+    }
+
+    // 권한 체크
+    private void permissionCheck() {
+
+        // PermissionSupport.java 클래스 객체 생성
+        permission = new PermissionSupport(this, this);
+
+        // 권한 체크 후 리턴이 false로 들어오면
+        if (!permission.checkPermission()){
+            //권한 요청
+            permission.requestPermission();
+        }
+    }
+
+    // Request Permission에 대한 결과 값 받아와
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        //여기서도 리턴이 false로 들어온다면 (사용자가 권한 허용 거부)
+        if (!permission.permissionResult(requestCode, permissions, grantResults)) {
+            // 다시 permission 요청
+            permission.requestPermission();
+        } else{
+            createNotificationChannel();
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
 }
