@@ -5,6 +5,7 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.pressBack;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
@@ -13,11 +14,18 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.test.core.app.ActivityScenario;
+import androidx.test.espresso.UiController;
+import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.contrib.NavigationViewActions;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -28,6 +36,7 @@ import com.example.runusandroid.ActivityRecognition.UserActivityBroadcastReceive
 import com.example.runusandroid.ActivityRecognition.UserActivityTransitionManager;
 import com.google.android.gms.location.LocationServices;
 
+import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -111,6 +120,20 @@ public class SingleModeTests {
 
     @Test
     public void playing() throws InterruptedException {
+        String firstHistoryTime;
+        // check history before running -> then move to desired fragment
+        mainActivityScenario.onActivity(activity -> {
+            activity.navController.navigate(R.id.navigation_history);
+        });
+        Thread.sleep(1000);
+        onView(withId(R.id.dailyTime)).check(matches(not(withText(""))));
+        firstHistoryTime = getText(withId(R.id.dailyTime));
+        Log.d("History_log_test","firstHistoryTime: " + firstHistoryTime);
+        assertNotNull(firstHistoryTime);
+        mainActivityScenario.onActivity(activity -> {
+            activity.navController.navigate(R.id.navigation_single_mode);
+        });
+
         Thread.sleep(1000);
         // enter playing screen
         onView(withId(R.id.startButton)).perform(click());
@@ -124,7 +147,8 @@ public class SingleModeTests {
         onView(isRoot()).perform(pressBack());
         onView(withId(R.id.buttonConfirmClose)).check(matches(isDisplayed()));
         onView(isRoot()).perform(pressBack());
-        // 종료
+        // 1분 뒤 종료
+        Thread.sleep(1000 * 60);
         onView(withId(R.id.quitButton)).perform(click());
         onView(withId(R.id.buttonConfirmClose)).check(matches(isDisplayed()));
         onView(withId(R.id.buttonConfirmClose)).perform(click());
@@ -144,22 +168,46 @@ public class SingleModeTests {
         onView(withId(R.id.quitButton)).perform(click());
         onView(withId(R.id.buttonConfirmPlayExit)).perform(click());
         onView(withId(R.id.startButton)).check(matches(isDisplayed()));
+
+        // check history change after running
+        mainActivityScenario.onActivity(activity -> {
+            activity.navController.navigate(R.id.navigation_history);
+        });
+        Thread.sleep(1000);
+        onView(withId(R.id.dailyTime)).check(matches(not(withText(""))));
+        onView(withId(R.id.dailyTime)).check(matches(not(withText(firstHistoryTime))));
     }
 
-//    public void navSingle_click_displayed2() {
-//        // Start the screen of your activity.
-//        onView(withId(R.id.nav_view))
-//                .perform(NavigationViewActions.navigateTo(R.id.navigation_single_mode));
-//        onView(withId(R.id.startButton)).perform(click());
-//    }
-//
-//    @Test
-//    public void draft(){
-//        // perform action (click)
-//        onView(withId(R.id.navigation_single_mode)).perform(click());
-//        onView(withId(R.id.startButton)).perform(click());
-//
-//        //check if UI changed
-//        onView(withId(R.id.buttonTimeAttack)).check(matches(isDisplayed()));
-//    }
+    // helper function to extract text content from viewInteraction
+    public static String getText(final Matcher<View> matcher) {
+        try {
+            final String[] stringHolder = {null};
+            onView(matcher).perform(new ViewAction() {
+                @Override
+                public Matcher<View> getConstraints() {
+                    return isAssignableFrom(TextView.class);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "get text";
+                }
+
+                @Override
+                public void perform(UiController uiController, View view) {
+                    TextView tv = (TextView) view;
+                    stringHolder[0] = tv.getText().toString();
+                }
+            });
+            if (stringHolder[0] == null || stringHolder[0] == "") {
+                fail("no text found");
+            }
+            return stringHolder[0];
+        } catch (Exception e) {
+            fail("null found");
+            return null;
+        }
+
+    }
+
 }

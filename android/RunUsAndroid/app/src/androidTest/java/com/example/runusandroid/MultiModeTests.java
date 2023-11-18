@@ -23,16 +23,22 @@ import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.not;
 
 import static org.hamcrest.Matchers.allOf;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.icu.util.Calendar;
+import android.util.Log;
 import android.view.InputDevice;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.NumberPicker;
+import android.widget.TextView;
 import android.widget.TimePicker;
 
 import androidx.test.core.app.ActivityScenario;
+import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.espresso.action.GeneralClickAction;
@@ -53,6 +59,7 @@ import com.example.runusandroid.ActivityRecognition.UserActivityBroadcastReceive
 import com.example.runusandroid.ActivityRecognition.UserActivityTransitionManager;
 import com.google.android.gms.location.LocationServices;
 
+import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -122,12 +129,26 @@ public class MultiModeTests {
     }
 
     @Test
-    public void roomCreation() throws InterruptedException {
-        Thread.sleep(1000);
+    public void roomCreation_play() throws InterruptedException {
         String roomName = "UITestRoom";
         String enterMemberNum = "5.5";
         String checkMemberNum = "55";
         Calendar calendar;
+
+        String firstHistoryTime;
+        // check history before running -> then move to desired fragment
+        mainActivityScenario.onActivity(activity -> {
+            activity.navController.navigate(R.id.navigation_history);
+        });
+        Thread.sleep(1000);
+        onView(withId(R.id.dailyTime)).check(matches(not(withText(""))));
+        firstHistoryTime = getText(withId(R.id.dailyTime));
+        Log.d("History_log_test","firstHistoryTime: " + firstHistoryTime);
+        assertNotNull(firstHistoryTime);
+        mainActivityScenario.onActivity(activity -> {
+            activity.navController.navigate(R.id.navigation_multi_mode);
+        });
+
         // 방 생성
         onView(withId(R.id.createRoomButton)).perform(click());
         onView(withId(R.id.roomCreateTitle)).check(matches(isDisplayed()));
@@ -156,6 +177,46 @@ public class MultiModeTests {
         onView(withId(R.id.time_present_content)).check(matches(not(withText("00:00:00"))));
 
         // TODO: 게임결과 화면 확인되지 않음
+
+//        // check history change after running
+//        mainActivityScenario.onActivity(activity -> {
+//            activity.navController.navigate(R.id.navigation_history);
+//        });
+//        Thread.sleep(1000);
+//        onView(withId(R.id.dailyTime)).check(matches(not(withText(""))));
+//        onView(withId(R.id.dailyTime)).check(matches(not(withText(firstHistoryTime))));
+
+    }
+
+    public static String getText(final Matcher<View> matcher) {
+        try {
+            final String[] stringHolder = {null};
+            onView(matcher).perform(new ViewAction() {
+                @Override
+                public Matcher<View> getConstraints() {
+                    return isAssignableFrom(TextView.class);
+                }
+
+                @Override
+                public String getDescription() {
+                    return "get text";
+                }
+
+                @Override
+                public void perform(UiController uiController, View view) {
+                    TextView tv = (TextView) view;
+                    stringHolder[0] = tv.getText().toString();
+                }
+            });
+            if (stringHolder[0] == null || stringHolder[0] == "") {
+                fail("no text found");
+            }
+            return stringHolder[0];
+        } catch (Exception e) {
+            fail("null found");
+            return null;
+        }
+
     }
 
 
