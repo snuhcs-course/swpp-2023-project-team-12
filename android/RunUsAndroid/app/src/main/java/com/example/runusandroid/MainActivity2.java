@@ -3,6 +3,8 @@ package com.example.runusandroid;
 import static com.example.runusandroid.RetrofitClient.setAuthToken;
 
 import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -72,6 +74,12 @@ public class MainActivity2 extends AppCompatActivity {
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1000);
         }
+        if (Build.VERSION.SDK_INT >= 33) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1000);
+            }
+        }
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -83,6 +91,8 @@ public class MainActivity2 extends AppCompatActivity {
                 PendingIntent.FLAG_MUTABLE
         );
         activityReceiver = new UserActivityBroadcastReceiver();
+
+        createNotificationChannel();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
@@ -126,6 +136,13 @@ public class MainActivity2 extends AppCompatActivity {
         });
     }
 
+    public void createNotificationChannel() {
+        CharSequence name = getString(R.string.channel_name);
+        int importance = NotificationManager.IMPORTANCE_DEFAULT;
+        NotificationChannel channel = new NotificationChannel("MultiModeWait", name, importance);
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
+    }
     @Override
     public void onBackPressed() {
         super.onBackPressed();

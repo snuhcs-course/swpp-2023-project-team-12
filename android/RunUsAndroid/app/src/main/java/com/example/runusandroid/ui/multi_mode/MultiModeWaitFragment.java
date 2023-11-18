@@ -1,10 +1,16 @@
 package com.example.runusandroid.ui.multi_mode;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Dialog;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -21,6 +27,9 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
@@ -55,6 +64,7 @@ public class MultiModeWaitFragment extends Fragment {
     private boolean isGameStarted = false;
     public boolean isFragmentVisible = true;
     private boolean navRoomListWhenResumed = false;
+    private boolean notificatedOneMinuteLeft = false;
     MultiModeUser user = MultiModeFragment.user;
     SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
     private MultiModeRoom selectedRoom; // MultiModeRoom 객체를 저장할 멤버 변수
@@ -78,6 +88,10 @@ public class MultiModeWaitFragment extends Fragment {
             startGame();
 
             long secondsRemaining = duration.getSeconds();
+
+            if(!notificatedOneMinuteLeft && secondsRemaining <= 60){
+                makeNotification();
+            }
 
             // 시간, 분으로 변환
             long hours = secondsRemaining / 3600;
@@ -125,7 +139,7 @@ public class MultiModeWaitFragment extends Fragment {
         }
     }
 
-    private void showExitDialog(){
+    private void showExitDialog() {
         @SuppressLint("InflateParams")
         View exitRoomDialog = getLayoutInflater().inflate(R.layout.dialog_multimode_wait_finish, null);
         Dialog dialog = new Dialog(requireContext());
@@ -143,7 +157,8 @@ public class MultiModeWaitFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-}
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -186,7 +201,7 @@ public class MultiModeWaitFragment extends Fragment {
         leaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (SystemClock.elapsedRealtime() - leaveButtonLastClickTime < 1000){
+                if (SystemClock.elapsedRealtime() - leaveButtonLastClickTime < 1000) {
                     return;
                 }
                 leaveButtonLastClickTime = SystemClock.elapsedRealtime();
@@ -253,6 +268,34 @@ public class MultiModeWaitFragment extends Fragment {
             set.applyTo(waitingListBox);
         }
     }
+
+    private void makeNotification() {
+        notificatedOneMinuteLeft = true;
+
+        Intent intent = new Intent(this.requireContext(), MainActivity2.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this.requireContext(), 0, intent, PendingIntent.FLAG_IMMUTABLE);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this.requireContext(), "MultiModeWait")
+                .setSmallIcon(R.drawable.runus_logo)
+                .setContentTitle("게임이 1분 후에 시작됩니다!")
+                .setContentText("앱에 접속하여 게임에 참여하세요!")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this.requireContext());
+        // notificationId is a unique int for each notification that you must define
+        if (Build.VERSION.SDK_INT >= 33) {
+            if (ActivityCompat.checkSelfPermission(this.requireContext(), Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this.requireActivity(), new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1000);
+
+            }
+        }
+        notificationManager.notify(10, builder.build());
+    }
+
 
     public void removeUserNameFromWaitingList(String userName) {
         int childCount = waitingListBox.getChildCount();

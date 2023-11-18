@@ -14,4 +14,5 @@
     <string name="ConfirmMessage">확인</string>
     <string name="MultiModePlayExitMessage">게임이 진행중입니다.\n 게임에서 나가시겠습니까?</string>
     <string name="MultiModeResultExitMessage">로비로 돌아가시겠습니까?</string>
+    <string name="channel_name">MultiModeWait</string>
 </resources>
