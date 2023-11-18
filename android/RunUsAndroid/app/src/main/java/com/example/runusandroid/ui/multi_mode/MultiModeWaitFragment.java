@@ -40,6 +40,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -71,6 +72,7 @@ public class MultiModeWaitFragment extends Fragment {
     private TextView startTimeTextView;
     private TextView timeRemainingTextView;
     private Duration duration;
+    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
     //남은 시간 계산 로직
     private final Runnable updateTimeRunnable = new Runnable() {
         @Override
@@ -182,6 +184,9 @@ public class MultiModeWaitFragment extends Fragment {
             participantCountTextView = view.findViewById(R.id.participant_count);
 
             titleTextView.setText(selectedRoom.getTitle());
+            startTimeTextView.setText(selectedRoom.getStartTime().format(timeFormatter));
+            // convert localdatetime object to string
+
             Duration duration = selectedRoom.getDuration();
 
             long hours = duration.toHours();
