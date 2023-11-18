@@ -69,6 +69,7 @@ public class MultiModeWaitFragment extends Fragment {
     public boolean isFragmentVisible = true;
     private boolean navRoomListWhenResumed = false;
     private boolean notificatedOneMinuteLeft = false;
+    private boolean notificatedTenMinuteLeft = false;
     SocketListenerThread socketListenerThread = MultiModeFragment.socketListenerThread;
     OnBackPressedCallback backPressedCallBack;
     MultiModeUser user = MultiModeFragment.user;
@@ -98,8 +99,12 @@ public class MultiModeWaitFragment extends Fragment {
 
             long secondsRemaining = duration.getSeconds();
 
-            if(!notificatedOneMinuteLeft && secondsRemaining <= 60){
-                makeNotification();
+            if(!notificatedTenMinuteLeft && secondsRemaining <= 602&& secondsRemaining >=598){
+                makeNotification(10);
+            }
+
+            if(!notificatedOneMinuteLeft && secondsRemaining <= 62 && secondsRemaining >=58){
+                makeNotification(1);
             }
 
             // 시간, 분으로 변환
@@ -143,9 +148,10 @@ public class MultiModeWaitFragment extends Fragment {
         if (duration.isNegative() || duration.isZero()) {
             timeRemainingTextView.setText("곧 경기가 시작됩니다");
             if (!isGameStarted && selectedRoom.getRoomOwner().getId() == user.getId()) {
-                isGameStarted = true;
+                Log.d("start","start game");
                 new StartRoomTask().execute();
             }
+            isGameStarted = true;
             // Runnable 종료
         }
     }
@@ -303,18 +309,22 @@ public class MultiModeWaitFragment extends Fragment {
         targetLayout.addView(userView);
     }
 
-    private void makeNotification() {
-        notificatedOneMinuteLeft = true;
+    private void makeNotification(int min) {
+        if(isFragmentVisible) return;
+        if(min==10) notificatedTenMinuteLeft = true;
+        else if(min==1) notificatedOneMinuteLeft = true;
 
         Intent intent = new Intent(this.requireContext(), MainActivity2.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this.requireContext(), 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
+        String contentTitle = "게임이 "+min+"분 후에 시작됩니다!";
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this.requireContext(), "MultiModeWait")
                 .setSmallIcon(R.drawable.runus_logo)
-                .setContentTitle("게임이 1분 후에 시작됩니다!")
+                .setContentTitle(contentTitle)
                 .setContentText("앱에 접속하여 게임에 참여하세요!")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true);
 
@@ -438,7 +448,7 @@ public class MultiModeWaitFragment extends Fragment {
                 navController.navigate(R.id.navigation_multi_mode);
                 Log.d("exitroomSendPacket", "Packet sent successfully!");
             } else {
-                Log.d("ExitSendPacket", "Failed to send packet!");
+                Log.d("ExitroomSendPacket", "Failed to send packet!");
             }
         }
 
@@ -469,7 +479,7 @@ public class MultiModeWaitFragment extends Fragment {
                 //navController.navigate(R.id.navigation_multi_mode);
                 Log.d("ExitGameBackSendPacket", "Packet sent successfully!");
             } else {
-                Log.d("ExitSendPacket", "Failed to send packet!");
+                Log.d("ExitgamebackSendPacket", "Failed to send packet!");
             }
         }
 
@@ -496,10 +506,10 @@ public class MultiModeWaitFragment extends Fragment {
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (success) {
-                Log.d("SendPacket", "Start Game Packet sent successfully!");
+                Log.d("startSendPacket", "Start Game Packet sent successfully!");
 
             } else {
-                Log.d("ExitSendPacket", "Failed to send Start Game packet!");
+                Log.d("startSendPacket", "Failed to send Start Game packet!");
             }
         }
     }

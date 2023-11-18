@@ -139,7 +139,7 @@ public class MainActivity2 extends AppCompatActivity {
 
     public void createNotificationChannel() {
         CharSequence name = getString(R.string.channel_name);
-        int importance = NotificationManager.IMPORTANCE_DEFAULT;
+        int importance = NotificationManager.IMPORTANCE_HIGH;
         NotificationChannel channel = new NotificationChannel("MultiModeWait", name, importance);
         NotificationManager notificationManager = getSystemService(NotificationManager.class);
         notificationManager.createNotificationChannel(channel);
