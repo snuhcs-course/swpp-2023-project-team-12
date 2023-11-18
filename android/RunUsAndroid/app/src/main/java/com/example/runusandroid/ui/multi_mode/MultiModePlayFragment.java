@@ -155,14 +155,6 @@ public class MultiModePlayFragment extends Fragment {
                     }
                 }
                 lastLocation = location;
-
-                // Update UI (draw line, zoom in)
-                if (mMap != null) {
-                    mMap.clear(); // Remove previous polylines
-                    if (newPoint != null) {
-                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 16));
-                    }
-                }
             }
         }
     };
