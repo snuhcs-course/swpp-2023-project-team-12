@@ -36,6 +36,7 @@ class ProfileImageUploadTest(TestCase):
             height="60",
             weight="170",
             age="23",
+            exp="0",
         )
         self.client = APIClient()
         access = AccessToken.for_user(self.user)

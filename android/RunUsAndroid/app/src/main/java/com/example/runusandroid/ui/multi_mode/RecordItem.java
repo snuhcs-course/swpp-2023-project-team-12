@@ -4,7 +4,7 @@ public class RecordItem {
     private final double section;
     private final double averageSpeed;
 
-    RecordItem(double section, double pace) {
+    public RecordItem(double section, double pace) {
         this.section = section;
         this.averageSpeed = pace;
     }

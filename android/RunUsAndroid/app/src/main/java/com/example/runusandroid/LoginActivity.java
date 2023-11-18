@@ -158,6 +158,9 @@ public class LoginActivity extends AppCompatActivity {
                                 float height = (float) userObject.getDouble("height");
                                 float weight = (float) userObject.getDouble("weight");
                                 int age = userObject.getInt("age");
+                                int exp = userObject.getInt("exp");
+                                int level = ExpSystem.getLevel(exp);
+                                Log.d("exp", "user's exp is " + exp);
 
                                 String token = responseBody.getJSONObject("jwt_token").getString("access_token");
 
@@ -176,6 +179,8 @@ public class LoginActivity extends AppCompatActivity {
                                 editor.putFloat("height", height);
                                 editor.putFloat("weight", weight);
                                 editor.putInt("age", age);
+                                editor.putInt("exp", exp);
+                                editor.putInt("level", level);
                                 editor.apply();
                                 Intent intent = new Intent(LoginActivity.this, MainActivity2.class);
                                 startActivity(intent);

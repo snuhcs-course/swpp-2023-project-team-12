@@ -69,6 +69,10 @@ obj/
 *.iml
 *.iws
 /out/
+.idea
+misc.xml
+deploymentTargetDropDown.xml
+render.experimental.xml
 
 # User-specific configurations
 .idea/caches/
