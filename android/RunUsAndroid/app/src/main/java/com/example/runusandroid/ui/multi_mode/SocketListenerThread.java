@@ -94,7 +94,7 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
 
                 if (receivedObject instanceof Packet) {
                     Packet packet = (Packet) receivedObject;
-
+                    System.out.println("protocol : "+packet.getProtocol());
                     if (packet.getProtocol() == Protocol.ROOM_LIST) {
                         handler.post(() -> {
                             List<MultiModeRoom> roomList = packet.getRoomList();
@@ -187,6 +187,11 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
             }
         } catch (SocketException e) {
             Log.d("Socket manager", "connection finished");
+            try {
+                SocketManager.getInstance().resetInstance();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {

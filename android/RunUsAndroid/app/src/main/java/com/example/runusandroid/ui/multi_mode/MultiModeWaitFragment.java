@@ -1,10 +1,16 @@
 package com.example.runusandroid.ui.multi_mode;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Dialog;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -22,6 +28,9 @@ import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -59,6 +68,9 @@ public class MultiModeWaitFragment extends Fragment {
     private final Handler handler = new Handler(); // 남은 시간 계산 위한 Handler
     private final int updateTimeInSeconds = 1; // 1초마다 업데이트/
     public boolean isFragmentVisible = true;
+    private boolean navRoomListWhenResumed = false;
+    private boolean notificatedOneMinuteLeft = false;
+    private boolean notificatedTenMinuteLeft = false;
     SocketListenerThread socketListenerThread = MultiModeFragment.socketListenerThread;
     OnBackPressedCallback backPressedCallBack;
     MultiModeUser user = MultiModeFragment.user;
@@ -66,7 +78,6 @@ public class MultiModeWaitFragment extends Fragment {
     private long leaveButtonLastClickTime = 0;
     private long backButtonLastClickTime = 0;
     private boolean isGameStarted = false;
-    private boolean navRoomListWhenResumed = false;
     private MultiModeRoom selectedRoom; // MultiModeRoom 객체를 저장할 멤버 변수
     private TextView titleTextView;
     private TextView startTimeTextView;
@@ -89,6 +100,14 @@ public class MultiModeWaitFragment extends Fragment {
             startGame();
 
             long secondsRemaining = duration.getSeconds();
+
+            if(!notificatedTenMinuteLeft && secondsRemaining <= 602&& secondsRemaining >=598){
+                makeNotification(10);
+            }
+
+            if(!notificatedOneMinuteLeft && secondsRemaining <= 62 && secondsRemaining >=58){
+                makeNotification(1);
+            }
 
             // 시간, 분으로 변환
             long hours = secondsRemaining / 3600;
@@ -131,9 +150,10 @@ public class MultiModeWaitFragment extends Fragment {
         if (duration.isNegative() || duration.isZero()) {
             timeRemainingTextView.setText("곧 경기가 시작됩니다");
             if (!isGameStarted && selectedRoom.getRoomOwner().getId() == user.getId()) {
-                isGameStarted = true;
+                Log.d("start","start game");
                 new StartRoomTask().execute();
             }
+            isGameStarted = true;
             // Runnable 종료
         }
     }
@@ -294,6 +314,38 @@ public class MultiModeWaitFragment extends Fragment {
         targetLayout.addView(userView);
     }
 
+    private void makeNotification(int min) {
+        if(isFragmentVisible) return;
+        if(min==10) notificatedTenMinuteLeft = true;
+        else if(min==1) notificatedOneMinuteLeft = true;
+
+        Intent intent = new Intent(this.requireContext(), MainActivity2.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this.requireContext(), 0, intent, PendingIntent.FLAG_IMMUTABLE);
+
+        String contentTitle = "게임이 "+min+"분 후에 시작됩니다!";
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this.requireContext(), "MultiModeWait")
+                .setSmallIcon(R.drawable.runus_logo)
+                .setContentTitle(contentTitle)
+                .setContentText("앱에 접속하여 게임에 참여하세요!")
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this.requireContext());
+        // notificationId is a unique int for each notification that you must define
+        if (Build.VERSION.SDK_INT >= 33) {
+            if (ActivityCompat.checkSelfPermission(this.requireContext(), Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this.requireActivity(), new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1000);
+
+            }
+        }
+        notificationManager.notify(10, builder.build());
+    }
+
+
     public void removeUserNameFromWaitingList(String userName) {
         List<View> userViews = new ArrayList<>();
 
@@ -401,7 +453,7 @@ public class MultiModeWaitFragment extends Fragment {
                 navController.navigate(R.id.navigation_multi_mode);
                 Log.d("exitroomSendPacket", "Packet sent successfully!");
             } else {
-                Log.d("ExitSendPacket", "Failed to send packet!");
+                Log.d("ExitroomSendPacket", "Failed to send packet!");
             }
         }
 
@@ -432,7 +484,7 @@ public class MultiModeWaitFragment extends Fragment {
                 //navController.navigate(R.id.navigation_multi_mode);
                 Log.d("ExitGameBackSendPacket", "Packet sent successfully!");
             } else {
-                Log.d("ExitSendPacket", "Failed to send packet!");
+                Log.d("ExitgamebackSendPacket", "Failed to send packet!");
             }
         }
 
@@ -459,10 +511,10 @@ public class MultiModeWaitFragment extends Fragment {
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (success) {
-                Log.d("SendPacket", "Start Game Packet sent successfully!");
+                Log.d("startSendPacket", "Start Game Packet sent successfully!");
 
             } else {
-                Log.d("ExitSendPacket", "Failed to send Start Game packet!");
+                Log.d("startSendPacket", "Failed to send Start Game packet!");
             }
         }
     }
