@@ -36,6 +36,7 @@ public class MainActivity2 extends AppCompatActivity {
     private FusedLocationProviderClient fusedLocationClient;
     public NavController navController;
     private PermissionSupport permission;
+    IntentFilter filter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +99,7 @@ public class MainActivity2 extends AppCompatActivity {
                 PendingIntent.FLAG_MUTABLE
         );
         activityReceiver = new UserActivityBroadcastReceiver();
+        filter = new IntentFilter(UserActivityTransitionManager.CUSTOM_INTENT_USER_ACTION);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
@@ -105,10 +107,8 @@ public class MainActivity2 extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         Log.d("test:lifecycle:main", "onStart");
-        // REMOVAL : move to onRequestPermissionsResult on MainActivity2.java
-        activityManager.registerActivityTransitions(pendingIntent);
-        IntentFilter filter = new IntentFilter(UserActivityTransitionManager.CUSTOM_INTENT_USER_ACTION);
         this.registerReceiver(activityReceiver, filter, RECEIVER_EXPORTED);
+        activityManager.registerActivityTransitions(pendingIntent);
 
     }
 
@@ -178,6 +178,10 @@ public class MainActivity2 extends AppCompatActivity {
             permission.requestPermission();
         } else{
             createNotificationChannel();
+            activityManager.removeActivityTransitions(pendingIntent);
+            this.unregisterReceiver(activityReceiver);
+            this.registerReceiver(activityReceiver, filter, RECEIVER_EXPORTED);
+            activityManager.registerActivityTransitions(pendingIntent);
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
