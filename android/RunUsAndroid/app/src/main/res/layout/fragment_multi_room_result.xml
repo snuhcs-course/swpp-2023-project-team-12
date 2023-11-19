@@ -35,7 +35,7 @@
         android:id="@+id/podium"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="50dp"
+        android:layout_marginBottom="20dp"
         android:src="@drawable/podium"
         app:layout_constraintBottom_toTopOf="@id/my_result_title"
         app:layout_constraintLeft_toLeftOf="parent"
