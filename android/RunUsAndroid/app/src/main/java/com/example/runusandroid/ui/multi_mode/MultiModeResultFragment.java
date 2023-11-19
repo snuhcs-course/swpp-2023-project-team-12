@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -26,9 +27,14 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.example.runusandroid.AccountApi;
 import com.example.runusandroid.ExpSystem;
 import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
+import com.example.runusandroid.RetrofitClient;
+import com.example.runusandroid.UserProfileResponse;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -36,6 +42,9 @@ import java.util.Objects;
 
 import MultiMode.MultiModeRoom;
 import MultiMode.UserDistance;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MultiModeResultFragment extends Fragment {
     OnBackPressedCallback backPressedCallBack;
@@ -47,12 +56,6 @@ public class MultiModeResultFragment extends Fragment {
     TextView paceGoalContentTextView;
     MainActivity2 mainActivity;
     TextView timeGoalContentTextView;
-    TextView goldDistanceTextView;
-    TextView goldNickNameTextView;
-    TextView silverDistanceTextView;
-    TextView silverNickNameTextView;
-    TextView bronzeDistanceTextView;
-    TextView bronzeNickNameTextView;
     ProgressBar progressBar;
     Button resultLeaveButton;
     Button recordButton;
@@ -61,6 +64,9 @@ public class MultiModeResultFragment extends Fragment {
     RecyclerView recyclerView;
     RecordDialog dialog;
     boolean isDialogOpenedBefore = false;
+    private ImageView goldProfileImageView, silverProfileImageView, bronzeProfileImageView;
+    private TextView goldLevelTextView, silverLevelTextView, bronzeLevelTextView;
+    private TextView goldNickNameTextView, silverNickNameTextView, bronzeNickNameTextView;
     private long resultLeaveButtonLastClickTime = 0;
     private long backButtonLastClickTime = 0;
     private TextView timeResultContentTextView;
@@ -99,12 +105,21 @@ public class MultiModeResultFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_multi_room_result, container, false); //각종 view 선언
         if (selectedRoom != null) {
-            goldNickNameTextView = view.findViewById(R.id.gold_nickname);
-            goldDistanceTextView = view.findViewById(R.id.gold_distance);
-            silverNickNameTextView = view.findViewById(R.id.silver_nickname);
-            silverDistanceTextView = view.findViewById(R.id.silver_distance);
-            bronzeNickNameTextView = view.findViewById(R.id.bronze_nickname);
-            bronzeDistanceTextView = view.findViewById(R.id.bronze_distance);
+            View goldProfileBox = view.findViewById(R.id.firstPlaceProfileBox);
+            goldProfileImageView = goldProfileBox.findViewById(R.id.multi_result_profile);
+            goldLevelTextView = goldProfileBox.findViewById(R.id.multi_result_level);
+            goldNickNameTextView = goldProfileBox.findViewById(R.id.multi_result_nickname);
+
+            View silverProfileBox = view.findViewById(R.id.secondPlaceProfileBox);
+            silverProfileImageView = silverProfileBox.findViewById(R.id.multi_result_profile);
+            silverLevelTextView = silverProfileBox.findViewById(R.id.multi_result_level);
+            silverNickNameTextView = silverProfileBox.findViewById(R.id.multi_result_nickname);
+
+            View bronzeProfileBox = view.findViewById(R.id.thirdPlaceProfileBox);
+            bronzeProfileImageView = bronzeProfileBox.findViewById(R.id.multi_result_profile);
+            bronzeLevelTextView = bronzeProfileBox.findViewById(R.id.multi_result_level);
+            bronzeNickNameTextView = bronzeProfileBox.findViewById(R.id.multi_result_nickname);
+
             progressBar = view.findViewById(R.id.linear_progress_bar);
             resultLeaveButton = view.findViewById(R.id.result_leaveButton);
             distanceResultContentTextView = view.findViewById(R.id.distance_present_content);
@@ -133,14 +148,6 @@ public class MultiModeResultFragment extends Fragment {
                         speedList = (ArrayList<Float>) getArguments().getSerializable("userSpeedList");
                         Log.d("speedList", speedList.size() + "");
                         double section = 1.0;
-                        //for test
-//                        distance = 4.579f;
-//                        speedList = new ArrayList<>();
-//                        speedList.add(12.0f);
-//                        speedList.add(10.0f);
-//                        speedList.add(15.0f);
-//                        speedList.add(20.0f);
-//                        speedList.add(12.0f);
 
                         while (true) {
                             if (distance - section >= 0) {
@@ -184,38 +191,93 @@ public class MultiModeResultFragment extends Fragment {
     }
 
     public void updateTop3UserDistance(UserDistance[] userDistances) { // 화면에 표시되는 top3 유저 정보 업데이트. socketListenerThread에서 사용
-        UserDistance[] top3UserDistance = userDistances;
-        for (int i = 0; i < userDistances.length; i++) {
+        AccountApi accountApi = RetrofitClient.getClient().create(AccountApi.class);
+        if (userDistances.length >= 1) {
+            goldNickNameTextView.setText(userDistances[0].getUser().getNickName());
+            goldLevelTextView.setText("Lv. " + userDistances[0].getUser().getLevel());
+            accountApi.getUserProfile(String.valueOf(userDistances[0].getUser().getId())).enqueue(new Callback<UserProfileResponse>() {
+                @Override
+                public void onResponse(Call<UserProfileResponse> call, Response<UserProfileResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        String imageUrl = response.body().getProfileImageUrl();
+                        Glide.with(MultiModeResultFragment.this)
+                                .load(imageUrl).placeholder(R.drawable.runus_logo)
+                                .apply(RequestOptions.circleCropTransform())
+                                .into(goldProfileImageView);
 
-            Log.d("response", "In updateTop3UserDistance, top3user " + i + " : " + top3UserDistance[0].getUser().getNickName() + " , distance : " + userDistances[0].getDistance());
-            Log.d("response", "In updateTop3UserDistance, user " + i + " : " + userDistances[0].getUser().getNickName() + " , distance : " + userDistances[0].getDistance());
+                    } else {
+                        Glide.with(MultiModeResultFragment.this)
+                                .load("").placeholder(R.drawable.runus_logo)
+                                .apply(RequestOptions.circleCropTransform())
+                                .into(goldProfileImageView);
+                    }
+                }
 
-        }
-        double goldDistance = 0;
+                @Override
+                public void onFailure(Call<UserProfileResponse> call, Throwable t) {
+                    Log.e("UserProfile", "Failed to load user profile", t);
+                }
+            });
 
-        if (top3UserDistance.length >= 1) {
-            goldNickNameTextView.setText(top3UserDistance[0].getUser().getNickName());
-            goldDistance = top3UserDistance[0].getDistance();
-            String goldDistanceString = String.format("%.2fkm", goldDistance);
-            goldDistanceTextView.setText(goldDistanceString);
+            if (userDistances.length >= 2) {
+                silverNickNameTextView.setText(userDistances[1].getUser().getNickName());
+                silverLevelTextView.setText("Lv. " + userDistances[1].getUser().getLevel());
+                accountApi.getUserProfile(String.valueOf(userDistances[1].getUser().getId())).enqueue(new Callback<UserProfileResponse>() {
+                    @Override
+                    public void onResponse(Call<UserProfileResponse> call, Response<UserProfileResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            String imageUrl = response.body().getProfileImageUrl();
+                            Glide.with(MultiModeResultFragment.this)
+                                    .load(imageUrl).placeholder(R.drawable.runus_logo)
+                                    .apply(RequestOptions.circleCropTransform())
+                                    .into(silverProfileImageView);
 
-            if (top3UserDistance.length >= 2) {
+                        } else {
+                            Glide.with(MultiModeResultFragment.this)
+                                    .load("").placeholder(R.drawable.runus_logo)
+                                    .apply(RequestOptions.circleCropTransform())
+                                    .into(silverProfileImageView);
+                        }
+                    }
 
-                silverNickNameTextView.setText(top3UserDistance[1].getUser().getNickName());
-                double silverDistance = top3UserDistance[1].getDistance();
-                String silverDistanceString = String.format("%.2fkm", silverDistance);
-                silverDistanceTextView.setText(silverDistanceString);
+                    @Override
+                    public void onFailure(Call<UserProfileResponse> call, Throwable t) {
+                        Log.e("UserProfile", "Failed to load user profile", t);
+                    }
+                });
 
-                if (top3UserDistance.length >= 3) {
-                    bronzeNickNameTextView.setText(top3UserDistance[2].getUser().getNickName());
-                    double bronzeDistance = top3UserDistance[2].getDistance();
-                    String bronzeDistanceString = String.format("%.2fkm", bronzeDistance);
-                    bronzeDistanceTextView.setText(bronzeDistanceString);
+                if (userDistances.length >= 3) {
+                    bronzeNickNameTextView.setText(userDistances[2].getUser().getNickName());
+                    bronzeLevelTextView.setText("Lv. " + userDistances[2].getUser().getLevel());
+                    accountApi.getUserProfile(String.valueOf(userDistances[2].getUser().getId())).enqueue(new Callback<UserProfileResponse>() {
+                        @Override
+                        public void onResponse(Call<UserProfileResponse> call, Response<UserProfileResponse> response) {
+                            if (response.isSuccessful() && response.body() != null) {
+                                String imageUrl = response.body().getProfileImageUrl();
+                                Glide.with(MultiModeResultFragment.this)
+                                        .load(imageUrl).placeholder(R.drawable.runus_logo)
+                                        .apply(RequestOptions.circleCropTransform())
+                                        .into(bronzeProfileImageView);
+
+                            } else {
+                                Glide.with(MultiModeResultFragment.this)
+                                        .load("").placeholder(R.drawable.runus_logo)
+                                        .apply(RequestOptions.circleCropTransform())
+                                        .into(bronzeProfileImageView);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<UserProfileResponse> call, Throwable t) {
+                            Log.e("UserProfile", "Failed to load user profile", t);
+                        }
+                    });
                 }
             }
         }
-        progressBar.setProgress(100);
+
     }
+
 
     @Override
     public void onResume() {
