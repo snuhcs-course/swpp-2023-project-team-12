@@ -2,6 +2,7 @@ package com.example.runusandroid.ui.multi_mode;
 
 import static android.content.Context.MODE_PRIVATE;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -80,8 +81,8 @@ public class MultiModeFragment extends Fragment {
         EditText groupNameEditText = dialog.findViewById(R.id.editTextGroupName);
         TimePicker time_picker = dialog.findViewById(R.id.timePicker);
         EditText membersEditText = dialog.findViewById(R.id.editTextMembers);
-        NumberPicker numberPickerHour = dialog.findViewById(R.id.hourPicker);
-        NumberPicker numberPickerMinute = dialog.findViewById(R.id.minutePicker);
+        NumberPicker numberPickerHour = (NumberPicker) dialog.findViewById(R.id.hourPicker);
+        NumberPicker numberPickerMinute = (NumberPicker) dialog.findViewById(R.id.minutePicker);
 
         // 시간 설정: 0 ~ 4
         numberPickerHour.setMinValue(0);
@@ -108,6 +109,13 @@ public class MultiModeFragment extends Fragment {
             }
         });
         completeButton.setOnClickListener(v -> {
+            if (numberPickerHour.getValue() <= 0 && numberPickerMinute.getValue() <= 0) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setMessage("시간을 설정해주세요.")
+                        .setNeutralButton("확인", null)
+                        .show();
+                return;
+            }
             if (SystemClock.elapsedRealtime() - completeButtonLastClickTime < 1000) {
                 return;
             }
