@@ -1,24 +1,24 @@
-from django.test import TestCase
-from django.urls import reverse
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.contrib.auth import get_user_model
-from rest_framework.test import APIClient
-from rest_framework_simplejwt.tokens import AccessToken
-from django.core.files.storage import default_storage
+# from django.test import TestCase
+# from django.urls import reverse
+# from django.core.files.uploadedfile import SimpleUploadedFile
+# from django.contrib.auth import get_user_model
+# from rest_framework.test import APIClient
+# from rest_framework_simplejwt.tokens import AccessToken
+# from django.core.files.storage import default_storage
 
-from PIL import Image
-from io import BytesIO
-from django.core.files.uploadedfile import SimpleUploadedFile
+# from PIL import Image
+# from io import BytesIO
+# from django.core.files.uploadedfile import SimpleUploadedFile
 
 
-def generate_dummy_image():
-    image = Image.new("RGB", (100, 100), (255, 255, 255))
-    image_io = BytesIO()
-    image.save(image_io, format="JPEG")
-    image_io.seek(0)
-    return SimpleUploadedFile(
-        "dummy.jpg", image_io.getvalue(), content_type="image/jpeg"
-    )
+# def generate_dummy_image():
+#     image = Image.new("RGB", (100, 100), (255, 255, 255))
+#     image_io = BytesIO()
+#     image.save(image_io, format="JPEG")
+#     image_io.seek(0)
+#     return SimpleUploadedFile(
+#         "dummy.jpg", image_io.getvalue(), content_type="image/jpeg"
+#     )
 
 
 # class ProfileImageUploadTest(TestCase):
