@@ -1,5 +1,6 @@
 package com.example.runusandroid;
 
+import static com.example.runusandroid.RetrofitClient.resetAuthToken;
 import static com.example.runusandroid.RetrofitClient.setAuthToken;
 
 import android.content.Intent;
@@ -119,6 +120,8 @@ public class LoginActivity extends AppCompatActivity {
             }
         };
 
+        resetAuthToken();
+
         // '비밀번호 찾기' 부분에 클릭 이벤트 추가
         String linkText = "비밀번호 찾기";
         int start = ssforpw.toString().indexOf(linkText);
@@ -161,9 +164,11 @@ public class LoginActivity extends AppCompatActivity {
                                 int exp = userObject.getInt("exp");
                                 int level = ExpSystem.getLevel(exp);
                                 int badge_collection = userObject.getInt("badge_collection");
+                                long lastLoginTime = System.currentTimeMillis();
                                 Log.d("exp", "user's exp is " + exp);
 
                                 String token = responseBody.getJSONObject("jwt_token").getString("access_token");
+                                String refreshToken = responseBody.getJSONObject("jwt_token").getString("refresh_token");
 
                                 setAuthToken(token);
                                 // 로그인 성공 시 SharePreferences에 유저 정보 및 토큰 저장
@@ -171,6 +176,7 @@ public class LoginActivity extends AppCompatActivity {
                                 SharedPreferences.Editor editor = sharedPreferences.edit();
                                 editor.putLong("userid", user_id);
                                 editor.putString("token", token);
+                                editor.putString("refresh_token", refreshToken);
                                 editor.putString("username", username);
                                 editor.putString("nickname", nickname);
                                 editor.putString("email", email);
@@ -183,6 +189,7 @@ public class LoginActivity extends AppCompatActivity {
                                 editor.putInt("exp", exp);
                                 editor.putInt("level", level);
                                 editor.putInt("badge_collection", badge_collection);
+                                editor.putLong("lastLoginTime", lastLoginTime);
                                 editor.apply();
                                 Intent intent = new Intent(LoginActivity.this, MainActivity2.class);
                                 startActivity(intent);

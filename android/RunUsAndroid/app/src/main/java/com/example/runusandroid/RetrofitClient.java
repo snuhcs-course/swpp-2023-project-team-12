@@ -1,5 +1,6 @@
 package com.example.runusandroid;
 
+
 import java.io.IOException;
 
 import okhttp3.Interceptor;
@@ -26,6 +27,9 @@ public class RetrofitClient {
         authToken = token;
     }
 
+    public static void resetAuthToken() {
+        authToken = null;
+    }
     public static Retrofit getClient() {
         if (retrofit == null) {
             OkHttpClient.Builder httpClient = new OkHttpClient.Builder();

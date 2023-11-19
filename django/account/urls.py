@@ -8,6 +8,7 @@ from .views import (
     UserProfileView,
 )
 from . import views
+from rest_framework_simplejwt.views import TokenRefreshView
 
 appname = "accounts"
 
@@ -25,4 +26,5 @@ urlpatterns = [
         UserProfileView.as_view(),
         name="user_profile",
     ),
+    path('auth/refresh/', TokenRefreshView.as_view()),
 ]
