@@ -77,10 +77,7 @@ public class UserSettingFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     String imageUrl = response.body().getProfileImageUrl();
                     Log.d("prfile", "profile=" + imageUrl);
-                    Glide.with(UserSettingFragment.this)
-                            .load(imageUrl).placeholder(R.drawable.runus_logo)
-                            .apply(RequestOptions.circleCropTransform())
-                            .into(profileImageView);
+                    updateProfileImageInView(imageUrl);
                 } else {
                     Glide.with(UserSettingFragment.this)
                             .load("").placeholder(R.drawable.runus_logo)
@@ -225,7 +222,10 @@ public class UserSettingFragment extends Fragment {
     }
 
     private void updateProfileImageInView(String imageUrl) {
-        Glide.with(this).load(imageUrl).into(binding.profileImage);
+        Glide.with(UserSettingFragment.this)
+                .load(imageUrl).placeholder(R.drawable.runus_logo)
+                .apply(RequestOptions.circleCropTransform())
+                .into(binding.profileImage);
     }
 
 }
