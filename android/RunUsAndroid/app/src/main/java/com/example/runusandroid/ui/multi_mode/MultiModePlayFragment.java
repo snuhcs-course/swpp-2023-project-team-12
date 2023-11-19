@@ -36,6 +36,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.example.runusandroid.AccountAPIFactory;
+import com.example.runusandroid.ActivityRecognition.RunningState;
 import com.example.runusandroid.ExpSystem;
 import com.example.runusandroid.GroupHistoryData;
 import com.example.runusandroid.HistoryApi;
@@ -159,7 +160,7 @@ public class MultiModePlayFragment extends Fragment {
                 // get distance
                 if (newPoint != null) {
                     // first few points might be noisy
-                    if (pathPoints.size() > 5 && mainActivity.activityReceiver.getIsRunning()) {
+                    if (pathPoints.size() > 5 && RunningState.getIsRunning()) {
                         Location lastLocation = new Location("");
                         lastLocation.setLatitude(pathPoints.get(pathPoints.size() - 2).latitude);
                         lastLocation.setLongitude(pathPoints.get(pathPoints.size() - 2).longitude);
@@ -328,9 +329,9 @@ public class MultiModePlayFragment extends Fragment {
         // for debugging purpose, hidden button on right bottom corner shows toast about lastly detected activity transition and isRunning value
         Button hiddenButton = view.findViewById(R.id.hiddenButton);
         hiddenButton.setOnClickListener(v -> {
-            boolean isRunning = mainActivity.activityReceiver.getIsRunning();
-            String lastActivityType = mainActivity.activityReceiver.getLastActivityType();
-            String lastTransitionType = mainActivity.activityReceiver.getLastTransitionType();
+            boolean isRunning = RunningState.getIsRunning();
+            String lastActivityType = RunningState.getLastActivityType();
+            String lastTransitionType = RunningState.getLastTransitionType();
 
             Toast.makeText(mainActivity, "last detected : " + lastTransitionType + " " + lastActivityType +
                     " . isRunning " + isRunning, Toast.LENGTH_LONG).show();
@@ -451,11 +452,11 @@ public class MultiModePlayFragment extends Fragment {
 
         if (ActivityCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1000);
+            ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1001);
         }
         if (ActivityCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1000);
+            ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1002);
         }
         Intent intent = new Intent(getContext(), BackGroundLocationService.class);
         intent.setAction(START_LOCATION_SERVICE);

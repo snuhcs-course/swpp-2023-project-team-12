@@ -24,6 +24,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.runusandroid.AccountApi;
+import com.example.runusandroid.ActivityRecognition.RunningState;
 import com.example.runusandroid.ImageResponse;
 import com.example.runusandroid.LoginActivity;
 import com.example.runusandroid.MainActivity2;
@@ -126,9 +127,9 @@ public class UserSettingFragment extends Fragment {
             @Override
             public void onClick(View v) {
 
-                String activityType = mainActivity.activityReceiver.getLastActivityType();
-                String transitionType = mainActivity.activityReceiver.getLastTransitionType();
-                boolean isRunning = mainActivity.activityReceiver.getIsRunning();
+                String activityType = RunningState.getLastActivityType();
+                String transitionType = RunningState.getLastTransitionType();
+                boolean isRunning = RunningState.getIsRunning();
 
                 Toast.makeText(mainActivity, "last state:" + transitionType + " " + activityType + " " + isRunning,
                         Toast.LENGTH_LONG).show();
