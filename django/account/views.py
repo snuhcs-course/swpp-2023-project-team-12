@@ -1,10 +1,14 @@
 import random
 import secrets
 import string
+import json
+from datetime import datetime, timedelta
+from django.http import JsonResponse
 from venv import logger
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from account.models import CustomUser
+from history.models import history_record, group_history_record
 from .serializers import (
     EmailSerializer,
     ResetPasswordSerializer,
@@ -30,6 +34,7 @@ class SignupView(APIView):
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
+        print(serializer)
         if serializer.is_valid():
             user = serializer.save()
             return Response({"name": user.username}, status=201)
@@ -46,7 +51,7 @@ class LoginView(APIView):
         token = TokenObtainPairSerializer.get_token(user)
         refresh_token = str(token)
         access_token = str(token.access_token)
-        if user.profile_image and user.profile_image.name:
+        if user.profile_image and user.profile_image[0].name:
             profile_image_url = settings.MEDIA_URL + user.profile_image.name
         else:
             profile_image_url = settings.MEDIA_URL + "temp_profile.jpeg"
@@ -65,6 +70,7 @@ class LoginView(APIView):
                     "age": user.age,
                     "exp": user.exp,
                     "profile_image": profile_image_url if user.profile_image else None,
+                    "badge_collection": user.badge_collection,
                 },
                 "jwt_token": {
                     "access_token": access_token,
@@ -150,14 +156,15 @@ class ProfileImageView(APIView):
         logger.debug(f"Received data: {request.data}")
         user = request.user
         serializer = UserProfileImageSerializer(user, data=request.data)
-
         if serializer.is_valid():
             serializer.save()
             random_number = random.randint(1, 100000)
             updated_image_url = f"{request.build_absolute_uri(user.profile_image.url)}?v={random_number}"
-            logger.debug(f"updated_image_url: {updated_image_url}")
+            ##logger.debug(f"updated_image_url: {updated_image_url}")
+
             return Response(
                 {
+                    "badge_collection":user.badge_collection,
                     "message": "Profile Image Updated Successfully",
                     "imageUrl": updated_image_url,
                 },
@@ -173,6 +180,93 @@ class UserProfileView(APIView):
 
     def get(self, request, user_id=None):
         user = get_object_or_404(CustomUser, id=user_id) if user_id else request.user
-        logger.debug(f"send profile url: {user.profile_image.url}")
+        ##logger.debug(f"send profile url: {user.profile_image.url}")
         serializer = UserProfileSerializer(user, context={"request": request})
+
         return Response(serializer.data)
+    
+def processBadgeCollection(badge_collection, history_instance):
+    #return 1000000000 #for reset(testing)
+    if badge_collection % 10 != 1:
+        print("badge1")
+        history_instances = history_record.objects.filter(user_id = history_instance.user_id)
+        print("history count : ", len(history_instances))
+        if len(history_instances) >= 5:
+            badge_collection += 1
+    if ((int) (badge_collection/10)) % 10 != 1:
+        print("badge2")
+        if history_instance.is_group is True:
+            
+            group_history_list = group_history_record.objects.filter(id=history_instance.group_history_id)
+            print(group_history_list)
+            group_history_instance = None
+            if len(group_history_list) >= 1:
+                group_history_instance = group_history_list[0]
+                if group_history_instance.first_place_user_id == history_instance.user_id:
+                    badge_collection += 10
+
+    if ((int) (badge_collection/100)) % 10 != 1:
+        print("badge3")
+        history_instances = history_record.objects.filter(user_id = history_instance.user_id)
+        count = 0
+        for history in history_instances:
+            if history.is_mission_succeeded > 0:
+                count += 1
+
+        if count >= 5:
+            badge_collection += 100
+
+    if ((int) (badge_collection/1000)) % 10 != 1:
+        print("badge4")
+        history_instances = history_record.objects.filter(user_id = history_instance.user_id)
+        count = 0
+        current_date = history_instance.start_time.date()
+        print(current_date)
+        for i in range(4):
+            for history in history_instances:
+                if history.start_time.date() == current_date - timedelta(days=1):
+                    count += 1
+                    current_date = current_date - timedelta(days=1)
+                    print(current_date)
+                    break
+        if count >= 4: badge_collection += 1000
+    if ((int) (badge_collection/10000)) % 10 != 1:
+        print("badge5")
+        if history_instance.is_group is True:
+            group_history_list = group_history_record.objects.filter(first_place_user_id = history_instance.user_id)
+            if len(group_history_list) >= 10:
+                badge_collection += 10000
+    if ((int) (badge_collection/100000)) % 10 != 1:
+        print("badge6")
+
+        if history_instance.distance > 5: 
+            duration_seconds = history_instance.duration.total_seconds()
+            print(history_instance.duration)
+            print(duration_seconds)
+            if duration_seconds != 0:
+                avg_speed = history_instance.distance / (duration_seconds / 3600)
+            else: avg_speed = 0
+            if avg_speed > 12: badge_collection += 100000
+
+
+    if ((int) (badge_collection/1000000)) % 10 != 1:
+        print("badge7")
+
+        if history_instance.distance >= 21:
+            badge_collection += 1000000
+    if ((int) (badge_collection/10000000)) % 10 != 1:
+        print("badge8")
+
+        if history_instance.distance >= 42.195:
+            badge_collection += 10000000
+
+    if ((int) (badge_collection/100000000)) % 10 != 1:
+        print("badge9")
+
+        if history_instance.distance >= 42.195 and history_instance.is_group is True:
+            group_history_instance = group_history_record.objects.get(id=history_instance.group_history_id)
+            if group_history_instance.first_place_user_id == history_instance.user_id:
+                badge_collection += 100000000
+
+    print("return badge_collection :" , badge_collection)
+    return badge_collection

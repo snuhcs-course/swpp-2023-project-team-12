@@ -24,6 +24,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
             "height",
             "weight",
             "age",
+            
         ]
 
 
@@ -93,7 +94,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ["username", "profile_image_url"]
+        fields = ["username", "badge_collection", "profile_image_url"]
 
     def get_profile_image_url(self, obj):
         request = self.context.get("request")

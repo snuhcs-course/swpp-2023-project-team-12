@@ -2,7 +2,7 @@ from django.db import models
 from account.models import CustomUser
 
 # Create your models here.
-class history(models.Model):
+class history_record(models.Model):
   user_id = models.BigIntegerField(null=False)
   distance = models.FloatField(null=False, blank=False)
   duration = models.DurationField()
@@ -21,7 +21,7 @@ class history(models.Model):
   def __str__(self):
     return self.user_id
 
-class group_history(models.Model):
+class group_history_record(models.Model):
   roomname = models.TextField(null=False, blank=True)
   start_time = models.DateTimeField(null=False, blank=False)
   duration = models.DurationField()
