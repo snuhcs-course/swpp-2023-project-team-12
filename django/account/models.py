@@ -60,7 +60,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         upload_to="profile_images",
         max_length=500,
         default="profile_images/temp_profile.jpeg",
-    ),
+    )
     USERNAME_FIELD = "username"
 
     def __str__(self):
