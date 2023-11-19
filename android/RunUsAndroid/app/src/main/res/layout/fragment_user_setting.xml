@@ -1,66 +1,629 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     tools:context=".ui.user_setting.UserSettingFragment">
 
     <TextView
-        android:id="@+id/UserSettingTitle"
+        android:id="@+id/userSettingTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:fontFamily="@font/pretendardextrablod"
+        android:gravity="center"
+        android:padding="10dp"
+        android:text="마이 페이지"
+        android:textSize="30sp"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/profileImageHolderLayout"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_margin="15dp"
+        app:layout_constraintBottom_toTopOf="@+id/changeProfileImageButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/userSettingTitle"
+        app:layout_constraintVertical_bias="0.0">
+
+        <ImageView
+            android:id="@+id/profileImage"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center"
+            android:src="@drawable/profile_image_for_multi" />
+    </LinearLayout>
+
+
+    <ImageButton
+        android:id="@+id/changeProfileImageButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/circle_change_profile"
+        android:contentDescription="Click Me"
+        android:padding="10dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/profile_change_image"
+        app:layout_constraintBottom_toBottomOf="@id/profileImageHolderLayout"
+        app:layout_constraintRight_toRightOf="@id/profileImageHolderLayout" />
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/InfoText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        app:layout_constraintLeft_toRightOf="@id/profileImageHolderLayout"
+        app:layout_constraintTop_toBottomOf="@id/userSettingTitle">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <!-- 닉네임 텍스트 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="닉네임: "
+                android:textColor="#000000"
+                android:textSize="16sp" />
+
+            <!-- 김개통 텍스트 -->
+            <TextView
+                android:id="@+id/userNickname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="user"
+                android:textColor="#4AA570"
+                android:textSize="16sp" /> <!-- 예시로 텍스트 색상을 초록색으로 설정했습니다. 원하는 색상으로 변경해주세요. -->
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <!-- Level 텍스트 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" Level: "
+                android:textColor="#000000"
+                android:textSize="16sp" />
+
+            <!-- 10 텍스트 -->
+            <TextView
+                android:id="@+id/userLevel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1"
+                android:textColor="#000000"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+
+            <!-- Exp 텍스트 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" Exp: "
+                android:textColor="#000000"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/userExpPercent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0%"
+                android:textSize="16sp" />
+            <!-- Exp 텍스트 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="  ("
+                android:textColor="#000000"
+                android:textSize="16sp" />
+
+            <!-- 5000 텍스트 -->
+            <TextView
+                android:id="@+id/userExpPresent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="5000"
+                android:textColor="#000000"
+                android:textSize="16sp" />
+
+            <!-- / 텍스트 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" / "
+                android:textColor="#000000"
+                android:textSize="16sp" />
+
+            <!-- 10000 텍스트 -->
+            <TextView
+                android:id="@+id/userExpNext"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="10000"
+                android:textColor="#000000"
+                android:textSize="16sp" />
+
+            <!-- ) 텍스트 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=")"
+                android:textColor="#000000"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/userExpProgressbar"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:max="100"
+            android:progress="60"
+            android:progressDrawable="@drawable/seekbar_progress"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/gray_box" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/myBadgesTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/pretendardextrablod"
-        android:padding="10dp"
-        android:text="환경 설정"
-        android:textSize="30sp"
-        app:layout_constraintBottom_toTopOf="@id/TextUserName"
-        app:layout_constraintLeft_toLeftOf="@id/TextUserName"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/TextUserName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="20dp"
-        android:text="Welcome"
-        android:textAlignment="center"
-        android:textSize="20sp"
+        android:gravity="left"
+        android:padding="20dp"
+        android:text="나의 배지"
+        android:textColor="#494949"
+        android:textSize="25sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/UserSettingTitle" />
-
-    <ImageView
-        android:id="@+id/profileImage"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:src="@drawable/profile_image_for_multi"
-        app:layout_constraintBottom_toTopOf="@+id/changeProfileImageButton"
-        app:layout_constraintStart_toStartOf="@id/TextUserName"
-        app:layout_constraintTop_toBottomOf="@id/TextUserName" />
-
+        app:layout_constraintTop_toBottomOf="@id/InfoText" />
 
     <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/changeProfileImageButton"
+        android:id="@+id/testButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="33dp"
-        android:layout_marginTop="5dp"
-        android:background="@drawable/round_strokegreen_shape"
-        android:text="사진 변경"
-        app:layout_constraintLeft_toLeftOf="@id/profileImage"
-        app:layout_constraintTop_toBottomOf="@id/profileImage" />
-
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/LogoutBtn"
-        android:layout_width="375dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="200dp"
+        android:layout_marginRight="30dp"
         android:background="@drawable/round_shape_green"
         android:fontFamily="@font/pretendardregular"
+        android:gravity="center"
+        android:text="모두 보기"
+        android:textColor="#FFFFFF"
+        app:layout_constraintBottom_toTopOf="@+id/badgeScrollViewWrapperView"
+        app:layout_constraintRight_toLeftOf="@id/logoutBtn"
+        app:layout_constraintTop_toBottomOf="@+id/InfoText" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/logoutBtn"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="30dp"
+        android:background="@drawable/round_shape_red"
+        android:fontFamily="@font/pretendardregular"
+        android:gravity="center"
         android:text="로그아웃"
+        android:textColor="#FFFFFF"
+        app:layout_constraintBottom_toTopOf="@+id/badgeScrollViewWrapperView"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/InfoText" />
+
+    <LinearLayout
+        android:id="@+id/badgeScrollViewWrapperView"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/changeProfileImageButton" />
+        app:layout_constraintTop_toBottomOf="@id/myBadgesTitle">
+
+        <ScrollView
+            android:id="@+id/BadgeScrollView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/myBadgesTitle">
+
+            <LinearLayout
+                android:id="@+id/BadgeLinearLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/myBadgesTitle">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+
+                    <RelativeLayout
+                        android:id="@+id/firstBadgeLayout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <View
+                            android:id="@+id/firstBadgeBackgroundBottom"
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+                            android:layout_centerInParent="true"
+                            android:layout_margin="10dp"
+                            android:background="@drawable/badge_background_bottom"
+                            android:gravity="center" />
+
+                        <View
+                            android:layout_width="80dp"
+                            android:layout_height="80dp"
+                            android:layout_centerInParent="true"
+                            android:background="@drawable/badge_background_top" />
+
+                        <ImageView
+                            android:id="@+id/fiveGameClearImage"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerInParent="true"
+                            android:background="@drawable/badge_background_top"
+                            android:src="@drawable/padlock" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/firstBadgeBackgroundBottom"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="5dp"
+                            android:text="다섯번 완주" />
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:id="@+id/secondBadgeLayout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <View
+                            android:id="@+id/secondBadgeBackgroundBottom"
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+                            android:layout_centerInParent="true"
+                            android:layout_margin="10dp"
+                            android:background="@drawable/badge_background_bottom"
+                            android:gravity="center" />
+
+                        <View
+                            android:layout_width="80dp"
+                            android:layout_height="80dp"
+                            android:layout_centerInParent="true"
+                            android:background="@drawable/badge_background_top" />
+
+                        <ImageView
+                            android:id="@+id/firstGoldMedalImage"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerInParent="true"
+                            android:background="@drawable/badge_background_top"
+                            android:src="@drawable/padlock" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/secondBadgeBackgroundBottom"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="5dp"
+                            android:text="첫번째 금메달" />
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:id="@+id/thirdBadgeLayout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <View
+                            android:id="@+id/thirdBadgeBackgroundBottom"
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+                            android:layout_centerInParent="true"
+                            android:layout_margin="10dp"
+                            android:background="@drawable/badge_background_bottom"
+                            android:gravity="center" />
+
+                        <View
+                            android:layout_width="80dp"
+                            android:layout_height="80dp"
+                            android:layout_centerInParent="true"
+                            android:background="@drawable/badge_background_top" />
+
+                        <ImageView
+                            android:id="@+id/tenMissionsClearImage"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerInParent="true"
+                            android:background="@drawable/badge_background_top"
+                            android:src="@drawable/padlock" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/thirdBadgeBackgroundBottom"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="5dp"
+                            android:text="미션 열번 성공" />
+
+                    </RelativeLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+
+                    <RelativeLayout
+                        android:id="@+id/fourthBadgeLayout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <View
+                            android:id="@+id/fourthBadgeBackgroundBottom"
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+                            android:layout_centerInParent="true"
+                            android:layout_margin="10dp"
+                            android:background="@drawable/badge_background_bottom"
+                            android:gravity="center" />
+
+                        <View
+                            android:layout_width="80dp"
+                            android:layout_height="80dp"
+                            android:layout_centerInParent="true"
+                            android:background="@drawable/badge_background_top" />
+
+                        <ImageView
+                            android:id="@+id/steadyRunnerImage"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerInParent="true"
+                            android:background="@drawable/badge_background_top"
+                            android:src="@drawable/padlock" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/fourthBadgeBackgroundBottom"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="5dp"
+                            android:text="꾸준함의 상징" />
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:id="@+id/fifthBadgeLayout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <View
+                            android:id="@+id/fifthBadgeBackgroundBottom"
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+                            android:layout_centerInParent="true"
+                            android:layout_margin="10dp"
+                            android:background="@drawable/badge_background_bottom"
+                            android:gravity="center" />
+
+                        <View
+                            android:layout_width="80dp"
+                            android:layout_height="80dp"
+                            android:layout_centerInParent="true"
+                            android:background="@drawable/badge_background_top" />
+
+                        <ImageView
+                            android:id="@+id/tenGoldMedalImage"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerInParent="true"
+                            android:background="@drawable/badge_background_top"
+                            android:src="@drawable/padlock" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/fifthBadgeBackgroundBottom"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="5dp"
+                            android:text="열번째 금메달" />
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:id="@+id/sixthBadgeLayout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <View
+                            android:id="@+id/sixthBadgeBackgroundBottom"
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+                            android:layout_centerInParent="true"
+                            android:layout_margin="10dp"
+                            android:background="@drawable/badge_background_bottom"
+                            android:gravity="center" />
+
+                        <View
+                            android:layout_width="80dp"
+                            android:layout_height="80dp"
+                            android:layout_centerInParent="true"
+                            android:background="@drawable/badge_background_top" />
+
+                        <ImageView
+                            android:id="@+id/speedRunnerImage"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerInParent="true"
+                            android:background="@drawable/badge_background_top"
+                            android:src="@drawable/padlock" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/sixthBadgeBackgroundBottom"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="5dp"
+                            android:text="스피드 러너" />
+
+                    </RelativeLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+
+                    <RelativeLayout
+                        android:id="@+id/seventhBadgeLayout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <View
+                            android:id="@+id/seventhBadgeBackgroundBottom"
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+                            android:layout_centerInParent="true"
+                            android:layout_margin="10dp"
+                            android:background="@drawable/badge_background_bottom"
+                            android:gravity="center" />
+
+                        <View
+                            android:layout_width="80dp"
+                            android:layout_height="80dp"
+                            android:layout_centerInParent="true"
+                            android:background="@drawable/badge_background_top" />
+
+                        <ImageView
+                            android:id="@+id/halfMarathonerImage"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerInParent="true"
+                            android:background="@drawable/badge_background_top"
+                            android:src="@drawable/padlock" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/seventhBadgeBackgroundBottom"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="5dp"
+                            android:text="하프 마라토너" />
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:id="@+id/eighthBadgeLayout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <View
+                            android:id="@+id/eighthBadgeBackgroundBottom"
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+                            android:layout_centerInParent="true"
+                            android:layout_margin="10dp"
+                            android:background="@drawable/badge_background_bottom"
+                            android:gravity="center" />
+
+                        <View
+                            android:layout_width="80dp"
+                            android:layout_height="80dp"
+                            android:layout_centerInParent="true"
+                            android:background="@drawable/badge_background_top" />
+
+                        <ImageView
+                            android:id="@+id/marathonerImage"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerInParent="true"
+                            android:background="@drawable/badge_background_top"
+                            android:src="@drawable/padlock" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/eighthBadgeBackgroundBottom"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="5dp"
+                            android:text="마라토너" />
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:id="@+id/ninethBadgeLayout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <View
+                            android:id="@+id/ninethBadgeBackgroundBottom"
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+                            android:layout_centerInParent="true"
+                            android:layout_margin="10dp"
+                            android:background="@drawable/badge_background_bottom"
+                            android:gravity="center" />
+
+                        <View
+                            android:layout_width="80dp"
+                            android:layout_height="80dp"
+                            android:layout_centerInParent="true"
+                            android:background="@drawable/badge_background_top" />
+
+                        <ImageView
+                            android:id="@+id/marathonWinnerImage"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:layout_centerInParent="true"
+                            android:background="@drawable/badge_background_top"
+                            android:src="@drawable/padlock" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/ninethBadgeBackgroundBottom"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="5dp"
+                            android:text="마라톤 위너" />
+
+                    </RelativeLayout>
+                </LinearLayout>
+
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+
 
     <Button
         android:id="@+id/check"
@@ -69,6 +632,7 @@
         android:backgroundTint="#FFFFFF"
         android:text="check"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/badgeScrollViewWrapperView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

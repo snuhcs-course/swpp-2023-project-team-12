@@ -10,7 +10,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,11 +22,11 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.runusandroid.AccountApi;
+import com.example.runusandroid.ExpSystem;
 import com.example.runusandroid.ImageResponse;
 import com.example.runusandroid.LoginActivity;
 import com.example.runusandroid.MainActivity2;
@@ -47,34 +50,122 @@ public class UserSettingFragment extends Fragment {
 
     private static final int PICK_IMAGE_REQUEST = 1;
     MainActivity2 mainActivity;
+    TextView userNicknameTextView;
+    TextView userLevelTextView;
+    TextView userExpPercentTextView;
+    TextView userExpPresentTextView;
+    TextView userExpNextTextView;
+    ImageView fiveGameClearImageView;
+    ImageView firstGoldMedalImageView;
+    ImageView tenMissionsClearImageView;
+    ImageView steadyRunnerImageView;
+    ImageView tenGoldMedalImageImageView;
+    ImageView speedRunnerImageView;
+    ImageView halfMarathonerImageView;
+    ImageView marathonerImageView;
+    ImageView marathonWinnerImageView;
+    ProgressBar userExpProgressbar;
     private FragmentUserSettingBinding binding;
     private Uri imageUri;
     private ActivityResultLauncher<String> imagePickerLauncher;
 
+    private Button testButton;
+    private int badgeCollection;
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        UserSettingViewModel userSettingViewModel = new ViewModelProvider(this).get(UserSettingViewModel.class);
+        //UserSettingViewModel userSettingViewModel = new ViewModelProvider(this).get(UserSettingViewModel.class);
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
         String userName = sharedPreferences.getString("username", "");
+        int userLevel = sharedPreferences.getInt("level", 1);
+        String userLevelText = Integer.toString(userLevel);
+        int exp = sharedPreferences.getInt("exp", 0);
+        int presentExp = ExpSystem.getPresentExp(exp);
+        int nextExp = ExpSystem.getNextExp(userLevel);
+        String presentExpText = Integer.toString(presentExp);
+        String nextExpText = Integer.toString(nextExp);
+        int expPercentage = (presentExp * 100 / nextExp);
+
+        Log.d("expPercentage", Integer.toString(expPercentage));
+        String expPercentageText = Integer.toString(expPercentage);
+        badgeCollection = sharedPreferences.getInt("badge_collection", 1000000000);
+        Log.d("badge", Integer.toString(badgeCollection));
         String userId = String.valueOf(sharedPreferences.getLong("userid", 99999));
         binding = FragmentUserSettingBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         mainActivity = (MainActivity2) getActivity();
 
-        final TextView textView = binding.TextUserName;
-        userSettingViewModel.setText(userName + "님 환영해요!");
-        userSettingViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
+        //final TextView textView = binding.TextUserName;
+        //userSettingViewModel.setText(userName + "님 환영해요!");
+        //userSettingViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
 
-        AppCompatButton logoutButton = root.findViewById(R.id.LogoutBtn);
+        userNicknameTextView = binding.userNickname;
+        userLevelTextView = binding.userLevel;
+        userExpPercentTextView = binding.userExpPercent;
+        userExpPresentTextView = binding.userExpPresent;
+        userExpNextTextView = binding.userExpNext;
+        userExpProgressbar = binding.userExpProgressbar;
+        fiveGameClearImageView = binding.fiveGameClearImage;
+        firstGoldMedalImageView = binding.firstGoldMedalImage;
+        tenMissionsClearImageView = binding.tenMissionsClearImage;
+        steadyRunnerImageView = binding.steadyRunnerImage;
+        tenGoldMedalImageImageView = binding.tenGoldMedalImage;
+        speedRunnerImageView = binding.speedRunnerImage;
+        halfMarathonerImageView = binding.halfMarathonerImage;
+        marathonerImageView = binding.marathonerImage;
+        marathonWinnerImageView = binding.marathonWinnerImage;
+        testButton = binding.testButton;
+        testButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int tempBadgeCollection = 1111111111;
+                updateBadge(tempBadgeCollection);
+                // 1초 뒤에 다른 작업 수행
+                new android.os.Handler().postDelayed(
+                        new Runnable() {
+                            public void run() {
+                                updateBadge(badgeCollection);
+                            }
+                        },
+                        1000 // 1초 지연
+                );
+            }
+        });
+
+        AppCompatButton logoutButton = root.findViewById(R.id.logoutBtn);
 
         AccountApi accountApi = RetrofitClient.getClient().create(AccountApi.class);
 
         ImageView profileImageView = root.findViewById(R.id.profileImage);
 
+
+        userNicknameTextView.setText(userName);
+        userLevelTextView.setText(userLevelText);
+        if (userLevel < 10) {
+            userExpPercentTextView.setText(expPercentageText + "%");
+            userExpPresentTextView.setText(presentExpText);
+            userExpNextTextView.setText(nextExpText);
+            userExpProgressbar.setProgress(expPercentage);
+        } else {
+            userExpPercentTextView.setText("--");
+            userExpPresentTextView.setText("Max");
+            userExpNextTextView.setText("Max");
+            userExpProgressbar.setProgress(100);
+
+        }
+        updateBadge(badgeCollection);
+
+
         accountApi.getUserProfile(userId).enqueue(new Callback<UserProfileResponse>() {
             @Override
             public void onResponse(Call<UserProfileResponse> call, Response<UserProfileResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
+                    badgeCollection = response.body().getBadgeCollection();
+                    updateBadge(badgeCollection);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putInt("badge_collection", badgeCollection);
+                    Log.d("badgeFromServer", Integer.toString(badgeCollection));
+                    editor.apply();
                     String imageUrl = response.body().getProfileImageUrl();
                     Log.d("prfile", "profile=" + imageUrl);
                     Glide.with(UserSettingFragment.this)
@@ -104,7 +195,7 @@ public class UserSettingFragment extends Fragment {
                     }
                 });
 
-        AppCompatButton changeProfileImageButton = root.findViewById(R.id.changeProfileImageButton);
+        ImageButton changeProfileImageButton = root.findViewById(R.id.changeProfileImageButton);
         changeProfileImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -226,6 +317,62 @@ public class UserSettingFragment extends Fragment {
 
     private void updateProfileImageInView(String imageUrl) {
         Glide.with(this).load(imageUrl).into(binding.profileImage);
+    }
+
+    private void updateBadge(int badgeCollection) {
+        if (badgeCollection % 10 == 1) {
+            fiveGameClearImageView.setImageResource(R.drawable.five_game_clear_image);
+        } else {
+            fiveGameClearImageView.setImageResource(R.drawable.padlock);
+        }
+
+        if ((badgeCollection / 10) % 10 == 1) {
+            firstGoldMedalImageView.setImageResource(R.drawable.first_gold_medal_image);
+        } else {
+            firstGoldMedalImageView.setImageResource(R.drawable.padlock);
+        }
+
+        if ((badgeCollection / 100) % 10 == 1) {
+            tenMissionsClearImageView.setImageResource(R.drawable.ten_missions_clear_image);
+        } else {
+            tenMissionsClearImageView.setImageResource(R.drawable.padlock);
+        }
+
+        if ((badgeCollection / 1000) % 10 == 1) {
+            steadyRunnerImageView.setImageResource(R.drawable.steady_runner_image_view);
+        } else {
+            steadyRunnerImageView.setImageResource(R.drawable.padlock);
+        }
+
+        if ((badgeCollection / 10000) % 10 == 1) {
+            tenGoldMedalImageImageView.setImageResource(R.drawable.ten_gold_medal_image);
+        } else {
+            tenGoldMedalImageImageView.setImageResource(R.drawable.padlock);
+        }
+
+        if ((badgeCollection / 100000) % 10 == 1) {
+            speedRunnerImageView.setImageResource(R.drawable.speed_runner_image);
+        } else {
+            speedRunnerImageView.setImageResource(R.drawable.padlock);
+        }
+
+        if ((badgeCollection / 1000000) % 10 == 1) {
+            halfMarathonerImageView.setImageResource(R.drawable.half_marathoner_image);
+        } else {
+            halfMarathonerImageView.setImageResource(R.drawable.padlock);
+        }
+
+        if ((badgeCollection / 10000000) % 10 == 1) {
+            marathonerImageView.setImageResource(R.drawable.marathoner);
+        } else {
+            marathonerImageView.setImageResource(R.drawable.padlock);
+        }
+        if ((badgeCollection / 100000000) % 10 == 1) {
+            marathonWinnerImageView.setImageResource(R.drawable.marathon_winner_image);
+        } else {
+            marathonWinnerImageView.setImageResource(R.drawable.padlock);
+        }
+
     }
 
 }

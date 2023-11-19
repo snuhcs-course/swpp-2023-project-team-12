@@ -220,6 +220,7 @@ public class SingleModeFragment extends Fragment {
             }
         }
     };
+    private int updatedBadgeCollection;
     private int isMissionSucceeded = 0;
     private int mode = 0;
     private Interpreter tflite;
@@ -416,8 +417,8 @@ public class SingleModeFragment extends Fragment {
             setStandard();
         }
 
-        int goalHour = (int) goalTime/60;
-        int goalMinute = (int) goalTime%60;
+        int goalHour = (int) goalTime / 60;
+        int goalMinute = (int) goalTime % 60;
         nowGoalDistance = goalDistance;
         nowGoalTime = goalTime;
 
@@ -451,9 +452,9 @@ public class SingleModeFragment extends Fragment {
                     try {
                         String distanceText = s.toString();
                         nowGoalDistance = (float) Double.parseDouble(distanceText);
-                        if (((int)(nowGoalDistance*10))/10f != nowGoalDistance){
-                            Log.e("TEXT", String.valueOf(nowGoalDistance)+ " / "+ String.valueOf(Math.round(nowGoalDistance*10)/10f));
-                            nowGoalDistance = ((int)(nowGoalDistance*10))/10f;
+                        if (((int) (nowGoalDistance * 10)) / 10f != nowGoalDistance) {
+                            Log.e("TEXT", nowGoalDistance + " / " + Math.round(nowGoalDistance * 10) / 10f);
+                            nowGoalDistance = ((int) (nowGoalDistance * 10)) / 10f;
                             textDistance.setText(String.valueOf(nowGoalDistance));
                         }
                         textDistance.setSelection(textDistance.getText().length());
@@ -490,15 +491,14 @@ public class SingleModeFragment extends Fragment {
                 if (s != null && !s.toString().equals("")) {
                     try {
                         String hourText = s.toString();
-                        int newHour =Integer.parseInt(hourText);
-                        nowGoalTime = newHour*60+Integer.parseInt(textMinute.getText().toString());
+                        int newHour = Integer.parseInt(hourText);
+                        nowGoalTime = newHour * 60 + Integer.parseInt(textMinute.getText().toString());
                     } catch (NumberFormatException e) {
                         String distanceText = s.toString();
                         Log.e("editText check", distanceText);
                         e.printStackTrace();
                     }
-                }
-                else {
+                } else {
                     int new_time = 0;
                     nowGoalTime = new_time;
                 }
@@ -526,20 +526,19 @@ public class SingleModeFragment extends Fragment {
                 if (s != null && !s.toString().equals("")) {
                     try {
                         String minuteText = s.toString();
-                        int newMinute =Integer.parseInt(minuteText);
-                        if (newMinute>59) {
+                        int newMinute = Integer.parseInt(minuteText);
+                        if (newMinute > 59) {
                             newMinute = 59;
                             textMinute.setText("59");
                             textMinute.setSelection(2);
                         }
-                        nowGoalTime = Integer.parseInt(textHour.getText().toString())*60+newMinute;
+                        nowGoalTime = Integer.parseInt(textHour.getText().toString()) * 60 + newMinute;
                     } catch (NumberFormatException e) {
                         String distanceText = s.toString();
                         Log.e("editText check", distanceText);
                         e.printStackTrace();
                     }
-                }
-                else {
+                } else {
                     int new_time = 0;
                     nowGoalTime = new_time;
                 }
@@ -586,32 +585,29 @@ public class SingleModeFragment extends Fragment {
         boolean enoughHistory = modelInput[4][2] != 0;
         if (!enoughHistory) {
             setStandard();
-            nowGoalDistance = goalDistance*1.5f;
-        }
-        else{
+            nowGoalDistance = goalDistance * 1.5f;
+        } else {
             float max_distance = 0;
-            for (int i=0; i<modelInput.length; i++){
-                float tmp_distance = modelInput[i][0]*7.019781e+00f+1.207809e+01f;
-                if(tmp_distance>max_distance){
+            for (int i = 0; i < modelInput.length; i++) {
+                float tmp_distance = modelInput[i][0] * 7.019781e+00f + 1.207809e+01f;
+                if (tmp_distance > max_distance) {
                     max_distance = tmp_distance;
                 }
             }
-            nowGoalDistance = goalDistance*1.5f;
-            if (nowGoalDistance >2*max_distance){
-                nowGoalDistance  = goalDistance *0.6f + max_distance*0.4f;
-            }
-            else if (nowGoalDistance <max_distance){
-                nowGoalDistance  = max_distance * 1.2f;
+            nowGoalDistance = goalDistance * 1.5f;
+            if (nowGoalDistance > 2 * max_distance) {
+                nowGoalDistance = goalDistance * 0.6f + max_distance * 0.4f;
+            } else if (nowGoalDistance < max_distance) {
+                nowGoalDistance = max_distance * 1.2f;
             }
         }
-
 
 
         SeekBar distanceSeekBar = dialogView.findViewById(R.id.distanceSeekBar);
         Button buttonConfirm = dialogView.findViewById(R.id.buttonConfirm);
         ImageButton buttonClose = dialogView.findViewById(R.id.buttonClose);
         TextView distanceTextView = dialogView.findViewById(R.id.textViewGoalDistance);
-        distanceTextView.setText("목표 거리   "+floatTo1stDecimal(nowGoalDistance) + "km");
+        distanceTextView.setText("목표 거리   " + floatTo1stDecimal(nowGoalDistance) + "km");
 
         buttonClose.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -631,15 +627,15 @@ public class SingleModeFragment extends Fragment {
             }
         });
 
-        final float revise_distance = Math.round(nowGoalDistance/2f) / 10f;
+        final float revise_distance = Math.round(nowGoalDistance / 2f) / 10f;
         float fixed_distance = nowGoalDistance;
 
         distanceSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-                nowGoalDistance = fixed_distance + (progress-4)*revise_distance;
-                distanceTextView.setText("목표 거리   "+String.format(floatTo1stDecimal(nowGoalDistance)) + "km");
+                nowGoalDistance = fixed_distance + (progress - 4) * revise_distance;
+                distanceTextView.setText("목표 거리   " + String.format(floatTo1stDecimal(nowGoalDistance)) + "km");
 
             }
 
@@ -651,7 +647,6 @@ public class SingleModeFragment extends Fragment {
             public void onStopTrackingTouch(SeekBar seekBar) {
             }
         });
-
 
 
         dialog.show();
@@ -679,8 +674,7 @@ public class SingleModeFragment extends Fragment {
             setStandard();
             nowGoalDistance = goalDistance;
             missionInfo.setText("5회 러닝 전에는 " + nickname + "님과 비슷한 그룹의 \n평균 러닝이 추천돼요!");
-        }
-        else{
+        } else {
             nowGoalDistance = goalDistance;
             float lastDistance = modelInput[0][1] * 7.019781e+00f + 1.207809e+01f;
             float lastTime = modelInput[0][2] * 6.457635e-01f + 1.156572e+00f;
@@ -698,13 +692,12 @@ public class SingleModeFragment extends Fragment {
         dialog.show();
 
 
-
         Button buttonConfirm = dialogView.findViewById(R.id.buttonConfirm);
 
         SeekBar distanceSeekBar = dialogView.findViewById(R.id.distanceSeekBar);
         TextView distanceTextView = dialogView.findViewById(R.id.textViewGoalDistance);
 
-        distanceTextView.setText("목표 거리   "+floatTo1stDecimal(nowGoalDistance) + "km");
+        distanceTextView.setText("목표 거리   " + floatTo1stDecimal(nowGoalDistance) + "km");
 
         SeekBar timeSeekBar = dialogView.findViewById(R.id.timeSeekBar);
         TextView timeTextView = dialogView.findViewById(R.id.textViewGoalTime);
@@ -721,17 +714,17 @@ public class SingleModeFragment extends Fragment {
             }
         });
 
-        final float revise_distance = Math.round(nowGoalDistance/2f) / 10f;
+        final float revise_distance = Math.round(nowGoalDistance / 2f) / 10f;
         final float fixed_distance = nowGoalDistance;
-        final float revise_time = (int) (Math.round(nowGoalTime) / 20.0f) + ((int)(Math.round(nowGoalTime) / 20.0f)==0?1:0);
+        final float revise_time = (int) (Math.round(nowGoalTime) / 20.0f) + ((int) (Math.round(nowGoalTime) / 20.0f) == 0 ? 1 : 0);
 
         distanceSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-                nowGoalDistance = fixed_distance + (progress-4)*revise_distance;
-                Log.e("Revise", "original distance : "+fixed_distance+", revise : "+revise_distance);
-                distanceTextView.setText("목표 거리   "+String.format(floatTo1stDecimal(nowGoalDistance)) + "km");
+                nowGoalDistance = fixed_distance + (progress - 4) * revise_distance;
+                Log.e("Revise", "original distance : " + fixed_distance + ", revise : " + revise_distance);
+                distanceTextView.setText("목표 거리   " + String.format(floatTo1stDecimal(nowGoalDistance)) + "km");
 
             }
 
@@ -747,8 +740,8 @@ public class SingleModeFragment extends Fragment {
         timeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                nowGoalTime = goalTime + (progress-4)*revise_time;
-                timeTextView.setText("목표 시간   "+String.valueOf((int) (nowGoalTime)) + "분");
+                nowGoalTime = goalTime + (progress - 4) * revise_time;
+                timeTextView.setText("목표 시간   " + (int) (nowGoalTime) + "분");
             }
 
             @Override
@@ -942,7 +935,8 @@ public class SingleModeFragment extends Fragment {
         int exp = ExpSystem.getExp("single", distance, duration, isMissionSucceeded);
         HistoryData requestData = new HistoryData(userId, (float) distance, durationInSeconds,
                 true, startTimeString, finishTimeString, calories, false, maxSpeed, minSpeed,
-                calculateMedian(speedList), speedList, -1, isMissionSucceeded, 100000);
+                calculateMedian(speedList), speedList, -1, isMissionSucceeded, exp);
+
 
         historyApi.postHistoryData(requestData).enqueue(new Callback<ResponseBody>() {
             @Override
@@ -958,6 +952,9 @@ public class SingleModeFragment extends Fragment {
                         // "exp" 키의 값을 가져오기
                         JSONObject expObject = jsonObject.getJSONObject("exp");
                         updatedExp = expObject.getInt("exp");
+                        JSONObject updatedBadgeCollectionObject = jsonObject.getJSONObject("badge_collection");
+                        updatedBadgeCollection = updatedBadgeCollectionObject.getInt("badge_collection");
+
 
                     } catch (IOException e) {
                         throw new RuntimeException(e);
@@ -1143,6 +1140,7 @@ public class SingleModeFragment extends Fragment {
                 }
                 Bundle bundle = new Bundle();
                 bundle.putSerializable("updatedExp", updatedExp);
+                bundle.putSerializable("updatedBadgeCollection", updatedBadgeCollection);
                 bundle.putSerializable("goalDistance", goalDistance);
                 bundle.putSerializable("goalTime", goalTime);
                 bundle.putSerializable("currentDistance", distance);
@@ -1186,7 +1184,7 @@ public class SingleModeFragment extends Fragment {
         } else {
             METs = (2 * speed - 52f) / 27;
         }
-        if(METs<1){
+        if (METs < 1) {
             METs = 1f;
         }
         float calories = METs * 3.5f * weight * minute * 5f / 1000f;
@@ -1194,7 +1192,7 @@ public class SingleModeFragment extends Fragment {
         return calories;
     }
 
-    private String floatTo1stDecimal(float num){
+    private String floatTo1stDecimal(float num) {
         DecimalFormat decimalFormat = new DecimalFormat("#.#");
         return decimalFormat.format(num);
     }

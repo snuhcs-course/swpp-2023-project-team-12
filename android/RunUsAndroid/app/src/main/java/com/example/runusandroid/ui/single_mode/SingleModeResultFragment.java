@@ -83,6 +83,7 @@ public class SingleModeResultFragment extends Fragment {
     private long backButtonLastClickTime = 0;
 
     private int updatedExp;
+    private int updatedBadgeCollection;
 
 
     @Override
@@ -99,6 +100,7 @@ public class SingleModeResultFragment extends Fragment {
         speedList = (List<Float>) getArguments().getSerializable("userSpeedList");
         pathPoints = (List<LatLng>) getArguments().getSerializable("pathPointList");
         updatedExp = (int) getArguments().getSerializable("updatedExp");
+        updatedBadgeCollection = (int) getArguments().getSerializable("updatedBadgeCollection");
         if (pathPoints != null && pathPoints.size() != 0) {
             Log.d("mMapCheck", "lastpoint is not null");
             lastPoint = pathPoints.get(pathPoints.size() - 1);
@@ -130,6 +132,7 @@ public class SingleModeResultFragment extends Fragment {
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt("exp", updatedExp);
+        editor.putInt("badge_collection", updatedBadgeCollection);
         int pastLevel = sharedPreferences.getInt("level", -1);
         if (pastLevel < updatedLevel) {
             editor.putInt("level", updatedLevel);

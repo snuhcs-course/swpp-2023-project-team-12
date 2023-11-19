@@ -160,6 +160,7 @@ public class LoginActivity extends AppCompatActivity {
                                 int age = userObject.getInt("age");
                                 int exp = userObject.getInt("exp");
                                 int level = ExpSystem.getLevel(exp);
+                                int badge_collection = userObject.getInt("badge_collection");
                                 Log.d("exp", "user's exp is " + exp);
 
                                 String token = responseBody.getJSONObject("jwt_token").getString("access_token");
@@ -181,6 +182,7 @@ public class LoginActivity extends AppCompatActivity {
                                 editor.putInt("age", age);
                                 editor.putInt("exp", exp);
                                 editor.putInt("level", level);
+                                editor.putInt("badge_collection", badge_collection);
                                 editor.apply();
                                 Intent intent = new Intent(LoginActivity.this, MainActivity2.class);
                                 startActivity(intent);

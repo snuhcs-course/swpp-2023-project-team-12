@@ -65,6 +65,7 @@ public class MultiModeResultFragment extends Fragment {
     private long backButtonLastClickTime = 0;
     private TextView timeResultContentTextView;
     private int updatedExp;
+    private int updatedBadgeCollection;
 
     private void showExitResultDialog() {
         @SuppressLint("InflateParams")
@@ -111,9 +112,11 @@ public class MultiModeResultFragment extends Fragment {
             timeResultContentTextView = view.findViewById(R.id.time_present_content);
             dialog = new RecordDialog(requireContext()); // requireContext()를 사용하여 컨텍스트 가져옴
             updatedExp = (int) getArguments().getSerializable("updatedExp");
+            updatedBadgeCollection = (int) getArguments().getSerializable("updatedBadgeCollection");
             SharedPreferences sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putInt("exp", updatedExp);
+            editor.putInt("badge_collection", updatedBadgeCollection);
             int updatedLevel = ExpSystem.getLevel(updatedExp);
             int pastLevel = sharedPreferences.getInt("level", -1);
             if (pastLevel < updatedLevel) {
