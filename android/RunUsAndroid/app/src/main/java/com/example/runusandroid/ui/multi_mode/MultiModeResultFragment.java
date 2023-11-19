@@ -16,7 +16,6 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
@@ -56,7 +55,6 @@ public class MultiModeResultFragment extends Fragment {
     TextView paceGoalContentTextView;
     MainActivity2 mainActivity;
     TextView timeGoalContentTextView;
-    ProgressBar progressBar;
     Button resultLeaveButton;
     Button recordButton;
     TextView distanceResultContentTextView; //API 사용해서 구한 나의 현재 이동 거리
@@ -125,7 +123,6 @@ public class MultiModeResultFragment extends Fragment {
             bronzeNickNameTextView = bronzeProfileBox.findViewById(R.id.multi_result_nickname);
             bronzeDistanceTextView = view.findViewById(R.id.thirdPlaceKm);
 
-            progressBar = view.findViewById(R.id.linear_progress_bar);
             resultLeaveButton = view.findViewById(R.id.result_leaveButton);
             distanceResultContentTextView = view.findViewById(R.id.distance_present_content);
             timeResultContentTextView = view.findViewById(R.id.time_present_content);
