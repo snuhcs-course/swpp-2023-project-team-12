@@ -67,6 +67,8 @@ public class MultiModeResultFragment extends Fragment {
     private ImageView goldProfileImageView, silverProfileImageView, bronzeProfileImageView;
     private TextView goldLevelTextView, silverLevelTextView, bronzeLevelTextView;
     private TextView goldNickNameTextView, silverNickNameTextView, bronzeNickNameTextView;
+
+    private TextView goldDistanceTextView, silverDistanceTextView, bronzeDistanceTextView;
     private long resultLeaveButtonLastClickTime = 0;
     private long backButtonLastClickTime = 0;
     private TextView timeResultContentTextView;
@@ -109,16 +111,19 @@ public class MultiModeResultFragment extends Fragment {
             goldProfileImageView = goldProfileBox.findViewById(R.id.multi_result_profile);
             goldLevelTextView = goldProfileBox.findViewById(R.id.multi_result_level);
             goldNickNameTextView = goldProfileBox.findViewById(R.id.multi_result_nickname);
+            goldDistanceTextView = view.findViewById(R.id.firstPlaceKm);
 
             View silverProfileBox = view.findViewById(R.id.secondPlaceProfileBox);
             silverProfileImageView = silverProfileBox.findViewById(R.id.multi_result_profile);
             silverLevelTextView = silverProfileBox.findViewById(R.id.multi_result_level);
             silverNickNameTextView = silverProfileBox.findViewById(R.id.multi_result_nickname);
+            silverDistanceTextView = view.findViewById(R.id.secondPlaceKm);
 
             View bronzeProfileBox = view.findViewById(R.id.thirdPlaceProfileBox);
             bronzeProfileImageView = bronzeProfileBox.findViewById(R.id.multi_result_profile);
             bronzeLevelTextView = bronzeProfileBox.findViewById(R.id.multi_result_level);
             bronzeNickNameTextView = bronzeProfileBox.findViewById(R.id.multi_result_nickname);
+            bronzeDistanceTextView = view.findViewById(R.id.thirdPlaceKm);
 
             progressBar = view.findViewById(R.id.linear_progress_bar);
             resultLeaveButton = view.findViewById(R.id.result_leaveButton);
@@ -195,6 +200,8 @@ public class MultiModeResultFragment extends Fragment {
         if (userDistances.length >= 1) {
             goldNickNameTextView.setText(userDistances[0].getUser().getNickName());
             goldLevelTextView.setText("Lv. " + userDistances[0].getUser().getLevel());
+            String goldDistanceString = String.format("%.2fkm", userDistances[0].getDistance());
+            goldDistanceTextView.setText(goldDistanceString);
             accountApi.getUserProfile(String.valueOf(userDistances[0].getUser().getId())).enqueue(new Callback<UserProfileResponse>() {
                 @Override
                 public void onResponse(Call<UserProfileResponse> call, Response<UserProfileResponse> response) {
@@ -222,6 +229,8 @@ public class MultiModeResultFragment extends Fragment {
             if (userDistances.length >= 2) {
                 silverNickNameTextView.setText(userDistances[1].getUser().getNickName());
                 silverLevelTextView.setText("Lv. " + userDistances[1].getUser().getLevel());
+                String silverDistanceString = String.format("%.2fkm", userDistances[1].getDistance());
+                silverDistanceTextView.setText(silverDistanceString);
                 accountApi.getUserProfile(String.valueOf(userDistances[1].getUser().getId())).enqueue(new Callback<UserProfileResponse>() {
                     @Override
                     public void onResponse(Call<UserProfileResponse> call, Response<UserProfileResponse> response) {
@@ -249,6 +258,8 @@ public class MultiModeResultFragment extends Fragment {
                 if (userDistances.length >= 3) {
                     bronzeNickNameTextView.setText(userDistances[2].getUser().getNickName());
                     bronzeLevelTextView.setText("Lv. " + userDistances[2].getUser().getLevel());
+                    String bronzeDistanceString = String.format("%.2fkm", userDistances[2].getDistance());
+                    bronzeDistanceTextView.setText(bronzeDistanceString);
                     accountApi.getUserProfile(String.valueOf(userDistances[2].getUser().getId())).enqueue(new Callback<UserProfileResponse>() {
                         @Override
                         public void onResponse(Call<UserProfileResponse> call, Response<UserProfileResponse> response) {
