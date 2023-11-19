@@ -145,6 +145,7 @@ public class MultiModePlayFragment extends Fragment {
                 Location location = new Location("");
                 location.setLatitude(latitude);
                 location.setLongitude(longitude);
+                int lastDistanceInt = (int) distance;
 
                 // Update UI (draw line, zoom in)
                 if (mMap != null) {
@@ -154,7 +155,55 @@ public class MultiModePlayFragment extends Fragment {
                         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 20));
                     }
                 }
-                lastLocation = location;
+
+                // get distance
+                if (newPoint != null) {
+                    // first few points might be noisy
+                    if (pathPoints.size() > 5 && mainActivity.activityReceiver.getIsRunning()) {
+                        Location lastLocation = new Location("");
+                        lastLocation.setLatitude(pathPoints.get(pathPoints.size() - 2).latitude);
+                        lastLocation.setLongitude(pathPoints.get(pathPoints.size() - 2).longitude);
+                        // unit : meter -> kilometer
+                        double last_distance_5s_kilometer = location.distanceTo(lastLocation) / (double) 1000;
+
+                        distance += last_distance_5s_kilometer;
+                        //Log.d("test:distance:5sec", "Last 5 second Distance :" + location.distanceTo(lastLocation) / (double) 1000);
+                        if (last_distance_5s_kilometer != 0) {
+                            int paceMinute = (int) (1 / (last_distance_5s_kilometer / 5)) / 60;
+                            int paceSecond = (int) (1 / (last_distance_5s_kilometer / 5)) % 60;
+                            if (paceMinute <= 30) {
+                                String paceString = String.format("%02d'%02d\"", paceMinute, paceSecond);
+                                pacePresentContentTextView.setText(paceString);
+                            } else {
+                                String paceString = "--'--\"";
+                                pacePresentContentTextView.setText(paceString);
+                            }
+                        } else {
+                            String paceString = "--'--\"";
+                            pacePresentContentTextView.setText(paceString);
+                        }
+
+                        // log distance into file
+                        //FileLogger.logToFileAndLogcat(mainActivity, "test:distance:5sec", "" + location.distanceTo(lastLocation) / (double) 1000);
+                        //Below code seems to cause NullPointerException after 10 minutes or so (on Duration.between)
+                        if ((int) distance != lastDistanceInt) {
+                            LocalDateTime currentTime = LocalDateTime.now();
+                            Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
+                            long secondsDuration = iterationDuration.getSeconds();
+                            float newPace = (float) (1.0 / (secondsDuration / 3600.0));
+                            if (newPace > maxSpeed)
+                                maxSpeed = newPace;
+                            if (newPace < minSpeed)
+                                minSpeed = newPace;
+                            speedList.add(newPace);
+                            iterationStartTime = currentTime;
+
+                        }
+                        //Log.d("test:distance:total", "Distance:" + distance);
+                    }
+                }
+                distancePresentContentTextView.setText(String.format(Locale.getDefault(), "%.2f" + "km", distance));
+                //lastLocation = location;
             }
         }
     };
@@ -438,6 +487,10 @@ public class MultiModePlayFragment extends Fragment {
         if (remainTimeHandler != null && remainTimeRunnable != null) {
             remainTimeHandler.removeCallbacks(remainTimeRunnable);
         }
+        Intent intent = new Intent(getContext(), BackGroundLocationService.class);
+        intent.setAction(STOP_LOCATION_SERVICE);
+        getActivity().startForegroundService(intent);
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(locationReceiver);
     }
 
     void saveHistoryData(long groupHistoryId) throws JSONException {
