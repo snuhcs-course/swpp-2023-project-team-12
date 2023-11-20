@@ -2,7 +2,7 @@
 
 # RunUs
 
-It is a learning support app with single mode, multimode, and various functions.
+It is a running support app with single mode, multimode, and various functions.
 
 ## Features
 
