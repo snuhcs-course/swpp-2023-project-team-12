@@ -114,23 +114,23 @@ public class UserSettingFragment extends Fragment {
         halfMarathonerImageView = binding.halfMarathonerImage;
         marathonerImageView = binding.marathonerImage;
         marathonWinnerImageView = binding.marathonWinnerImage;
-        testButton = binding.testButton;
-        testButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int tempBadgeCollection = 1111111111;
-                updateBadge(tempBadgeCollection);
-                // 1초 뒤에 다른 작업 수행
-                new android.os.Handler().postDelayed(
-                        new Runnable() {
-                            public void run() {
-                                updateBadge(badgeCollection);
-                            }
-                        },
-                        1000 // 1초 지연
-                );
-            }
-        });
+        //testButton = binding.testButton;
+//        testButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                int tempBadgeCollection = 1111111111;
+//                updateBadge(tempBadgeCollection);
+//                // 1초 뒤에 다른 작업 수행
+//                new android.os.Handler().postDelayed(
+//                        new Runnable() {
+//                            public void run() {
+//                                updateBadge(badgeCollection);
+//                            }
+//                        },
+//                        1000 // 1초 지연
+//                );
+//            }
+//        });
 
         AppCompatButton logoutButton = root.findViewById(R.id.logoutBtn);
 

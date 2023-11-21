@@ -535,7 +535,7 @@ public class MultiModePlayFragment extends Fragment {
         }
         int exp = ExpSystem.getExp("multi", distance, selectedRoom.getDuration(), place);
         HistoryData requestData = new HistoryData(user.getId(), distance, durationInSeconds,
-                true, startTimeString, finishTimeString, calories, true, maxSpeed, minSpeed, calculateMedian(speedList), speedList, groupHistoryId, 0, 200000);
+                true, startTimeString, finishTimeString, calories, true, maxSpeed, minSpeed, calculateMedian(speedList), speedList, groupHistoryId, 0, exp);
 
         historyApi.postHistoryData(requestData).enqueue(new Callback<ResponseBody>() {
             @Override
