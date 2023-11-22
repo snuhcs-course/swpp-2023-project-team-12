@@ -38,9 +38,9 @@
         android:id="@+id/viewPager"
         android:layout_width="0dp"
         android:layout_height="400dp"
+        app:layout_constraintBottom_toTopOf="@id/runningRecordCard"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/runningRecordCard"
         app:layout_constraintTop_toBottomOf="@id/announcementText" />
 
     <TextView
@@ -49,7 +49,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:fontFamily="@font/pretendardregular"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="@id/viewPager"
         app:layout_constraintEnd_toEndOf="@id/viewPager" />
