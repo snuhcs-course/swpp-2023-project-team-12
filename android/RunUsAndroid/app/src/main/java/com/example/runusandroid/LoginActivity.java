@@ -55,10 +55,6 @@ public class LoginActivity extends AppCompatActivity {
         String signUpText = "회원가입";
         SpannableString spannableString = new SpannableString(text + signUpText);
 
-        // 회원가입 부분에 색상 적용
-        ForegroundColorSpan colorSpan = new ForegroundColorSpan(Color.parseColor("#4AA570"));
-        spannableString.setSpan(colorSpan, text.length(), text.length() + signUpText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
         // 회원가입 부분에 클릭 이벤트 적용
         ClickableSpan clickableSpanforSignUp = new ClickableSpan() {
             @Override
@@ -71,9 +67,11 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void updateDrawState(@NonNull TextPaint ds) {
                 super.updateDrawState(ds);
+                ds.setColor(Color.parseColor("#4AA570"));
             }
         };
-        spannableString.setSpan(clickableSpanforSignUp, text.length(), text.length() + signUpText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        spannableString.setSpan(clickableSpanforSignUp, text.length(), text.length() + signUpText.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         signInMessage.setText(spannableString);
         signInMessage.setMovementMethod(LinkMovementMethod.getInstance());
@@ -168,7 +166,8 @@ public class LoginActivity extends AppCompatActivity {
                                 Log.d("exp", "user's exp is " + exp);
 
                                 String token = responseBody.getJSONObject("jwt_token").getString("access_token");
-                                String refreshToken = responseBody.getJSONObject("jwt_token").getString("refresh_token");
+                                String refreshToken = responseBody.getJSONObject("jwt_token")
+                                        .getString("refresh_token");
 
                                 setAuthToken(token);
                                 // 로그인 성공 시 SharePreferences에 유저 정보 및 토큰 저장
