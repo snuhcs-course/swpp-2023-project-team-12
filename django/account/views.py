@@ -55,7 +55,8 @@ class LoginView(APIView):
         token = TokenObtainPairSerializer.get_token(user)
         refresh_token = str(token)
         access_token = str(token.access_token)
-        if user.profile_image and user.profile_image[0].name:
+        print("user.profile_image is ", user.profile_image)
+        if user.profile_image and user.profile_image.name:
             profile_image_url = settings.MEDIA_URL + user.profile_image.name
         else:
             profile_image_url = settings.MEDIA_URL + "temp_profile.jpeg"

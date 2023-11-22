@@ -62,6 +62,7 @@
         android:id="@+id/confirmButton"
         android:layout_width="125dp"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/primary"
         android:fontFamily="@font/pretendardsemibold"
         android:text="입장"
         app:layout_constraintBottom_toBottomOf="@id/timeTextView"

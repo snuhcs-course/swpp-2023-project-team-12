@@ -1,28 +1,27 @@
-# SNU-SWPP-Template
+# SNU-SWPP-Team-12
 
-You can use the README file to showcase and promote your mobile app. The template provided below is just a starting point. Feel free to craft your README as you see fit. 
+# RunUs
 
-Please note that the README doesn't affect your grade and is not included in documentation(Wiki).
-
-# [Your Application Name]
-
-[Short application description here]
-
-![Application Screenshot](path_to_screenshot.png)
+It is a running support app with single mode, multimode, and various functions.
 
 ## Features
 
-- Feature 1: Brief description
-- Feature 2: Brief description
-- ...
+- Single mode: You can enjoy various mission and single running modes
+- Multi mode: You can also enjoy competitive multi mode with other people
+- History: You can manage and analyze your running history
+- Level: You have level
+- Badge: You can get badge if you complete various missions
+
+- Pictures will be offered later
 
 ## Getting Started
 
+Offer later
+
 ### Prerequisites
 
-- Android Studio [version, e.g., 4.2.1]
-- Minimum Android SDK Version [e.g., 21]
+Offer later
 
 ### Installation
 
-[Installation link here]
+Offer later

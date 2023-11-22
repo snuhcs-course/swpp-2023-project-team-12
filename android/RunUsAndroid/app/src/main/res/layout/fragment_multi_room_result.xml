@@ -4,161 +4,127 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/record_button"
-        android:layout_width="224dp"
-        android:layout_height="39dp"
+    <TextView
+        android:id="@+id/result_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:backgroundTint="@color/cardview_dark_background"
-        android:fontFamily="@font/pretendardregular"
-        android:gravity="center"
-        android:text="상세기록 확인"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
+        android:fontFamily="@font/pretendardextrablod"
+        android:text="경기 결과"
+        android:textSize="24sp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-
-    <View
-        android:id="@+id/gray_box"
-        android:layout_width="match_parent"
-        android:layout_height="360dp"
-        android:layout_marginTop="80dp"
-        android:background="#D9D9D9"
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/record_button"
+        android:layout_width="120dp"
+        android:layout_height="35dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/detail_result_button"
+        android:gravity="center"
+        android:text="상세 기록"
+        android:textColor="#4AA570"
+        android:textSize="16sp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@id/record_button" />
+        app:layout_constraintTop_toBottomOf="@+id/result_title" />
 
-    <ProgressBar
-        android:id="@+id/linear_progress_bar"
-        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-        android:layout_width="326dp"
+
+    <ImageView
+        android:id="@+id/podium"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
-        android:max="100"
-        android:progress="0"
-        android:progressDrawable="@drawable/seekbar_progress"
+        android:layout_marginBottom="20dp"
+        android:src="@drawable/podium"
+        app:layout_constraintBottom_toTopOf="@id/my_result_title"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@id/gray_box" />
+        app:layout_constraintRight_toRightOf="parent" />
 
-    <LinearLayout
-        android:id="@+id/top_3_view"
+    <TextView
+        android:id="@+id/firstPlaceKm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0km"
+        app:layout_constraintBottom_toTopOf="@id/items"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
+
+    <FrameLayout
+        android:id="@+id/items"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="120dp"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@id/gray_box">
+        app:layout_constraintBottom_toBottomOf="@id/podium"
+        app:layout_constraintEnd_toEndOf="@id/podium"
+        app:layout_constraintStart_toStartOf="@id/podium"
+        app:layout_constraintTop_toBottomOf="@+id/record_button">
 
-        <FrameLayout
-            android:layout_width="326dp"
-            android:layout_height="52dp"
-            android:layout_marginTop="10dp">
+        <TextView
+            android:id="@+id/secondPlaceKm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left|top"
+            android:layout_marginLeft="70dp"
+            android:layout_marginTop="30dp"
+            android:text="0km" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/round_shape_multi_room_play_gold" />
+        <TextView
+            android:id="@+id/thirdPlaceKm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right|top"
+            android:layout_marginTop="40dp"
+            android:layout_marginRight="65dp"
+            android:text="0km" />
 
-            <TextView
-                android:id="@+id/gold_nickname"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|start"
-                android:layout_marginLeft="100dp"
-                android:fontFamily="@font/pretendardregular"
-                android:text="-"
-                android:textColor="#FFFFFF" />
+        <include
+            android:id="@+id/secondPlaceProfileBox"
+            layout="@layout/multi_mode_result_user_profile"
+            android:layout_width="90dp"
+            android:layout_height="120dp"
+            android:layout_gravity="left|bottom"
+            android:layout_marginLeft="40dp"
+            android:layout_marginBottom="40dp" />
 
-            <TextView
-                android:id="@+id/gold_distance"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|end"
-                android:layout_marginRight="50dp"
-                android:fontFamily="@font/pretendardregular"
-                android:text="-"
-                android:textColor="#FFFFFF" />
-        </FrameLayout>
+        <include
+            android:id="@+id/firstPlaceProfileBox"
+            layout="@layout/multi_mode_result_user_profile"
+            android:layout_width="90dp"
+            android:layout_height="120dp"
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_marginBottom="90dp" />
 
-        <FrameLayout
-            android:layout_width="326dp"
-            android:layout_height="52dp"
-            android:layout_marginTop="10dp">
+        <include
+            android:id="@+id/thirdPlaceProfileBox"
+            layout="@layout/multi_mode_result_user_profile"
+            android:layout_width="90dp"
+            android:layout_height="120dp"
+            android:layout_gravity="right|bottom"
+            android:layout_marginRight="35dp"
+            android:layout_marginBottom="30dp" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/round_shape_multi_room_play_silver" />
+    </FrameLayout>
 
-
-            <TextView
-                android:id="@+id/silver_nickname"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|start"
-                android:layout_marginLeft="100dp"
-                android:fontFamily="@font/pretendardregular"
-                android:text="-"
-                android:textColor="#FFFFFF" />
-
-            <TextView
-                android:id="@+id/silver_distance"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|end"
-                android:layout_marginRight="50dp"
-                android:fontFamily="@font/pretendardregular"
-                android:text="-"
-                android:textColor="#FFFFFF" />
-        </FrameLayout>
-
-        <FrameLayout
-            android:layout_width="326dp"
-            android:layout_height="52dp"
-            android:layout_marginTop="10dp">
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/round_shape_multi_room_play_bronze" />
-
-            <TextView
-                android:id="@+id/bronze_nickname"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|start"
-                android:layout_marginLeft="100dp"
-                android:fontFamily="@font/pretendardregular"
-                android:text="-"
-                android:textColor="#FFFFFF" />
-
-            <TextView
-                android:id="@+id/bronze_distance"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|end"
-                android:layout_marginRight="50dp"
-                android:fontFamily="@font/pretendardregular"
-                android:text="-"
-                android:textColor="#FFFFFF" />
-        </FrameLayout>
-
-
-    </LinearLayout>
+    <TextView
+        android:id="@+id/my_result_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="30dp"
+        android:fontFamily="@font/pretendardextrablod"
+        android:text="나의 기록"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toTopOf="@id/present_box"
+        app:layout_constraintLeft_toLeftOf="parent" />
 
     <LinearLayout
         android:id="@+id/present_box"
         android:layout_width="match_parent"
         android:layout_height="80dp"
+        android:layout_marginBottom="30dp"
         android:gravity="center"
         android:orientation="horizontal"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/gray_box">
+        app:layout_constraintBottom_toTopOf="@id/result_leaveButton"
+        app:layout_constraintLeft_toLeftOf="parent">
 
         <LinearLayout
             android:id="@+id/distance_present_box"
@@ -222,8 +188,9 @@
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/result_leaveButton"
-        android:layout_width="112dp"
+        android:layout_width="150dp"
         android:layout_height="39dp"
+        android:layout_marginBottom="30dp"
         android:background="@drawable/leave_button"
         android:fontFamily="@font/pretendardregular"
         android:gravity="center"
@@ -231,10 +198,8 @@
         android:textColor="#FFFFFF"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintBottom_toTopOf="@navigation/mobile_navigation"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/present_box" />
+        app:layout_constraintRight_toRightOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

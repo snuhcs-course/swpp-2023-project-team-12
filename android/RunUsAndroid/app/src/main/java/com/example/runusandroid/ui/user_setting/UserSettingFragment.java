@@ -26,6 +26,7 @@ import androidx.fragment.app.Fragment;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.runusandroid.AccountApi;
+import com.example.runusandroid.ActivityRecognition.RunningState;
 import com.example.runusandroid.ExpSystem;
 import com.example.runusandroid.ImageResponse;
 import com.example.runusandroid.LoginActivity;
@@ -168,10 +169,7 @@ public class UserSettingFragment extends Fragment {
                     editor.apply();
                     String imageUrl = response.body().getProfileImageUrl();
                     Log.d("prfile", "profile=" + imageUrl);
-                    Glide.with(UserSettingFragment.this)
-                            .load(imageUrl).placeholder(R.drawable.runus_logo)
-                            .apply(RequestOptions.circleCropTransform())
-                            .into(profileImageView);
+                    updateProfileImageInView(imageUrl);
                 } else {
                     Glide.with(UserSettingFragment.this)
                             .load("").placeholder(R.drawable.runus_logo)
@@ -217,9 +215,9 @@ public class UserSettingFragment extends Fragment {
             @Override
             public void onClick(View v) {
 
-                String activityType = mainActivity.activityReceiver.getLastActivityType();
-                String transitionType = mainActivity.activityReceiver.getLastTransitionType();
-                boolean isRunning = mainActivity.activityReceiver.getIsRunning();
+                String activityType = RunningState.getLastActivityType();
+                String transitionType = RunningState.getLastTransitionType();
+                boolean isRunning = RunningState.getIsRunning();
 
                 Toast.makeText(mainActivity, "last state:" + transitionType + " " + activityType + " " + isRunning,
                         Toast.LENGTH_LONG).show();
@@ -316,7 +314,10 @@ public class UserSettingFragment extends Fragment {
     }
 
     private void updateProfileImageInView(String imageUrl) {
-        Glide.with(this).load(imageUrl).into(binding.profileImage);
+        Glide.with(UserSettingFragment.this)
+                .load(imageUrl).placeholder(R.drawable.runus_logo)
+                .apply(RequestOptions.circleCropTransform())
+                .into(binding.profileImage);
     }
 
     private void updateBadge(int badgeCollection) {

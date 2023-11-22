@@ -36,6 +36,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.example.runusandroid.AccountAPIFactory;
+import com.example.runusandroid.ActivityRecognition.RunningState;
 import com.example.runusandroid.ExpSystem;
 import com.example.runusandroid.GroupHistoryData;
 import com.example.runusandroid.HistoryApi;
@@ -47,7 +48,11 @@ import com.example.runusandroid.ui.single_mode.BackGroundLocationService;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -93,11 +98,17 @@ public class MultiModePlayFragment extends Fragment {
     TextView timeGoalContentTextView;
     TextView goldDistanceTextView;
     TextView goldNickNameTextView;
+
+    TextView goldLevelTextView;
     TextView silverDistanceTextView;
     TextView silverNickNameTextView;
+    TextView silverLevelTextView;
     TextView bronzeDistanceTextView;
     TextView bronzeNickNameTextView;
-    ProgressBar progressBar;
+    TextView bronzeLevelTextView;
+    ProgressBar firstRunnerProgressBar;
+    ProgressBar secondRunnerProgressBar;
+    ProgressBar thirdRunnerProgressBar;
     LocalDateTime gameStartTime;
     TextView distancePresentContentTextView; //API 사용해서 구한 나의 현재 이동 거리
     TextView pacePresentContentTextView; //API 사용해서 구한 나의 현재 페이스
@@ -108,11 +119,22 @@ public class MultiModePlayFragment extends Fragment {
     Handler sendDataHandler;
     Runnable sendDataRunnable;
     UserDistance[] userDistances;
+    private final Location lastLocation = null;
+    private Handler remainTimeHandler;
     private long playLeaveButtonLastClickTime = 0;
     private long backButtonLastClickTime = 0;
     private boolean userExit = false;
     private float minSpeed;
     private float maxSpeed;
+    private long secondsRemaining;
+    private int updatedExp;
+    private HistoryApi historyApi;
+    private TextView timePresentContentTextView;
+    private int isFinished;
+    private int groupHistoryId = 999;
+    private SendFinishedTask finishedTask;
+    private Runnable remainTimeRunnable;
+    private GoogleMap mMap;
     private final BroadcastReceiver locationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -120,17 +142,25 @@ public class MultiModePlayFragment extends Fragment {
                 double latitude = intent.getDoubleExtra("latitude", 0.0);
                 double longitude = intent.getDoubleExtra("longitude", 0.0);
                 LatLng newPoint = new LatLng(latitude, longitude);
-
                 pathPoints.add(newPoint);
                 Location location = new Location("");
                 location.setLatitude(latitude);
                 location.setLongitude(longitude);
                 int lastDistanceInt = (int) distance;
 
+                // Update UI (draw line, zoom in)
+                if (mMap != null) {
+                    mMap.clear(); // Remove previous polylines
+                    mMap.addPolyline(new PolylineOptions().addAll(pathPoints).color(Color.parseColor("#4AA570")).width(10));
+                    if (newPoint != null) {
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 20));
+                    }
+                }
+
                 // get distance
                 if (newPoint != null) {
                     // first few points might be noisy
-                    if (pathPoints.size() > 5 && mainActivity.activityReceiver.getIsRunning()) {
+                    if (pathPoints.size() > 5 && RunningState.getIsRunning()) {
                         Location lastLocation = new Location("");
                         lastLocation.setLatitude(pathPoints.get(pathPoints.size() - 2).latitude);
                         lastLocation.setLongitude(pathPoints.get(pathPoints.size() - 2).longitude);
@@ -172,20 +202,21 @@ public class MultiModePlayFragment extends Fragment {
                         }
                         //Log.d("test:distance:total", "Distance:" + distance);
                     }
-
                 }
                 distancePresentContentTextView.setText(String.format(Locale.getDefault(), "%.2f" + "km", distance));
+                //lastLocation = location;
             }
         }
     };
     private int updatedBadgeCollection;
-    private int updatedExp;
-    private float medianSpeed;
-    private HistoryApi historyApi;
-    private TextView timePresentContentTextView;
-    private int isFinished;
-    private int groupHistoryId = 999;
-    private SendFinishedTask finishedTask;
+//    private int updatedExp;
+//    private float medianSpeed;
+//    private HistoryApi historyApi;
+//    private TextView timePresentContentTextView;
+//    private int isFinished;
+//    private int groupHistoryId = 999;
+//    private SendFinishedTask finishedTask;
+
 
     private void showExitGameDialog() {
         @SuppressLint("InflateParams")
@@ -211,6 +242,7 @@ public class MultiModePlayFragment extends Fragment {
         gameStartTime = (LocalDateTime) getArguments().getSerializable("startTime");
         //경과 시간 업데이트
         timeHandler = new Handler(Looper.getMainLooper());
+        remainTimeHandler = new Handler(Looper.getMainLooper());
 
         // Runnable을 사용하여 매 초마다 시간 업데이트
         isFinished = 0;
@@ -263,46 +295,52 @@ public class MultiModePlayFragment extends Fragment {
 
 
         mainActivity = (MainActivity2) getActivity();
-        //locationRequest = LocationRequest.create();
-        //// TODO: let's find out which interval has best tradeoff
-        //locationRequest.setInterval(5000); // Update interval in milliseconds
-        //locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         maxSpeed = 0;
         minSpeed = 999;
         View view = inflater.inflate(R.layout.fragment_multi_room_play, container, false); //각종 view 선언
+        distancePresentContentTextView = view.findViewById(R.id.distance_present_content);
+        pacePresentContentTextView = view.findViewById(R.id.pace_present_content);
+        timeGoalContentTextView = view.findViewById(R.id.remain_time);
+        goldNickNameTextView = view.findViewById(R.id.first_runner_name);
+        goldLevelTextView = view.findViewById(R.id.first_runner_level);
+        goldDistanceTextView = view.findViewById(R.id.first_runner_km);
+        silverNickNameTextView = view.findViewById(R.id.second_runner_name);
+        silverLevelTextView = view.findViewById(R.id.second_runner_level);
+        silverDistanceTextView = view.findViewById(R.id.second_runner_km);
+        bronzeNickNameTextView = view.findViewById(R.id.third_runner_name);
+        bronzeLevelTextView = view.findViewById(R.id.third_runner_level);
+        bronzeDistanceTextView = view.findViewById(R.id.third_runner_km);
+
+        // ProgressBars
+        firstRunnerProgressBar = view.findViewById(R.id.first_runner_progress_bar);
+        secondRunnerProgressBar = view.findViewById(R.id.second_runner_progress_bar);
+        thirdRunnerProgressBar = view.findViewById(R.id.third_runner_progress_bar);
         if (selectedRoom != null) {
-            timeGoalContentTextView = view.findViewById(R.id.time_goal_content);
-            timePresentContentTextView = view.findViewById(R.id.time_present_content);
-            goldNickNameTextView = view.findViewById(R.id.gold_nickname);
-            goldDistanceTextView = view.findViewById(R.id.gold_distance);
-            silverNickNameTextView = view.findViewById(R.id.silver_nickname);
-            silverDistanceTextView = view.findViewById(R.id.silver_distance);
-            bronzeNickNameTextView = view.findViewById(R.id.bronze_nickname);
-            bronzeDistanceTextView = view.findViewById(R.id.bronze_distance);
+            timeGoalContentTextView = view.findViewById(R.id.remain_time);
             distancePresentContentTextView = view.findViewById(R.id.distance_present_content);
             pacePresentContentTextView = view.findViewById(R.id.pace_present_content);
-            progressBar = view.findViewById(R.id.linear_progress_bar);
             playLeaveButton = view.findViewById(R.id.play_leaveButton);
-            //목표 시간 계산하기 위한 코드
-            long secondsRemaining = selectedRoom.getDuration().getSeconds();
+            SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.multi_mode_map);
 
-            // 시간, 분으로 변환
-            long hours = secondsRemaining / 3600;
-            long minutes = (secondsRemaining % 3600) / 60;
-            long seconds = secondsRemaining % 60;
-            String formattedTime = String.format(Locale.getDefault(), "%02d:%02d:%02d",
-                    hours, minutes, seconds);
+            secondsRemaining = selectedRoom.getDuration().getSeconds(); // 목표 시간
 
-            timeGoalContentTextView.setText(formattedTime);
+            startRemainTimer();
 
+            mapFragment.getMapAsync(googleMap -> {
+                mMap = googleMap;
+                if (ActivityCompat.checkSelfPermission(mainActivity,
+                        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    mMap.setMyLocationEnabled(true);
+                }
+            });
         }
 
         // for debugging purpose, hidden button on right bottom corner shows toast about lastly detected activity transition and isRunning value
         Button hiddenButton = view.findViewById(R.id.hiddenButton);
         hiddenButton.setOnClickListener(v -> {
-            boolean isRunning = mainActivity.activityReceiver.getIsRunning();
-            String lastActivityType = mainActivity.activityReceiver.getLastActivityType();
-            String lastTransitionType = mainActivity.activityReceiver.getLastTransitionType();
+            boolean isRunning = RunningState.getIsRunning();
+            String lastActivityType = RunningState.getLastActivityType();
+            String lastTransitionType = RunningState.getLastTransitionType();
 
             Toast.makeText(mainActivity, "last detected : " + lastTransitionType + " " + lastActivityType +
                     " . isRunning " + isRunning, Toast.LENGTH_LONG).show();
@@ -315,84 +353,6 @@ public class MultiModePlayFragment extends Fragment {
             playLeaveButtonLastClickTime = SystemClock.elapsedRealtime();
             showExitGameDialog();
         });
-
-//        //TODO: only draw lines if running is started
-//        //TODO: doesn't update location when app is in background -> straight lines are drawn from the last location when app is opened again
-//        //TODO: lines are ugly and noisy -> need to filter out some points or smoothed
-//        locationCallback = new LocationCallback() {
-//            @Override
-//            public void onLocationResult(LocationResult locationResult) {
-//                if (locationResult != null) {
-//                    Location location = locationResult.getLastLocation();
-//                    LatLng newPoint = new LatLng(location.getLatitude(), location.getLongitude());
-//                    Log.d("debug:location", "location : " + location.getLongitude() + ", " + location.getLatitude());
-//                    pathPoints.add(newPoint);
-//
-//                    int lastDistanceInt = (int) distance;
-//                    // TODO: check calculate distance
-//                    if (newPoint != null) {
-//                        // first few points might be noisy && while activity is running (or walking)
-//                        if (pathPoints.size() > 5 && mainActivity.activityReceiver.getIsRunning()) {
-//                            Location lastLocation = new Location("");
-//                            lastLocation.setLatitude(pathPoints.get(pathPoints.size() - 2).latitude);
-//                            lastLocation.setLongitude(pathPoints.get(pathPoints.size() - 2).longitude);
-//
-//                            // unit : meter -> kilometer
-//                            double last_distance_5s_kilometer = location.distanceTo(lastLocation) / (double) 1000;
-//                            distance += last_distance_5s_kilometer;
-//
-//                            // double speed_average = distance / (double) (Duration.between(gameStartTime, LocalDateTime.now()).getSeconds() / 3600.0);
-//
-////                            if (speed_average > 0.1) {
-////                                Log.d("debug:distance", "last 5s distance (km) : " + last_distance_5s_kilometer + "");
-////                                Log.d("debug:speed", "average speed since start (km/h) : " + speed_average + "");
-////                                String paceString = String.format("%4.2f km/h", speed_average);
-////                                pacePresentContentTextView.setText(paceString);
-////                            } else {
-////                                String paceString = "--.-- km/h";
-////                                pacePresentContentTextView.setText(paceString);
-////                            }
-//
-//                            if (last_distance_5s_kilometer != 0) {
-//                                int paceMinute = (int) (1 / (last_distance_5s_kilometer / 5)) / 60;
-//                                int paceSecond = (int) (1 / (last_distance_5s_kilometer / 5)) % 60;
-//
-//                                if (paceMinute <= 30) {
-//                                    String paceString = String.format("%02d'%02d\"", paceMinute, paceSecond);
-//                                    pacePresentContentTextView.setText(paceString);
-//                                } else {
-//                                    String paceString = "--'--\"";
-//                                    pacePresentContentTextView.setText(paceString);
-//                                }
-//                            } else {
-//                                String paceString = "--'--\"";
-//                                pacePresentContentTextView.setText(paceString);
-//                            }
-//
-//
-//                            // pace unused for now
-////                            if ((int) distance != lastDistanceInt) {
-////                                LocalDateTime currentTime = LocalDateTime.now();
-////                                Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
-////                                long secondsDuration = iterationDuration.getSeconds();
-////                                float newPace = (float) (1.0 / (secondsDuration / 3600.0));
-////                                if (newPace > maxSpeed) maxSpeed = newPace;
-////                                if (newPace < minSpeed) minSpeed = newPace;
-////                                speedList.add(newPace);
-////                                iterationStartTime = currentTime;
-////
-////                            }
-//                        }
-//                    }
-//                    // update distance text
-//                    distancePresentContentTextView.setText(String.format(Locale.getDefault(), "%.2f" + "km", distance));
-//                    Log.d("debug:distance", "total distance : " + distance);
-//                }
-//            }
-//        };
-
-        //fusedLocationClient = LocationServices.getFusedLocationProviderClient(mainActivity);
-
 
         //5초마다 현재 이동 거리 전송
         sendDataHandler = new Handler(Looper.getMainLooper());
@@ -420,44 +380,62 @@ public class MultiModePlayFragment extends Fragment {
 
     }
 
-    public void updateTop3UserDistance(UserDistance[] userDistances) { // 화면에 표시되는 top3 유저 정보 업데이트. socketListenerThread에서 사용
-        UserDistance[] top3UserDistance = userDistances;
-        for (int i = 0; i < userDistances.length; i++) {
-            //Log.d("response", "In updateTop3UserDistance, top3user " + i + " : " + top3UserDistance[0].getUser().getNickName() + " , distance : " + userDistances[0].getDistance());
-            //Log.d("response", "In updateTop3UserDistance, user " + i + " : " + userDistances[0].getUser().getNickName() + " , distance : " + userDistances[0].getDistance());
+    public void updateTop3UserDistance(UserDistance[] userDistances) {
+        // 기본 설정: 모든 텍스트 뷰를 비웁니다.
+        goldNickNameTextView.setText("");
+        goldLevelTextView.setText("");
+        goldDistanceTextView.setText("");
+        silverNickNameTextView.setText("");
+        silverLevelTextView.setText("");
+        silverDistanceTextView.setText("");
+        bronzeNickNameTextView.setText("");
+        bronzeLevelTextView.setText("");
+        bronzeDistanceTextView.setText("");
+
+        // 기본 설정: 모든 프로그레스 바를 0으로 설정합니다.
+        firstRunnerProgressBar.setProgress(0);
+        secondRunnerProgressBar.setProgress(0);
+        thirdRunnerProgressBar.setProgress(0);
+
+        double firstDistance = 0, secondDistance = 0, thirdDistance = 0;
+
+        // 1등 사용자 정보 업데이트
+        if (userDistances.length >= 1) {
+            MultiModeUser firstUser = userDistances[0].getUser();
+            goldNickNameTextView.setText(firstUser.getNickName());
+            goldLevelTextView.setText("Lv. " + firstUser.getLevel());
+            firstDistance = userDistances[0].getDistance();
+            goldDistanceTextView.setText(String.format("%.2fkm", firstDistance));
+            firstRunnerProgressBar.setProgress(100); // 1등은 프로그레스 바를 항상 100%로 설정합니다.
         }
-        double goldDistance = 0;
 
-        if (top3UserDistance.length >= 1) {
-            goldNickNameTextView.setText(top3UserDistance[0].getUser().getNickName());
-            goldDistance = top3UserDistance[0].getDistance();
-            String goldDistanceString = String.format("%.2fkm", goldDistance);
-            goldDistanceTextView.setText(goldDistanceString);
-
-            if (top3UserDistance.length >= 2) {
-
-                silverNickNameTextView.setText(top3UserDistance[1].getUser().getNickName());
-                double silverDistance = top3UserDistance[1].getDistance();
-                String silverDistanceString = String.format("%.2fkm", silverDistance);
-                silverDistanceTextView.setText(silverDistanceString);
-
-                if (top3UserDistance.length >= 3) {
-
-                    bronzeNickNameTextView.setText(top3UserDistance[2].getUser().getNickName());
-                    double bronzeDistance = top3UserDistance[2].getDistance();
-                    String bronzeDistanceString = String.format("%.2fkm", bronzeDistance);
-                    bronzeDistanceTextView.setText(bronzeDistanceString);
-                }
+        // 2등 사용자 정보 업데이트
+        if (userDistances.length >= 2) {
+            MultiModeUser secondUser = userDistances[1].getUser();
+            silverNickNameTextView.setText(secondUser.getNickName());
+            silverLevelTextView.setText("Lv. " + secondUser.getLevel());
+            secondDistance = userDistances[1].getDistance();
+            silverDistanceTextView.setText(String.format("%.2fkm", secondDistance));
+            // 2등의 프로그레스 바는 1등 대비 상대적 비율로 설정합니다.
+            if (firstDistance > 0) {
+                secondRunnerProgressBar.setProgress((int) (secondDistance / firstDistance * 100));
             }
         }
 
-        int progress = 0;
-        if (goldDistance != 0) {
-            progress = (int) ((int) distance / goldDistance) * 100;
-        } else progress = 100;
-        progressBar.setProgress(progress);
-
+        // 3등 사용자 정보 업데이트
+        if (userDistances.length >= 3) {
+            MultiModeUser thirdUser = userDistances[2].getUser();
+            bronzeNickNameTextView.setText(thirdUser.getNickName());
+            bronzeLevelTextView.setText("Lv. " + thirdUser.getLevel());
+            thirdDistance = userDistances[2].getDistance();
+            bronzeDistanceTextView.setText(String.format("%.2fkm", thirdDistance));
+            // 3등의 프로그레스 바는 1등 대비 상대적 비율로 설정합니다.
+            if (firstDistance > 0) {
+                thirdRunnerProgressBar.setProgress((int) (thirdDistance / firstDistance * 100));
+            }
+        }
     }
+
 
     @Override
     public void onResume() {
@@ -483,11 +461,11 @@ public class MultiModePlayFragment extends Fragment {
 
         if (ActivityCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1000);
+            ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1001);
         }
         if (ActivityCompat.checkSelfPermission(mainActivity, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1000);
+            ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1002);
         }
         Intent intent = new Intent(getContext(), BackGroundLocationService.class);
         intent.setAction(START_LOCATION_SERVICE);
@@ -513,10 +491,16 @@ public class MultiModePlayFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // 타이머가 더 이상 필요하지 않을 때 핸들러를 제거합니다.
         timeHandler.removeCallbacks(timeRunnable);
         sendDataHandler.removeCallbacks(sendDataRunnable);
         backPressedCallBack.remove();
+        if (remainTimeHandler != null && remainTimeRunnable != null) {
+            remainTimeHandler.removeCallbacks(remainTimeRunnable);
+        }
+        Intent intent = new Intent(getContext(), BackGroundLocationService.class);
+        intent.setAction(STOP_LOCATION_SERVICE);
+        getActivity().startForegroundService(intent);
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(locationReceiver);
     }
 
     void saveHistoryData(long groupHistoryId) throws JSONException {
@@ -627,17 +611,14 @@ public class MultiModePlayFragment extends Fragment {
     }
 
     public float calculateMedian(List<Float> numbers) {
-        // 리스트를 정렬합니다.
         Collections.sort(numbers);
 
         int size = numbers.size();
         if (size == 0) return 0;
 
-        // 리스트의 크기가 홀수인 경우 중간값을 반환합니다.
         if (size % 2 == 1) {
             return numbers.get(size / 2);
         } else {
-            // 리스트의 크기가 짝수인 경우 중간 두 값을 더한 후 2로 나눈 값을 반환합니다.
             double middle1 = numbers.get((size - 1) / 2);
             double middle2 = numbers.get(size / 2);
             return (float) ((float) (middle1 + middle2) / 2.0);
@@ -677,6 +658,38 @@ public class MultiModePlayFragment extends Fragment {
         }
     }
 
+    public void startRemainTimer() {
+        remainTimeRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (secondsRemaining > 0) {
+                    secondsRemaining--;
+
+                    // 시간, 분, 초로 변환
+                    long hours = secondsRemaining / 3600;
+                    long minutes = (secondsRemaining % 3600) / 60;
+                    long seconds = secondsRemaining % 60;
+
+                    // 포맷에 맞게 문자열로 변환
+                    String formattedTime = String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds);
+
+                    // 텍스트 뷰 업데이트
+                    timeGoalContentTextView.setText(formattedTime);
+
+                    // 다음 초를 위해 다시 runnable을 post합니다.
+                    remainTimeHandler.postDelayed(this, 1000);
+                }
+            }
+        };
+
+        // Runnable 시작
+        remainTimeHandler.postDelayed(remainTimeRunnable, 1000);
+    }
+
+    public void stopRemainTimer() {
+        // 타이머 정지
+        remainTimeHandler.removeCallbacks(remainTimeRunnable);
+    }
 
     public class SendDistanceTask extends AsyncTask<Packet, Void, Boolean> { // 서버에 업데이트할 거리 정보 전송
         @Override
@@ -789,6 +802,9 @@ public class MultiModePlayFragment extends Fragment {
     }
 
     public class ExitGameTask extends AsyncTask<Packet, Void, Boolean> {
+        private final Handler handler = new Handler();
+        private Runnable runnable;
+
         @Override
         public Boolean doInBackground(Packet... packets) {
             boolean success = true;
@@ -821,6 +837,5 @@ public class MultiModePlayFragment extends Fragment {
                 Log.d("ExitSendPacket", "Failed to send packet!");
             }
         }
-
     }
 }
