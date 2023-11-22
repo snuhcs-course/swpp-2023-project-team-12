@@ -1,22 +1,22 @@
 from rest_framework import serializers
-from .models import history, group_history
+from .models import history_record, group_history_record
 
 
 class HistorySerializer(serializers.ModelSerializer):
     class Meta:
-        model = history
+        model = history_record
         fields = "__all__"
 
 
 class GroupHistorySerializer(serializers.ModelSerializer):
     class Meta:
-        model = group_history
+        model = group_history_record
         fields = "__all__"
 
 
 class RecentHistorySerializer(serializers.ModelSerializer):
     class Meta:
-        model = history
+        model = history_record
         fields = ("distance", "duration")
 
 

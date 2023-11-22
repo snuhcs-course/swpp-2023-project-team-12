@@ -91,6 +91,8 @@ public class Packet implements Serializable { //서버와 통신하기 위해 �
     public Packet(int protocol, List<UserDistance> lTop3UserDistances, int temp) {
         this.protocol = protocol;
         this.listTop3UserDistance = lTop3UserDistances;
+        this.groupHistoryId = temp;
+
     }
 
     public Packet(int protocol, MultiModeUser user, float distance) {

@@ -1,6 +1,7 @@
 package com.example.runusandroid;
 
-import static com.example.runusandroid.RetrofitClient.*;
+import static com.example.runusandroid.RetrofitClient.resetAuthToken;
+import static com.example.runusandroid.RetrofitClient.setAuthToken;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -162,6 +163,7 @@ public class LoginActivity extends AppCompatActivity {
                                 int age = userObject.getInt("age");
                                 int exp = userObject.getInt("exp");
                                 int level = ExpSystem.getLevel(exp);
+                                int badge_collection = userObject.getInt("badge_collection");
                                 long lastLoginTime = System.currentTimeMillis();
                                 Log.d("exp", "user's exp is " + exp);
 
@@ -186,6 +188,7 @@ public class LoginActivity extends AppCompatActivity {
                                 editor.putInt("age", age);
                                 editor.putInt("exp", exp);
                                 editor.putInt("level", level);
+                                editor.putInt("badge_collection", badge_collection);
                                 editor.putLong("lastLoginTime", lastLoginTime);
                                 editor.apply();
                                 Intent intent = new Intent(LoginActivity.this, MainActivity2.class);

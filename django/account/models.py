@@ -34,12 +34,13 @@ class MyUserManager(UserManager):
             weight=weight,
             age=age,
             exp=0,
+            badge_collection=1000000000,
+            **extra_fields
         )
         user.set_password(password)
         user.save()
 
         return user
-
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     objects = MyUserManager()
@@ -52,6 +53,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     weight = models.FloatField(default=0)
     age = models.IntegerField(default=20)
     exp = models.IntegerField(default=0)
+    badge_collection = models.IntegerField(null=False, default=1000000000)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     profile_image = models.ImageField(
@@ -63,3 +65,4 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.username
+

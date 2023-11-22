@@ -119,7 +119,7 @@ public class MultiModePlayFragment extends Fragment {
     Handler sendDataHandler;
     Runnable sendDataRunnable;
     UserDistance[] userDistances;
-    private Location lastLocation = null;
+    private final Location lastLocation = null;
     private Handler remainTimeHandler;
     private long playLeaveButtonLastClickTime = 0;
     private long backButtonLastClickTime = 0;
@@ -208,6 +208,15 @@ public class MultiModePlayFragment extends Fragment {
             }
         }
     };
+    private int updatedBadgeCollection;
+//    private int updatedExp;
+//    private float medianSpeed;
+//    private HistoryApi historyApi;
+//    private TextView timePresentContentTextView;
+//    private int isFinished;
+//    private int groupHistoryId = 999;
+//    private SendFinishedTask finishedTask;
+
 
     private void showExitGameDialog() {
         @SuppressLint("InflateParams")
@@ -508,9 +517,9 @@ public class MultiModePlayFragment extends Fragment {
         } else if (userDistances.length >= 3 && userDistances[2].getUser().getId() == user.getId()) {
             place = 3;
         }
-        int exp = ExpSystem.getExp("single", distance, selectedRoom.getDuration(), place);
+        int exp = ExpSystem.getExp("multi", distance, selectedRoom.getDuration(), place);
         HistoryData requestData = new HistoryData(user.getId(), distance, durationInSeconds,
-                true, startTimeString, finishTimeString, calories, true, maxSpeed, minSpeed, calculateMedian(speedList), speedList, groupHistoryId, 0, 200000);
+                true, startTimeString, finishTimeString, calories, true, maxSpeed, minSpeed, calculateMedian(speedList), speedList, groupHistoryId, 0, exp);
 
         historyApi.postHistoryData(requestData).enqueue(new Callback<ResponseBody>() {
             @Override
@@ -526,6 +535,8 @@ public class MultiModePlayFragment extends Fragment {
                         // "exp" 키의 값을 가져오기
                         JSONObject expObject = jsonObject.getJSONObject("exp");
                         updatedExp = expObject.getInt("exp");
+                        JSONObject badgeCollectionObject = jsonObject.getJSONObject("badge_collection");
+                        updatedBadgeCollection = badgeCollectionObject.getInt("badge_collection");
 
                     } catch (JSONException e) {
                         throw new RuntimeException(e);
@@ -583,6 +594,7 @@ public class MultiModePlayFragment extends Fragment {
                         responseBody = new JSONObject(responseBodyString);
                         Log.d("response", responseBodyString);
                         groupHistoryId = (int) responseBody.getLong("id");
+                        Log.d("groupHistoryId", Integer.toString(groupHistoryId));
                         Packet requestPacket = new Packet(Protocol.SAVE_GROUP_HISTORY, user, selectedRoom, groupHistoryId);
                         new SendSavedInfoTask().execute(requestPacket);
                     } catch (IOException | JSONException e) {
@@ -640,6 +652,7 @@ public class MultiModePlayFragment extends Fragment {
             bundle.putSerializable("userDistance", distance);
             bundle.putSerializable("userSpeedList", (Serializable) speedList);
             bundle.putSerializable("updatedExp", updatedExp);
+            bundle.putSerializable("updatedBadgeCollection", updatedBadgeCollection);
             NavController navController = Navigation.findNavController(requireView());
             navController.navigate(R.id.navigation_multi_room_result, bundle);
         }

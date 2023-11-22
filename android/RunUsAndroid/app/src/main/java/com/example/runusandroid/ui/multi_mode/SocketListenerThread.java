@@ -94,7 +94,7 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
 
                 if (receivedObject instanceof Packet) {
                     Packet packet = (Packet) receivedObject;
-                    System.out.println("protocol : "+packet.getProtocol());
+                    System.out.println("protocol : " + packet.getProtocol());
                     if (packet.getProtocol() == Protocol.ROOM_LIST) {
                         handler.post(() -> {
                             List<MultiModeRoom> roomList = packet.getRoomList();
@@ -167,6 +167,7 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
                             List<UserDistance> temp = packet.getListTop3UserDistance();
                             playFragment.userDistances = temp.toArray(new UserDistance[temp.size()]);
                             try {
+                                Log.d("groupHistoryId", Long.toString(packet.getGroupHistoryId()));
                                 playFragment.saveHistoryData(packet.getGroupHistoryId());
                             } catch (JSONException e) {
                                 throw new RuntimeException(e);

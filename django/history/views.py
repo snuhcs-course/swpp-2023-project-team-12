@@ -8,13 +8,14 @@ from .serializers import (
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from .models import history, group_history
+from .models import history_record, group_history_record
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db.models import Sum
 from django.db.models.functions import TruncDay
 from venv import logger
 from account.models import CustomUser
+from account.views import processBadgeCollection
 
 
 # Create your views here.
@@ -41,7 +42,7 @@ class HistoryDetail(APIView):
         group_history_id = request.data.get("group_history_id")
         is_mission_succeeded = request.data.get("is_mission_succeeded")
         exp = request.data.get("exp")
-        history_instance = history.objects.create(
+        history_instance = history_record.objects.create(
             user_id=user_id,
             distance=distance,
             duration=duration,
@@ -60,19 +61,22 @@ class HistoryDetail(APIView):
         user = CustomUser.objects.filter(id = user_id).last()
         if user is not None:
             user.exp = user.exp + exp
+            print("past badge_collection : ", user.badge_collection)
+            user.badge_collection = processBadgeCollection(user.badge_collection, history_instance)
+            print("current badge_collection : ", user.badge_collection)
             user.save()
         else:
             return Response({"message": "User not found"}, status=404)
 
         serializer = HistorySerializer(history_instance)
         print({"history" : serializer.data, "exp" : user.exp})
-        return Response({"history" : serializer.data, "exp" : {"exp" : user.exp}}, status=status.HTTP_201_CREATED)
+        return Response({"history" : serializer.data, "exp" : {"exp" : user.exp}, "badge_collection" : {"badge_collection": user.badge_collection}}, status=status.HTTP_201_CREATED)
 
 
 class RecentHistory(APIView):
     def get(self, request, user_id):
         try:
-            user_history = history.objects.filter(user_id=user_id).order_by(
+            user_history = history_record.objects.filter(user_id=user_id).order_by(
                 "-start_time"
             )[:5]
             serializer = RecentHistorySerializer(user_history, many=True)
@@ -100,7 +104,7 @@ class GroupHistoryDetail(APIView):
         second_place_user_distance = request.data.get("second_place_user_distance")
         third_place_user_id = request.data.get("third_place_user_id")
         third_place_user_distance = request.data.get("third_place_user_distance")
-        group_history_instance = group_history.objects.create(
+        group_history_instance = group_history_record.objects.create(
             roomname=roomname,
             start_time=start_time,
             duration=duration,
@@ -125,7 +129,7 @@ class MonthlyDataView(APIView):
             if month < 12
             else datetime(year + 1, 1, 1).date()
         )
-        data = history.objects.filter(
+        data = history_record.objects.filter(
             user_id=user_id, start_time__range=[start_date, end_date]
         )
         total_distance = data.aggregate(Sum("distance"))["distance__sum"] or 0
@@ -162,7 +166,7 @@ class MonthlyDataView(APIView):
 # NOTE: 잠시 Deperecated된 API
 class DailyDataView(APIView):
     def get(self, request, year, month, day, user_id):
-        data = history.objects.filter(
+        data = history_record.objects.filter(
             user_id=user_id,
             start_time__year=year,
             start_time__month=month,

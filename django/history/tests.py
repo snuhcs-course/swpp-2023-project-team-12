@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from datetime import datetime, timedelta
 from django.utils import timezone
-from .models import history, group_history
+from .models import history_record, group_history_record
 from account.models import CustomUser
 
 class HistoryDetailTestCase(TestCase):

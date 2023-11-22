@@ -167,6 +167,7 @@ public class Server {
                                     .getInGameRoom(((Packet) data).getSelectedRoom().getId());
                             System.out.println("!!!!!!!!got saved group history packet " + user.getId()
                                     + user.getNickName() + "\n");
+                            System.out.println(((Packet) data).getGroupHistoryId());
                             sendResultTop3Users(Protocol.CLOSE_GAME, finishRoom, ((Packet) data).getGroupHistoryId());
                             RoomManager.removeInGameRoom(finishRoom);
                         }
@@ -263,6 +264,7 @@ public class Server {
         }
         List<UserDistance> lTop3UserDistances = new ArrayList<UserDistance>(Arrays.asList(top3UserDistance));
         Packet updateTop3Packet = new Packet(protocol, lTop3UserDistances, (int) groupHistoryId);
+        System.out.println((int) groupHistoryId);
         broadcastToRoomUsers(room, updateTop3Packet);
     }
 
@@ -291,6 +293,7 @@ public class Server {
         } else if (packet.getProtocol() == Protocol.CLOSE_GAME) {
             // System.out.println("!!!send close room packet " + packet.getProtocol() + "
             // 1st user is " + packet.getTop3UserDistance()[0].getUser().getNickName());
+            System.out.println(packet.getGroupHistoryId());
         }
         for (int i = 0; i < oosList.size(); i++) {
             ObjectOutputStream oos = oosList.get(i);

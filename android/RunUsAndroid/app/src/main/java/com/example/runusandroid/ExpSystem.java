@@ -101,6 +101,62 @@ public class ExpSystem {
         return level;
     }
 
+    public static int getPresentExp(int exp) {
+        int presentExp = 0;
+
+        if (exp > 300000) {
+            presentExp = exp - 300000;
+        } else if (exp > 200000) {
+            presentExp = exp - 200000;
+        } else if (exp > 120000) {
+            presentExp = exp - 120000;
+        } else if (exp > 70000) {
+            presentExp = exp - 70000;
+        } else if (exp > 40000) {
+            presentExp = exp - 40000;
+        } else if (exp > 20000) {
+            presentExp = exp - 20000;
+        } else if (exp > 10000) {
+            presentExp = exp - 10000;
+        } else if (exp > 4000) {
+            presentExp = exp - 4000;
+        } else if (exp > 1000) {
+            presentExp = exp - 1000;
+        } else {
+            presentExp = exp;
+        }
+
+        return presentExp;
+    }
+
+    public static int getNextExp(int level) {
+        int nextExp = 0;
+
+        if (level == 10) {
+            nextExp = 999999;
+        } else if (level == 9) {
+            nextExp = 300000;
+        } else if (level == 8) {
+            nextExp = 200000;
+        } else if (level == 7) {
+            nextExp = 120000;
+        } else if (level == 6) {
+            nextExp = 70000;
+        } else if (level == 5) {
+            nextExp = 40000;
+        } else if (level == 4) {
+            nextExp = 20000;
+        } else if (level == 3) {
+            nextExp = 10000;
+        } else if (level == 2) {
+            nextExp = 4000;
+        } else {
+            nextExp = 1000;
+        }
+
+        return nextExp;
+    }
+
 
 }
 
