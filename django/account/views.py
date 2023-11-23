@@ -166,10 +166,9 @@ class ProfileImageView(APIView):
             random_number = random.randint(1, 100000)
             updated_image_url = f"{request.build_absolute_uri(user.profile_image.url)}?v={random_number}"
             ##logger.debug(f"updated_image_url: {updated_image_url}")
-
+            print(user.badge_collection)
             return Response(
                 {
-                    "badge_collection":user.badge_collection,
                     "message": "Profile Image Updated Successfully",
                     "imageUrl": updated_image_url,
                 },
@@ -185,8 +184,10 @@ class UserProfileView(APIView):
 
     def get(self, request, user_id=None):
         user = get_object_or_404(CustomUser, id=user_id) if user_id else request.user
+        print(user)
         ##logger.debug(f"send profile url: {user.profile_image.url}")
         serializer = UserProfileSerializer(user, context={"request": request})
+        print(serializer.data)
 
         return Response(serializer.data)
     

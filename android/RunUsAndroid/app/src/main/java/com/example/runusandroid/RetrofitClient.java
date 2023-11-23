@@ -15,7 +15,12 @@ public class RetrofitClient {
     // 아래 코드를 수정 후 커밋하지 마시오!!
     private final static String BASE_URL = "http://ec2-3-36-116-64.ap-northeast-2.compute.amazonaws.com:3000";
     // 위 코드를 수정 후 커밋하지 마시오!!
-    //private final static String BASE_URL = "http://192.168.0.4:8000/";
+
+    //로컬에서 장고 서버 여는 법(에뮬레이터, 피지컬 디바이스)
+    //django settings.py에 현재 ip주소 입력
+    //서버 켤 때 python manage.py runserver 0.0.0.0:8000 커맨드로 실행
+    //Base_URL ip 주소 넣는 부분에 현재 ip주소 넣고 실행
+    //private final static String BASE_URL = "http://10.22.84.103:8000/";
 
     private static String authToken = null;
     private static Retrofit retrofit = null;
