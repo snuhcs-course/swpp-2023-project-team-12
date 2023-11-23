@@ -53,6 +53,7 @@ public class Server {
     private void handleClient(Socket socket, ObjectOutputStream oos) {
         MultiModeUser connectedUser = null;
         MultiModeUser user = null;
+        PacketBuilder packetBuilder = null;
         try {
             InputStream is = socket.getInputStream();
             ObjectInputStream ois = new ObjectInputStream(is);

@@ -8,7 +8,7 @@ public class Packet implements Serializable { //서버와 통신하기 위해 �
     UserDistance[] top3UserDistance = null;
     List<UserDistance> listTop3UserDistance = null;
     // 데이터 유형을 나타내는 필드
-    private final int protocol;
+    private int protocol;
     private RoomCreateInfo roomCreateInfo = null;
     // 실제 데이터
     private MultiModeUser user;
@@ -18,7 +18,9 @@ public class Packet implements Serializable { //서버와 통신하기 위해 �
     private long groupHistoryId; //db에 저장된 히스토리 id
     public int temp;
 
+    public Packet(){
 
+    }
 
     public Packet(int protocol, MultiModeUser user) {
         this.protocol = protocol;
@@ -139,5 +141,39 @@ public class Packet implements Serializable { //서버와 통신하기 위해 �
 
     public UserDistance[] getTop3UserDistance() {
         return top3UserDistance;
+    }
+
+    public void setProtocol(int protocol){
+        this.protocol = protocol;
+    }
+
+    public void setTop3UserDistance(UserDistance[] top3UserDistance){
+        this.top3UserDistance = top3UserDistance;
+    }
+
+    public void setListTop3UserDistance(List<UserDistance> listTop3UserDistance){
+        this.listTop3UserDistance = listTop3UserDistance;
+    }
+
+    public void setRoomCreateInfo(RoomCreateInfo roomCreateInfo){
+        this.roomCreateInfo = roomCreateInfo;
+    }
+
+    public void setRoomList(List<MultiModeRoom> roomList){
+        this.roomList = roomList;
+    }
+
+    public void setUser(MultiModeUser user){
+        this.user = user;
+    }
+    public void setDistance(float distance){
+        this.distance = distance;
+    }
+    public void setSelectedRoom(MultiModeRoom selectedRoom){
+        this.selectedRoom = selectedRoom;
+    }
+
+    public void setTemp(int temp) {
+        this.temp = temp;
     }
 }
