@@ -416,7 +416,7 @@ public class SingleModeFragment extends Fragment {
         dialog.getWindow().setAttributes(params);
 
         boolean enoughHistory = modelInput[4][2] != 0;
-        if (!enoughHistory) {
+        if (!enoughHistory || goalDistance==0) {
             setStandard();
         }
 
@@ -586,7 +586,7 @@ public class SingleModeFragment extends Fragment {
         dialog.getWindow().setAttributes(params);
 
         boolean enoughHistory = modelInput[4][2] != 0;
-        if (!enoughHistory) {
+        if (!enoughHistory || goalDistance==0) {
             setStandard();
             nowGoalDistance = goalDistance * 1.5f;
         } else {
@@ -673,7 +673,7 @@ public class SingleModeFragment extends Fragment {
         String nickname = sharedPreferences.getString("nickname", "");
 
         boolean enoughHistory = modelInput[4][2] != 0;
-        if (!enoughHistory) {
+        if (!enoughHistory || goalDistance==0) {
             setStandard();
             nowGoalDistance = goalDistance;
             missionInfo.setText("5회 러닝 전에는 " + nickname + "님과 비슷한 그룹의 \n평균 러닝이 추천돼요!");
@@ -692,7 +692,6 @@ public class SingleModeFragment extends Fragment {
         }
         nowGoalTime = goalTime;
 
-        dialog.show();
 
 
         Button buttonConfirm = dialogView.findViewById(R.id.buttonConfirm);
@@ -767,6 +766,9 @@ public class SingleModeFragment extends Fragment {
                 dialog.dismiss();
             }
         });
+
+
+        dialog.show();
 
     }
 
