@@ -235,7 +235,7 @@ public class Server {
          * }
          */
         List<UserDistance> lTop3UserDistances = new ArrayList<UserDistance>(Arrays.asList(top3UserDistance));
-        PacketBuilder packetBuilder = new PacketBuilder().protocol(protocol).listTop3UserDistance(lTop3UserDistances).temp(0);
+        PacketBuilder packetBuilder = new PacketBuilder().protocol(protocol).listTop3UserDistance(lTop3UserDistances);
         Packet updateTop3Packet = packetBuilder.getPacket();
         broadcastToRoomUsers(room, updateTop3Packet);
     }
@@ -250,7 +250,7 @@ public class Server {
         }
         List<UserDistance> lTop3UserDistances = new ArrayList<UserDistance>(Arrays.asList(top3UserDistance));
         System.out.println(lTop3UserDistances);
-        PacketBuilder packetBuilder = new PacketBuilder().protocol(protocol).listTop3UserDistance(lTop3UserDistances).temp(0);
+        PacketBuilder packetBuilder = new PacketBuilder().protocol(protocol).listTop3UserDistance(lTop3UserDistances);
         Packet updateTop3Packet = packetBuilder.getPacket();
 
         ObjectOutputStream oos = room.getRoomOwnerOos();

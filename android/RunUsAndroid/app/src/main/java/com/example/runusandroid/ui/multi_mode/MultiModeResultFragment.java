@@ -64,17 +64,16 @@ public class MultiModeResultFragment extends Fragment {
     RecyclerView recyclerView;
     RecordDialog dialog;
     boolean isDialogOpenedBefore = false;
+    View bronzeProfileBox;
     private ImageView goldProfileImageView, silverProfileImageView, bronzeProfileImageView;
     private TextView goldLevelTextView, silverLevelTextView, bronzeLevelTextView;
     private TextView goldNickNameTextView, silverNickNameTextView, bronzeNickNameTextView;
-
     private TextView goldDistanceTextView, silverDistanceTextView, bronzeDistanceTextView;
     private long resultLeaveButtonLastClickTime = 0;
     private long backButtonLastClickTime = 0;
     private TextView timeResultContentTextView;
     private int updatedExp;
     private int updatedBadgeCollection;
-
     private LinearLayoutCompat firstPlaceLayout;
     private LinearLayoutCompat secondPlaceLayout;
     private LinearLayoutCompat thirdPlaceLayout;
@@ -128,7 +127,7 @@ public class MultiModeResultFragment extends Fragment {
             silverNickNameTextView = silverProfileBox.findViewById(R.id.multi_result_nickname);
             silverDistanceTextView = view.findViewById(R.id.secondPlaceKm);
 
-            View bronzeProfileBox = view.findViewById(R.id.thirdPlaceProfileBox);
+            bronzeProfileBox = view.findViewById(R.id.thirdPlaceProfileBox);
             bronzeProfileImageView = bronzeProfileBox.findViewById(R.id.multi_result_profile);
             bronzeLevelTextView = bronzeProfileBox.findViewById(R.id.multi_result_level);
             bronzeNickNameTextView = bronzeProfileBox.findViewById(R.id.multi_result_nickname);
@@ -208,7 +207,8 @@ public class MultiModeResultFragment extends Fragment {
     public void updateTop3UserDistance(UserDistance[] userDistances) { // 화면에 표시되는 top3 유저 정보 업데이트. socketListenerThread에서 사용
         AccountApi accountApi = RetrofitClient.getClient().create(AccountApi.class);
         if (userDistances.length < 3) {
-            thirdPlaceLayout.setVisibility(GONE);
+            bronzeProfileBox.setVisibility(GONE);
+            bronzeDistanceTextView.setVisibility(GONE);
         }
         if (userDistances.length < 2) {
             secondPlaceLayout.setVisibility(GONE);
