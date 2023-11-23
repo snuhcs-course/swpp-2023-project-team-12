@@ -229,7 +229,7 @@ public class SingleModeResultFragment extends Fragment {
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
 
-        goalDistanceText.setText(floatToSecondDeciStr(goalDistance) + "km");
+        goalDistanceText.setText(floatToFirstDeciStr(goalDistance) + "km");
         currentDistanceText.setText(doubleToThirdDeciStr(currentDistance) + "km");
         goalTimeText.setText(goalTime + " 분");
         currentTimeText.setText(dateFormat.format(currentTime));

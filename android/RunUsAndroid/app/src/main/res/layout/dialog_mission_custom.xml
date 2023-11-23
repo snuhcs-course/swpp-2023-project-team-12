@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<androidx.appcompat.widget.LinearLayoutCompat
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+    android:layout_height="wrap_content">
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -48,7 +47,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.3" />
+            app:layout_constraintGuide_percent="0.28" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline1"
@@ -62,7 +61,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.7" />
+            app:layout_constraintGuide_percent="0.72" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline9"
@@ -70,6 +69,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.9" />
+
         <TextView
             android:id="@+id/textViewDialog"
             android:layout_width="0dp"
@@ -79,9 +79,9 @@
             android:layout_marginBottom="25dp"
             android:gravity="left"
             android:text="오늘의 목표"
-            android:textStyle="bold"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
             android:textSize="20dp"
+            android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@id/textViewTitle"
             app:layout_constraintEnd_toStartOf="@id/buttonClose"
             app:layout_constraintStart_toStartOf="parent"
@@ -94,13 +94,13 @@
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
             android:layout_marginBottom="25dp"
-            android:padding="10dp"
             android:background="@android:color/transparent"
+            android:padding="10dp"
             android:src="@drawable/ic_close"
             app:layout_constraintBottom_toTopOf="@id/textViewTitle"
-            app:layout_constraintStart_toEndOf="@id/textViewDialog"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintStart_toEndOf="@id/textViewDialog"
+            app:layout_constraintTop_toTopOf="parent" />
 
 
         <TextView
@@ -144,15 +144,15 @@
             android:background="@drawable/round_shape_light_gray"
             android:gravity="right|center"
             android:hint="0"
-            android:paddingLeft="15dp"
-            android:paddingRight="15dp"
             android:inputType="numberDecimal"
             android:maxLength="4"
-            app:layout_constraintHorizontal_weight="0.6"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
             app:layout_constraintBottom_toTopOf="@+id/textViewMissionInfo2"
+            app:layout_constraintEnd_toStartOf="@id/km"
+            app:layout_constraintHorizontal_weight="0.6"
             app:layout_constraintStart_toEndOf="@+id/textViewGoalDistance"
-            app:layout_constraintTop_toBottomOf="@id/textViewMissionInfo"
-            app:layout_constraintEnd_toStartOf="@id/km"/>
+            app:layout_constraintTop_toBottomOf="@id/textViewMissionInfo" />
 
         <TextView
             android:id="@+id/textViewGoalDistance"
@@ -160,9 +160,9 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:text="목표 거리"
-            app:layout_constraintHorizontal_weight="0.3"
             app:layout_constraintBottom_toTopOf="@+id/textViewMissionInfo2"
             app:layout_constraintEnd_toStartOf="@+id/editTextGoalDistance"
+            app:layout_constraintHorizontal_weight="0.3"
             app:layout_constraintStart_toStartOf="@id/guideline1"
             app:layout_constraintTop_toBottomOf="@id/textViewMissionInfo" />
 
@@ -172,10 +172,10 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:text="목표 시간"
-            app:layout_constraintHorizontal_weight="0.3"
             app:layout_constraintBottom_toTopOf="@+id/textViewMissionInfo3"
-            app:layout_constraintStart_toStartOf="@id/guideline1"
             app:layout_constraintEnd_toStartOf="@id/editTextGoalHour"
+            app:layout_constraintHorizontal_weight="0.3"
+            app:layout_constraintStart_toStartOf="@id/guideline1"
             app:layout_constraintTop_toBottomOf="@+id/textViewMissionInfo2" />
 
 
@@ -187,13 +187,13 @@
             android:background="@drawable/round_shape_light_gray"
             android:gravity="right|center"
             android:hint="0"
-            android:paddingLeft="15dp"
-            android:paddingRight="15dp"
             android:inputType="number"
             android:maxLength="2"
-            app:layout_constraintHorizontal_weight="0.25"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
             app:layout_constraintBottom_toTopOf="@+id/textViewMissionInfo3"
             app:layout_constraintEnd_toStartOf="@id/h"
+            app:layout_constraintHorizontal_weight="0.25"
             app:layout_constraintStart_toEndOf="@+id/textViewGoalTime"
             app:layout_constraintTop_toBottomOf="@+id/textViewMissionInfo2" />
 
@@ -203,9 +203,9 @@
             android:layout_height="wrap_content"
             android:gravity="center|left"
             android:text=" h"
-            app:layout_constraintHorizontal_weight="0.1"
             app:layout_constraintBottom_toTopOf="@+id/textViewMissionInfo3"
             app:layout_constraintEnd_toStartOf="@+id/editTextGoalMinute"
+            app:layout_constraintHorizontal_weight="0.1"
             app:layout_constraintStart_toEndOf="@+id/editTextGoalHour"
             app:layout_constraintTop_toBottomOf="@+id/textViewMissionInfo2" />
 
@@ -216,14 +216,14 @@
             android:background="@drawable/round_shape_light_gray"
             android:gravity="right|center"
             android:hint="0"
-            app:layout_constraintHorizontal_weight="0.25"
-            android:paddingLeft="15dp"
-            android:paddingRight="15dp"
             android:inputType="number"
             android:max="59"
             android:maxLength="2"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
             app:layout_constraintBottom_toTopOf="@+id/textViewMissionInfo3"
             app:layout_constraintEnd_toStartOf="@id/m"
+            app:layout_constraintHorizontal_weight="0.25"
             app:layout_constraintStart_toEndOf="@id/h"
             app:layout_constraintTop_toBottomOf="@+id/textViewMissionInfo2" />
 
@@ -233,9 +233,9 @@
             android:layout_height="wrap_content"
             android:gravity="center|left"
             android:text=" m"
-            app:layout_constraintHorizontal_weight="0.1"
             app:layout_constraintBottom_toTopOf="@+id/textViewMissionInfo3"
             app:layout_constraintEnd_toEndOf="@id/guideline9"
+            app:layout_constraintHorizontal_weight="0.1"
             app:layout_constraintStart_toEndOf="@+id/editTextGoalMinute"
             app:layout_constraintTop_toBottomOf="@+id/textViewMissionInfo2" />
 
@@ -245,25 +245,24 @@
             android:layout_height="wrap_content"
             android:gravity="center|left"
             android:text=" km"
-            app:layout_constraintHorizontal_weight="0.1"
             app:layout_constraintBottom_toTopOf="@+id/textViewMissionInfo"
-            app:layout_constraintTop_toBottomOf="@+id/textViewMissionInfo2"
             app:layout_constraintEnd_toEndOf="@id/guideline9"
-            app:layout_constraintStart_toEndOf="@+id/editTextGoalDistance" />
+            app:layout_constraintHorizontal_weight="0.1"
+            app:layout_constraintStart_toEndOf="@+id/editTextGoalDistance"
+            app:layout_constraintTop_toBottomOf="@+id/textViewMissionInfo2" />
 
         <Button
             android:id="@+id/buttonConfirm"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:backgroundTint="#4AA570"
             android:layout_margin="10dp"
+            android:backgroundTint="#4AA570"
             android:text="설정 완료"
             android:textColor="@color/white"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="@id/guideline3"
             app:layout_constraintEnd_toEndOf="@id/guideline7"
+            app:layout_constraintStart_toStartOf="@id/guideline3"
             app:layout_constraintTop_toBottomOf="@id/textViewMissionInfo3" />
-
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
