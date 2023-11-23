@@ -80,6 +80,7 @@
         android:background="@drawable/round_shape_green"
         android:fontFamily="@font/pretendardregular"
         android:text="로그인"
+        android:textColor="@color/white"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/PasswordInput" />

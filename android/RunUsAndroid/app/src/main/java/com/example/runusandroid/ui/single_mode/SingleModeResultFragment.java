@@ -229,7 +229,7 @@ public class SingleModeResultFragment extends Fragment {
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
 
-        goalDistanceText.setText(floatToThirdDeciStr(goalDistance) + "km");
+        goalDistanceText.setText(floatToFirstDeciStr(goalDistance) + "km");
         currentDistanceText.setText(doubleToThirdDeciStr(currentDistance) + "km");
         goalTimeText.setText(goalTime + " 분");
         currentTimeText.setText(dateFormat.format(currentTime));
@@ -248,8 +248,8 @@ public class SingleModeResultFragment extends Fragment {
 
     }
 
-    private String floatToThirdDeciStr(float num) {
-        DecimalFormat decimalFormat = new DecimalFormat("#.###");
+    private String floatToFirstDeciStr(float num) {
+        DecimalFormat decimalFormat = new DecimalFormat("#.#");
         return decimalFormat.format(num);
     }
 

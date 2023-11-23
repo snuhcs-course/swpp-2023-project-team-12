@@ -109,6 +109,7 @@
         android:layout_marginRight="15dp"
         android:background="@drawable/round_shape_green"
         android:text="다음"
+        android:textColor="@color/white"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/SignUpEmailInput" />

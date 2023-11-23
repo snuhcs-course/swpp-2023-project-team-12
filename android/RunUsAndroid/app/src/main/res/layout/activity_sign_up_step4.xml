@@ -94,26 +94,28 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"></LinearLayout>
 
-        <RadioButton
+        <androidx.appcompat.widget.AppCompatRadioButton
             android:id="@+id/radioButtonMale"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:fontFamily="@font/pretendardregular"
-            android:text="남성" />
+            android:text="남성"
+            app:buttonTint="#4AA570" />
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"></LinearLayout>
 
-        <RadioButton
+        <androidx.appcompat.widget.AppCompatRadioButton
             android:id="@+id/radioButtonFemale"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:fontFamily="@font/pretendardregular"
-            android:text="여성" />
+            android:text="여성"
+            app:buttonTint="#4AA570" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -132,6 +134,7 @@
         android:background="@drawable/round_shape_green"
         android:fontFamily="@font/pretendardregular"
         android:text="가입 완료"
+        android:textColor="@color/white"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/radioGroupGender" />

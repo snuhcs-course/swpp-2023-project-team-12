@@ -1,6 +1,7 @@
 package com.example.runusandroid.ui.multi_mode;
 
 import static android.content.Context.MODE_PRIVATE;
+import static android.view.View.GONE;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -21,6 +22,7 @@ import android.widget.TextView;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -73,6 +75,10 @@ public class MultiModeResultFragment extends Fragment {
     private int updatedExp;
     private int updatedBadgeCollection;
 
+    private LinearLayoutCompat firstPlaceLayout;
+    private LinearLayoutCompat secondPlaceLayout;
+    private LinearLayoutCompat thirdPlaceLayout;
+
     private void showExitResultDialog() {
         @SuppressLint("InflateParams")
         View exitResultDialog = getLayoutInflater().inflate(R.layout.dialog_multimode_play_finish, null);
@@ -106,6 +112,10 @@ public class MultiModeResultFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_multi_room_result, container, false); //각종 view 선언
         if (selectedRoom != null) {
+            firstPlaceLayout = view.findViewById(R.id.firstPlaceLayout);
+            secondPlaceLayout = view.findViewById(R.id.secondPlaceLayout);
+            thirdPlaceLayout = view.findViewById(R.id.thirdPlaceLayout);
+
             View goldProfileBox = view.findViewById(R.id.firstPlaceProfileBox);
             goldProfileImageView = goldProfileBox.findViewById(R.id.multi_result_profile);
             goldLevelTextView = goldProfileBox.findViewById(R.id.multi_result_level);
@@ -197,6 +207,12 @@ public class MultiModeResultFragment extends Fragment {
 
     public void updateTop3UserDistance(UserDistance[] userDistances) { // 화면에 표시되는 top3 유저 정보 업데이트. socketListenerThread에서 사용
         AccountApi accountApi = RetrofitClient.getClient().create(AccountApi.class);
+        if (userDistances.length < 3) {
+            thirdPlaceLayout.setVisibility(GONE);
+        }
+        if (userDistances.length < 2) {
+            secondPlaceLayout.setVisibility(GONE);
+        }
         if (userDistances.length >= 1) {
             goldNickNameTextView.setText(userDistances[0].getUser().getNickName());
             goldLevelTextView.setText("Lv. " + userDistances[0].getUser().getLevel());

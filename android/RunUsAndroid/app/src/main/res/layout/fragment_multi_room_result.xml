@@ -4,6 +4,30 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_vertical_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.33" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_vertical_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.66" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_vertical_3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.5" />
+    <!-- 나머지 레이아웃 요소들은 기존과 동일하게 유지됩니다. -->
+
+
     <TextView
         android:id="@+id/result_title"
         android:layout_width="wrap_content"
@@ -35,73 +59,112 @@
         android:id="@+id/podium"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
         android:src="@drawable/podium"
-        app:layout_constraintBottom_toTopOf="@id/my_result_title"
+        app:layout_constraintBottom_toTopOf="@id/guideline_vertical_2"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 
-    <TextView
-        android:id="@+id/firstPlaceKm"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="0km"
-        app:layout_constraintBottom_toTopOf="@id/items"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
 
     <FrameLayout
         android:id="@+id/items"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@id/podium"
+        app:layout_constraintBottom_toTopOf="@id/guideline_vertical_3"
         app:layout_constraintEnd_toEndOf="@id/podium"
-        app:layout_constraintStart_toStartOf="@id/podium"
-        app:layout_constraintTop_toBottomOf="@+id/record_button">
+        app:layout_constraintStart_toStartOf="@id/podium">
 
-        <TextView
-            android:id="@+id/secondPlaceKm"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="left|top"
-            android:layout_marginLeft="70dp"
-            android:layout_marginTop="30dp"
-            android:text="0km" />
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
 
-        <TextView
-            android:id="@+id/thirdPlaceKm"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right|top"
-            android:layout_marginTop="40dp"
-            android:layout_marginRight="65dp"
-            android:text="0km" />
+            >
 
-        <include
-            android:id="@+id/secondPlaceProfileBox"
-            layout="@layout/multi_mode_result_user_profile"
-            android:layout_width="90dp"
-            android:layout_height="120dp"
-            android:layout_gravity="left|bottom"
-            android:layout_marginLeft="40dp"
-            android:layout_marginBottom="40dp" />
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/secondPlaceLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_marginLeft="20dp"
+                android:layout_marginBottom="15dp"
+                android:layout_weight="1"
 
-        <include
-            android:id="@+id/firstPlaceProfileBox"
-            layout="@layout/multi_mode_result_user_profile"
-            android:layout_width="90dp"
-            android:layout_height="120dp"
-            android:layout_gravity="center_horizontal|bottom"
-            android:layout_marginBottom="90dp" />
+                android:orientation="vertical"
+                android:visibility="visible">
 
-        <include
-            android:id="@+id/thirdPlaceProfileBox"
-            layout="@layout/multi_mode_result_user_profile"
-            android:layout_width="90dp"
-            android:layout_height="120dp"
-            android:layout_gravity="right|bottom"
-            android:layout_marginRight="35dp"
-            android:layout_marginBottom="30dp" />
+                <TextView
+                    android:id="@+id/secondPlaceKm"
+                    android:layout_width="90dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="0km" />
+
+                <include
+                    android:id="@+id/secondPlaceProfileBox"
+                    layout="@layout/multi_mode_result_user_profile"
+                    android:layout_width="90dp"
+                    android:layout_height="120dp"
+                    android:layout_gravity="center" />
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/firstPlaceLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top"
+                android:layout_marginBottom="60dp"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:visibility="visible">
+
+                <TextView
+                    android:id="@+id/firstPlaceKm"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="0km" />
+
+                <include
+                    android:id="@+id/firstPlaceProfileBox"
+                    layout="@layout/multi_mode_result_user_profile"
+                    android:layout_width="90dp"
+                    android:layout_height="120dp"
+                    android:layout_gravity="center" />
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/thirdPlaceLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_marginRight="20dp"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:visibility="visible">
+
+                <TextView
+                    android:id="@+id/thirdPlaceKm"
+                    android:layout_width="90dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="0km" />
+
+                <include
+                    android:id="@+id/thirdPlaceProfileBox"
+                    layout="@layout/multi_mode_result_user_profile"
+                    android:layout_width="90dp"
+                    android:layout_height="120dp"
+                    android:layout_gravity="center" />
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
 
     </FrameLayout>
 
@@ -109,12 +172,13 @@
         android:id="@+id/my_result_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="30dp"
+        android:layout_marginLeft="30dp"
         android:fontFamily="@font/pretendardextrablod"
         android:text="나의 기록"
         android:textSize="24sp"
         app:layout_constraintBottom_toTopOf="@id/present_box"
-        app:layout_constraintLeft_toLeftOf="parent" />
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/podium" />
 
     <LinearLayout
         android:id="@+id/present_box"
