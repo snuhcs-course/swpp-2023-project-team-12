@@ -137,7 +137,7 @@ public class MultiModeFragment extends Fragment {
             }
             RoomCreateInfo roomCreateInfo = new RoomCreateInfo(groupName, 0, startTime, numRunners, duration);
             //for testing
-            roomCreateInfo = new RoomCreateInfo(groupName, 0, LocalDateTime.now().plusSeconds(5), numRunners, Duration.ofSeconds(6));
+            //roomCreateInfo = new RoomCreateInfo(groupName, 0, LocalDateTime.now().plusSeconds(5), numRunners, Duration.ofSeconds(6));
 
             new SendRoomInfoTask().execute(roomCreateInfo);
         });
