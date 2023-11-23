@@ -1,5 +1,6 @@
 import MultiMode.MultiModeUser;
 import MultiMode.Packet;
+import MultiMode.PacketBuilder;
 
 import java.io.*;
 import java.net.Socket;
@@ -17,7 +18,9 @@ public class Client {
             ObjectInputStream ois = new ObjectInputStream(is);
 
             int dataType = request; // 예를 들어, 1은 MultiModeUser 객체를 나타낸다고 가정
-            Packet packet = new Packet(dataType, newUser);
+            PacketBuilder packetBuilder = new PacketBuilder().protocol(dataType).user(newUser);
+            Packet packet = packetBuilder.getPacket();
+            //Packet packet = new Packet(dataType, newUser);
             oos.writeObject(packet);
             oos.flush();
 

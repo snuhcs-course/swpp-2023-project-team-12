@@ -75,7 +75,8 @@ public class Server {
 
 
                         if (((Packet) data).getProtocol() == Protocol.ROOM_LIST) {
-                            Packet roomListPacket = new Packet(Protocol.ROOM_LIST, RoomManager.getRoomList());
+                            packetBuilder = new PacketBuilder().protocol(Protocol.ROOM_LIST).roomList(RoomManager.getRoomList());
+                            Packet roomListPacket = packetBuilder.getPacket();
                             System.out.println("RoomList size is " + RoomManager.getRoomList().size());
 //                            System.out.println("First RoomOwner Image: "
 //                                    + RoomManager.getRoomList().getFirst().getOwner().getProfileImageUrl() != null
@@ -91,31 +92,38 @@ public class Server {
                             MultiModeRoom selectedRoom = RoomManager.createRoom(user, roomCreateInfo, oos);
                             System.out.println(RoomManager.getRoomList().get(0).getOwner().getProfileImageUrl());
                             System.out.println(selectedRoom.toString());
-                            Packet createRoomPacket = new Packet(Protocol.CREATE_ROOM, RoomManager.getRoomList(),
-                                    selectedRoom);
+                            packetBuilder = new PacketBuilder().protocol(Protocol.CREATE_ROOM).roomList(RoomManager.getRoomList()).selectedRoom(selectedRoom);
+                            Packet createRoomPacket = packetBuilder.getPacket();
+
                             oos.reset();
                             oos.writeObject(createRoomPacket);
                             oos.flush();
                         } else if (((Packet) data).getProtocol() == Protocol.ENTER_ROOM) {
                             MultiModeRoom enteredRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
                             if (enteredRoom == null) {
-                                Packet closedRoomPacket = new Packet(Protocol.CLOSED_ROOM_ERROR);
+                                packetBuilder = new PacketBuilder().protocol(Protocol.CLOSED_ROOM_ERROR);
+                                Packet closedRoomPacket = packetBuilder.getPacket();
                                 oos.reset();
                                 oos.writeObject(closedRoomPacket);
                                 oos.flush();
                             } else if (enteredRoom.isRoomFull()) {
-                                Packet fullRoomPacket = new Packet(Protocol.FULL_ROOM_ERROR);
+                                packetBuilder = new PacketBuilder().protocol(Protocol.FULL_ROOM_ERROR);
+                                Packet fullRoomPacket = packetBuilder.getPacket();
                                 oos.reset();
                                 oos.writeObject(fullRoomPacket);
                                 oos.flush();
                             } else {
                                 enteredRoom.enterUser(user);
-                                Packet enterRoomPacket = new Packet(Protocol.ENTER_ROOM, user, enteredRoom);
+                                packetBuilder = new PacketBuilder().protocol(Protocol.ENTER_ROOM).user(user).selectedRoom(enteredRoom);
+                                Packet enterRoomPacket = packetBuilder.getPacket();
                                 oos.reset();
                                 oos.writeObject(enterRoomPacket);
                                 oos.flush();
                                 System.out.println(enteredRoom);
-                                broadcastToRoomUsers(enteredRoom, new Packet(Protocol.UPDATE_ROOM, user, enteredRoom));
+                                packetBuilder = new PacketBuilder().protocol(Protocol.UPDATE_ROOM).user(user).selectedRoom(enteredRoom);
+                                Packet updateRoomPacket = packetBuilder.getPacket();
+                                broadcastToRoomUsers(enteredRoom, updateRoomPacket);
+
                                 enteredRoom.addOutputStream(oos);
                             }
                         } else if (((Packet) data).getProtocol() == Protocol.EXIT_ROOM) {
@@ -127,7 +135,10 @@ public class Server {
                             // RoomManager.getRoomList(), user, exitRoom);
                             // oos.writeObject(exitRoomPacket);
                             // oos.flush();
-                            broadcastToRoomUsers(exitRoom, new Packet(Protocol.EXIT_ROOM, user, exitRoom));
+                            packetBuilder = new PacketBuilder().protocol(Protocol.EXIT_ROOM).user(user).selectedRoom(exitRoom);
+                            Packet exitRoomPacket = packetBuilder.getPacket();
+                            broadcastToRoomUsers(exitRoom, exitRoomPacket);
+
                         } else if (((Packet) data).getProtocol() == Protocol.UPDATE_USER_DISTANCE) {
                             MultiModeRoom updateRoom = RoomManager.getInGameRoom(user.getRoom().getId());
                             Float distance = ((Packet) data).getDistance();
@@ -143,7 +154,9 @@ public class Server {
                             MultiModeRoom enteredRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
                             enteredRoom.startGame();
                             RoomManager.startRoom(enteredRoom);
-                            broadcastToRoomUsers(enteredRoom, new Packet(Protocol.START_GAME, enteredRoom));
+                            packetBuilder = new PacketBuilder().protocol(Protocol.START_GAME).selectedRoom(enteredRoom);
+                            Packet startGamePacket = packetBuilder.getPacket();
+                            broadcastToRoomUsers(enteredRoom, startGamePacket);
                         } else if (((Packet) data).getProtocol() == Protocol.EXIT_GAME) {
                             MultiModeRoom exitRoom = RoomManager
                                     .getInGameRoom(((Packet) data).getSelectedRoom().getId());
@@ -188,7 +201,9 @@ public class Server {
                         int index = exitRoom.exitUser(user);
                         if (index != -1)
                             exitRoom.removeOutputStream(index);
-                        broadcastToRoomUsers(exitRoom, new Packet(Protocol.EXIT_ROOM, user, exitRoom));
+                        packetBuilder = new PacketBuilder().protocol(Protocol.EXIT_ROOM).user(user).selectedRoom(exitRoom);
+                        Packet exitRoomPacket = packetBuilder.getPacket();
+                        broadcastToRoomUsers(exitRoom, exitRoomPacket);
                     }
                     allClientOutputStreams.removeIf(clientOOS -> clientOOS == oos);
                     break;
@@ -220,7 +235,8 @@ public class Server {
          * }
          */
         List<UserDistance> lTop3UserDistances = new ArrayList<UserDistance>(Arrays.asList(top3UserDistance));
-        Packet updateTop3Packet = new Packet(protocol, lTop3UserDistances, 0);
+        PacketBuilder packetBuilder = new PacketBuilder().protocol(protocol).listTop3UserDistance(lTop3UserDistances).temp(0);
+        Packet updateTop3Packet = packetBuilder.getPacket();
         broadcastToRoomUsers(room, updateTop3Packet);
     }
 
@@ -234,7 +250,8 @@ public class Server {
         }
         List<UserDistance> lTop3UserDistances = new ArrayList<UserDistance>(Arrays.asList(top3UserDistance));
         System.out.println(lTop3UserDistances);
-        Packet updateTop3Packet = new Packet(protocol, lTop3UserDistances, 0);
+        PacketBuilder packetBuilder = new PacketBuilder().protocol(protocol).listTop3UserDistance(lTop3UserDistances).temp(0);
+        Packet updateTop3Packet = packetBuilder.getPacket();
 
         ObjectOutputStream oos = room.getRoomOwnerOos();
         if (oos != null) {
@@ -264,7 +281,8 @@ public class Server {
                     + top3UserDistance[i].getDistance());
         }
         List<UserDistance> lTop3UserDistances = new ArrayList<UserDistance>(Arrays.asList(top3UserDistance));
-        Packet updateTop3Packet = new Packet(protocol, lTop3UserDistances, (int) groupHistoryId);
+        PacketBuilder packetBuilder = new PacketBuilder().protocol(protocol).listTop3UserDistance(lTop3UserDistances).groupHistoryId((int) groupHistoryId);
+        Packet updateTop3Packet = packetBuilder.getPacket();
         System.out.println((int) groupHistoryId);
         broadcastToRoomUsers(room, updateTop3Packet);
     }

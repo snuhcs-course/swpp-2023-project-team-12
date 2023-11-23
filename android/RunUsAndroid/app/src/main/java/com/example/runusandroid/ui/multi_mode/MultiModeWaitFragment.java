@@ -2,7 +2,6 @@ package com.example.runusandroid.ui.multi_mode;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -58,6 +57,7 @@ import java.util.Objects;
 import MultiMode.MultiModeRoom;
 import MultiMode.MultiModeUser;
 import MultiMode.Packet;
+import MultiMode.PacketBuilder;
 import MultiMode.Protocol;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -67,14 +67,15 @@ public class MultiModeWaitFragment extends Fragment {
 
     private final Handler handler = new Handler(); // 남은 시간 계산 위한 Handler
     private final int updateTimeInSeconds = 1; // 1초마다 업데이트/
+    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
     public boolean isFragmentVisible = true;
-    private boolean navRoomListWhenResumed = false;
-    private boolean notificatedOneMinuteLeft = false;
-    private boolean notificatedTenMinuteLeft = false;
     SocketListenerThread socketListenerThread = MultiModeFragment.socketListenerThread;
     OnBackPressedCallback backPressedCallBack;
     MultiModeUser user = MultiModeFragment.user;
     SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
+    private boolean navRoomListWhenResumed = false;
+    private boolean notificatedOneMinuteLeft = false;
+    private boolean notificatedTenMinuteLeft = false;
     private long leaveButtonLastClickTime = 0;
     private long backButtonLastClickTime = 0;
     private boolean isGameStarted = false;
@@ -83,7 +84,6 @@ public class MultiModeWaitFragment extends Fragment {
     private TextView startTimeTextView;
     private TextView timeRemainingTextView;
     private Duration duration;
-    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
     //남은 시간 계산 로직
     private final Runnable updateTimeRunnable = new Runnable() {
         @Override
@@ -101,11 +101,11 @@ public class MultiModeWaitFragment extends Fragment {
 
             long secondsRemaining = duration.getSeconds();
 
-            if(!notificatedTenMinuteLeft && secondsRemaining <= 602&& secondsRemaining >=598){
+            if (!notificatedTenMinuteLeft && secondsRemaining <= 602 && secondsRemaining >= 598) {
                 makeNotification(10);
             }
 
-            if(!notificatedOneMinuteLeft && secondsRemaining <= 62 && secondsRemaining >=58){
+            if (!notificatedOneMinuteLeft && secondsRemaining <= 62 && secondsRemaining >= 58) {
                 makeNotification(1);
             }
 
@@ -150,7 +150,7 @@ public class MultiModeWaitFragment extends Fragment {
         if (duration.isNegative() || duration.isZero()) {
             timeRemainingTextView.setText("곧 경기가 시작됩니다");
             if (!isGameStarted && selectedRoom.getRoomOwner().getId() == user.getId()) {
-                Log.d("start","start game");
+                Log.d("start", "start game");
                 new StartRoomTask().execute();
             }
             isGameStarted = true;
@@ -315,15 +315,15 @@ public class MultiModeWaitFragment extends Fragment {
     }
 
     private void makeNotification(int min) {
-        if(isFragmentVisible) return;
-        if(min==10) notificatedTenMinuteLeft = true;
-        else if(min==1) notificatedOneMinuteLeft = true;
+        if (isFragmentVisible) return;
+        if (min == 10) notificatedTenMinuteLeft = true;
+        else if (min == 1) notificatedOneMinuteLeft = true;
 
         Intent intent = new Intent(this.requireContext(), MainActivity2.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this.requireContext(), 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
-        String contentTitle = "게임이 "+min+"분 후에 시작됩니다!";
+        String contentTitle = "게임이 " + min + "분 후에 시작됩니다!";
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this.requireContext(), "MultiModeWait")
                 .setSmallIcon(R.drawable.runus_logo)
@@ -432,7 +432,8 @@ public class MultiModeWaitFragment extends Fragment {
             boolean success = true;
             try {
                 ObjectOutputStream oos = socketManager.getOOS();
-                Packet requestPacket = new Packet(Protocol.EXIT_ROOM, user, selectedRoom);
+                PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.EXIT_ROOM).user(user).selectedRoom(selectedRoom);
+                Packet requestPacket = packetBuilder.getPacket();
                 oos.reset();
                 oos.writeObject(requestPacket);
                 oos.flush();
@@ -464,7 +465,8 @@ public class MultiModeWaitFragment extends Fragment {
         public Boolean doInBackground(Void... voids) {
             boolean success = true;
             try {
-                Packet requestPacket = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
+                PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.EXIT_GAME).user(user).selectedRoom(selectedRoom);
+                Packet requestPacket = packetBuilder.getPacket();
                 ObjectOutputStream oos = socketManager.getOOS();
                 oos.reset();
                 oos.writeObject(requestPacket);
@@ -496,7 +498,8 @@ public class MultiModeWaitFragment extends Fragment {
             boolean success = true;
             try {
                 ObjectOutputStream oos = socketManager.getOOS();
-                Packet requestPacket = new Packet(Protocol.START_GAME, selectedRoom);
+                PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.START_GAME).selectedRoom(selectedRoom);
+                Packet requestPacket = packetBuilder.getPacket();
                 oos.reset();
                 oos.writeObject(requestPacket);
                 oos.flush();

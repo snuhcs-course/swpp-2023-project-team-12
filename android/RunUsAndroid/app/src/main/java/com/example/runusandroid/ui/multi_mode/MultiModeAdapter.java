@@ -33,6 +33,7 @@ import java.util.List;
 import MultiMode.MultiModeRoom;
 import MultiMode.MultiModeUser;
 import MultiMode.Packet;
+import MultiMode.PacketBuilder;
 import MultiMode.Protocol;
 
 public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.ViewHolder> {
@@ -153,7 +154,8 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
             boolean success = true;
             try {
                 ObjectOutputStream oos = socketManager.getOOS(); // 서버로 바이트스트림을 직렬화하기 위해 필요.
-                Packet requestPacket = new Packet(Protocol.ENTER_ROOM, user, selectedRoom);
+                PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.ENTER_ROOM).user(user).selectedRoom(selectedRoom);
+                Packet requestPacket = packetBuilder.getPacket();
                 oos.reset();
                 oos.writeObject(requestPacket);
                 oos.flush();
@@ -163,6 +165,7 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
             }
             return success;
         }
+
         @Override
         protected void onPostExecute(Boolean success) { // doInBackground()의 return값에 따라 작업 수행. 룸 리스트 업데이트, 입장하는 방 정보
             super.onPostExecute(success);

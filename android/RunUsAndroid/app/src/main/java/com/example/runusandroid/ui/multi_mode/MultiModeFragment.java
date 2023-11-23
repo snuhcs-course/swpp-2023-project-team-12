@@ -49,6 +49,7 @@ import java.util.List;
 import MultiMode.MultiModeRoom;
 import MultiMode.MultiModeUser;
 import MultiMode.Packet;
+import MultiMode.PacketBuilder;
 import MultiMode.Protocol;
 import MultiMode.RoomCreateInfo;
 import retrofit2.Call;
@@ -267,7 +268,8 @@ public class MultiModeFragment extends Fragment {
             boolean success = true;
             try {
                 ObjectOutputStream oos = socketManager.getOOS();
-                Packet requestPacket = new Packet(Protocol.ROOM_LIST, user);
+                PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.ROOM_LIST).user(user);
+                Packet requestPacket = packetBuilder.getPacket();
                 oos.reset();
                 oos.writeObject(requestPacket);
                 oos.flush();
@@ -291,7 +293,9 @@ public class MultiModeFragment extends Fragment {
             boolean success = false;
             try {
                 ObjectOutputStream oos = socketManager.getOOS();
-                Packet requestPacket = new Packet(Protocol.CREATE_ROOM, user, roomInfo[0]); // 서버에 보내는 패킷
+                PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.CREATE_ROOM).user(user).roomCreateInfo(roomInfo[0]);
+                Packet requestPacket = packetBuilder.getPacket();
+
                 oos.reset();
                 oos.writeObject(requestPacket); // 서버로 패킷 전송
                 oos.flush();
