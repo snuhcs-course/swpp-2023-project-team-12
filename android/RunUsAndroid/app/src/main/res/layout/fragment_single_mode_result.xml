@@ -216,7 +216,7 @@
             android:layout_height="40dp"
             android:background="@drawable/detail_result_button"
             android:text="상세 기록"
-            android:textColor="4AA570" />
+            android:textColor="#4AA570" />
     </LinearLayout>
 
 
