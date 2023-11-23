@@ -134,6 +134,7 @@
         android:background="@drawable/round_shape_green"
         android:fontFamily="@font/pretendardregular"
         android:text="가입 완료"
+        android:textColor="@color/white"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/radioGroupGender" />
