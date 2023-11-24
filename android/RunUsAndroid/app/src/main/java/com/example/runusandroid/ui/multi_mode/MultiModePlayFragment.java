@@ -72,6 +72,7 @@ import java.util.Objects;
 import MultiMode.MultiModeRoom;
 import MultiMode.MultiModeUser;
 import MultiMode.Packet;
+import MultiMode.PacketBuilder;
 import MultiMode.Protocol;
 import MultiMode.UserDistance;
 import okhttp3.ResponseBody;
@@ -84,6 +85,7 @@ public class MultiModePlayFragment extends Fragment {
     static final String STOP_LOCATION_SERVICE = "stop";
     private final List<LatLng> pathPoints = new ArrayList<>();
     private final List<Float> speedList = new ArrayList<>(); // 매 km 마다 속력 (km/h)
+    private final Location lastLocation = null;
     LocalDateTime iterationStartTime;
     MultiModeUser user = MultiModeFragment.user;
     SocketManager socketManager = SocketManager.getInstance();
@@ -98,7 +100,6 @@ public class MultiModePlayFragment extends Fragment {
     TextView timeGoalContentTextView;
     TextView goldDistanceTextView;
     TextView goldNickNameTextView;
-
     TextView goldLevelTextView;
     TextView silverDistanceTextView;
     TextView silverNickNameTextView;
@@ -119,7 +120,6 @@ public class MultiModePlayFragment extends Fragment {
     Handler sendDataHandler;
     Runnable sendDataRunnable;
     UserDistance[] userDistances;
-    private final Location lastLocation = null;
     private Handler remainTimeHandler;
     private long playLeaveButtonLastClickTime = 0;
     private long backButtonLastClickTime = 0;
@@ -229,7 +229,8 @@ public class MultiModePlayFragment extends Fragment {
         buttonConfirmPlayExit.setOnClickListener(v -> {
             dialog.dismiss();
             userExit = true;
-            Packet requestPacket = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
+            PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.EXIT_GAME).user(user).selectedRoom(selectedRoom);
+            Packet requestPacket = packetBuilder.getPacket();
             new ExitGameTask().execute(requestPacket);
         });
         dialog.show();
@@ -272,7 +273,8 @@ public class MultiModePlayFragment extends Fragment {
                     timeHandler.postDelayed(this, 1000);
                 } else if (isFinished == 1) {
                     if (isVisible() && isAdded()) {
-                        Packet requestPacket = new Packet(Protocol.FINISH_GAME, user, selectedRoom);
+                        PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.FINISH_GAME).user(user).selectedRoom(selectedRoom);
+                        Packet requestPacket = packetBuilder.getPacket();
                         AccountAPIFactory accountFactory = AccountAPIFactory.getInstance();
                         accountFactory.refreshToken(MultiModePlayFragment.this.requireContext());
                         finishedTask.execute(requestPacket);
@@ -359,7 +361,8 @@ public class MultiModePlayFragment extends Fragment {
         sendDataRunnable = new Runnable() {
             @Override
             public void run() {
-                Packet requestPacket = new Packet(Protocol.UPDATE_USER_DISTANCE, user, distance);
+                PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.UPDATE_USER_DISTANCE).user(user).distance(distance);
+                Packet requestPacket = packetBuilder.getPacket();
                 new SendDistanceTask().execute(requestPacket);
                 if (isFinished == 0) {
                     // 1초마다 Runnable 실행
@@ -595,7 +598,8 @@ public class MultiModePlayFragment extends Fragment {
                         Log.d("response", responseBodyString);
                         groupHistoryId = (int) responseBody.getLong("id");
                         Log.d("groupHistoryId", Integer.toString(groupHistoryId));
-                        Packet requestPacket = new Packet(Protocol.SAVE_GROUP_HISTORY, user, selectedRoom, groupHistoryId);
+                        PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.SAVE_GROUP_HISTORY).user(user).selectedRoom(selectedRoom).groupHistoryId(groupHistoryId);
+                        Packet requestPacket = packetBuilder.getPacket();
                         new SendSavedInfoTask().execute(requestPacket);
                     } catch (IOException | JSONException e) {
                         throw new RuntimeException(e);

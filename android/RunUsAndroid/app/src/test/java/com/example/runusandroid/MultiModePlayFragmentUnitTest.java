@@ -23,6 +23,7 @@ import java.util.List;
 import MultiMode.MultiModeRoom;
 import MultiMode.MultiModeUser;
 import MultiMode.Packet;
+import MultiMode.PacketBuilder;
 import MultiMode.Protocol;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -84,7 +85,9 @@ public class MultiModePlayFragmentUnitTest {
 
     @Test
     public void testSendDistanceTask() throws IOException {
-        Packet packet = new Packet(Protocol.UPDATE_USER_DISTANCE, user, distance);
+        PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.UPDATE_USER_DISTANCE).user(user).distance(distance);
+        Packet packet = packetBuilder.getPacket();
+        //Packet packet = new Packet(Protocol.UPDATE_USER_DISTANCE, user, distance);
 
         // Mock 객체의 동작 정의
         //SocketManager socketManager = mock(SocketManager.class); // SocketManager의 Mock 객체 생성
@@ -108,7 +111,9 @@ public class MultiModePlayFragmentUnitTest {
 
     @Test
     public void testSendFinishedTask() throws IOException {
-        Packet packet = new Packet(Protocol.FINISH_GAME, user, selectedRoom);
+        PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.FINISH_GAME).user(user).selectedRoom(selectedRoom);
+        Packet packet = packetBuilder.getPacket();
+        //Packet packet = new Packet(Protocol.FINISH_GAME, user, selectedRoom);
         Handler timeHandlerMock = mock(Handler.class);
         Handler sendDataHandlerMock = mock(Handler.class);
         fragment.setTimeHandler(timeHandlerMock);
@@ -123,7 +128,9 @@ public class MultiModePlayFragmentUnitTest {
     @Test
     public void testSendSavedInfoTask() throws IOException {
         int groupHistoryId = 1;
-        Packet packet = new Packet(Protocol.SAVE_GROUP_HISTORY, user, selectedRoom, groupHistoryId);
+        PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.SAVE_GROUP_HISTORY).user(user).selectedRoom(selectedRoom).groupHistoryId(groupHistoryId);
+        Packet packet = packetBuilder.getPacket();
+        //Packet packet = new Packet(Protocol.SAVE_GROUP_HISTORY, user, selectedRoom, groupHistoryId);
         socketManager.openSocket();
         fragment.setSocketManager(socketManager);
         boolean success = fragment.new SendSavedInfoTask().doInBackground(packet);
@@ -133,7 +140,9 @@ public class MultiModePlayFragmentUnitTest {
 
     @Test
     public void testExitGameTask() throws IOException {
-        Packet packet = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
+        PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.EXIT_GAME).user(user).selectedRoom(selectedRoom);
+        Packet packet = packetBuilder.getPacket();
+        //Packet packet = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
         socketManager.openSocket();
         fragment.setSocketManager(socketManager);
         Handler timeHandlerMock = mock(Handler.class);

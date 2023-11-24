@@ -3,7 +3,7 @@ package MultiMode;
 import java.util.List;
 
 public class PacketBuilder {
-    private Packet packet;
+    private final Packet packet;
 
     public PacketBuilder() {
         this.packet = new Packet();
@@ -63,4 +63,3 @@ public class PacketBuilder {
         return packet;
     }
 }
-
