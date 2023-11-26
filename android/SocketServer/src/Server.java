@@ -113,31 +113,39 @@ public class Server {
                                 oos.writeObject(fullRoomPacket);
                                 oos.flush();
                             } else {
-                                enteredRoom.enterUser(user);
+                                enteredRoom.enterUser(user, oos);
+                                //enteredRoom.updateRoom(user);
+                                /*
                                 packetBuilder = new PacketBuilder().protocol(Protocol.ENTER_ROOM).user(user).selectedRoom(enteredRoom);
                                 Packet enterRoomPacket = packetBuilder.getPacket();
                                 oos.reset();
                                 oos.writeObject(enterRoomPacket);
                                 oos.flush();
-                                System.out.println(enteredRoom);
+
+
                                 packetBuilder = new PacketBuilder().protocol(Protocol.UPDATE_ROOM).user(user).selectedRoom(enteredRoom);
                                 Packet updateRoomPacket = packetBuilder.getPacket();
                                 broadcastToRoomUsers(enteredRoom, updateRoomPacket);
 
-                                enteredRoom.addOutputStream(oos);
+                                 */
+                                System.out.println(enteredRoom);
+                                //enteredRoom.addOutputStream(oos);
                             }
                         } else if (((Packet) data).getProtocol() == Protocol.EXIT_ROOM) {
                             MultiModeRoom exitRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
                             int index = exitRoom.exitUser(user);
-                            if (index != -1)
-                                exitRoom.removeOutputStream(index);
+                            //if (index != -1)
+                            //    exitRoom.removeOutputStream(index);
                             // Packet exitRoomPacket = new Packet(Protocol.EXIT_ROOM,
                             // RoomManager.getRoomList(), user, exitRoom);
                             // oos.writeObject(exitRoomPacket);
                             // oos.flush();
+                            /*
                             packetBuilder = new PacketBuilder().protocol(Protocol.EXIT_ROOM).user(user).selectedRoom(exitRoom);
                             Packet exitRoomPacket = packetBuilder.getPacket();
                             broadcastToRoomUsers(exitRoom, exitRoomPacket);
+
+                             */
 
                         } else if (((Packet) data).getProtocol() == Protocol.UPDATE_USER_DISTANCE) {
                             MultiModeRoom updateRoom = RoomManager.getInGameRoom(user.getRoom().getId());
@@ -152,19 +160,25 @@ public class Server {
                             }
                         } else if (((Packet) data).getProtocol() == Protocol.START_GAME) {
                             MultiModeRoom enteredRoom = RoomManager.getRoom(((Packet) data).getSelectedRoom().getId());
-                            enteredRoom.startGame();
                             RoomManager.startRoom(enteredRoom);
+                            enteredRoom.startGame();
+                            /*
                             packetBuilder = new PacketBuilder().protocol(Protocol.START_GAME).selectedRoom(enteredRoom);
                             Packet startGamePacket = packetBuilder.getPacket();
                             broadcastToRoomUsers(enteredRoom, startGamePacket);
+
+                             */
                         } else if (((Packet) data).getProtocol() == Protocol.EXIT_GAME) {
                             MultiModeRoom exitRoom = RoomManager
                                     .getInGameRoom(((Packet) data).getSelectedRoom().getId());
                             System.out.println(
                                     "EXIT_GAME packet received from " + user.getId() + user.getNickName() + "\n");
                             int index = exitRoom.exitUser(user);
+                            /*
                             if (index != -1)
                                 exitRoom.removeOutputStream(index);
+                                
+                             */
                         } else if (((Packet) data).getProtocol() == Protocol.FINISH_GAME) {
                             MultiModeRoom finishRoom = RoomManager
                                     .getInGameRoom(((Packet) data).getSelectedRoom().getId());
@@ -199,11 +213,14 @@ public class Server {
                         System.out.println("user room : " + user.getRoom());
                         MultiModeRoom exitRoom = RoomManager.getRoom(user.getRoom().getId());
                         int index = exitRoom.exitUser(user);
+                        /*
                         if (index != -1)
                             exitRoom.removeOutputStream(index);
                         packetBuilder = new PacketBuilder().protocol(Protocol.EXIT_ROOM).user(user).selectedRoom(exitRoom);
                         Packet exitRoomPacket = packetBuilder.getPacket();
                         broadcastToRoomUsers(exitRoom, exitRoomPacket);
+
+                         */
                     }
                     allClientOutputStreams.removeIf(clientOOS -> clientOOS == oos);
                     break;
