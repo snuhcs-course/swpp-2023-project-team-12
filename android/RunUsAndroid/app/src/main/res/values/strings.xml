@@ -8,7 +8,7 @@
     <string name="title_multi_mode_wait">MultiModeWait</string>
     <string name="title_multi_mode_play">MultiModePlay</string>
     <string name="title_history">히스토리</string>
-    <string name="title_user_setting">환경설정</string>
+    <string name="title_user_setting">마이페이지</string>
     <string name="leaveButtonText">떠나기</string>
     <string name="title_multi_mode_result" />
     <string name="MultiModeExitRoomMessage">방에서 나가시겠습니까?</string>
