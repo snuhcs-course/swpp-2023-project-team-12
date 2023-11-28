@@ -173,10 +173,13 @@ public class MainActivity2 extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         //여기서도 리턴이 false로 들어온다면 (사용자가 권한 허용 거부)
+        Log.d("test:permission", "onRequestPermissionsResult");
         if (!permission.permissionResult(requestCode, permissions, grantResults)) {
             // 다시 permission 요청
-            permission.requestPermission();
+            //permission.requestPermission();
+            Log.d("test:permission", "denied");
         } else{
+            Log.d("test:permission", "accepted");
             createNotificationChannel();
             activityManager.removeActivityTransitions(pendingIntent);
             this.unregisterReceiver(activityReceiver);
