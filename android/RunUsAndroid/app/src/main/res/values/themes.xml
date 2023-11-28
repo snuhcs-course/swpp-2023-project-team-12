@@ -8,6 +8,7 @@
         <item name="android:textViewStyle">@style/pretendardTextView</item>
         <item name="android:buttonStyle">@style/pretendardButton</item>
         <item name="android:editTextStyle">@style/pretendardEditText</item>
+        <item name="alertDialogTheme">@style/AppTheme.AlertDialogTheme</item>
     </style>
 
     <style name="Theme.RunUsAndroid" parent="Base.Theme.RunUsAndroid" />
@@ -22,5 +23,27 @@
 
     <style name="pretendardEditText" parent="android:Widget.EditText">
         <item name="android:fontFamily">@font/pretendardregular</item>
+    </style>
+
+    <style name="AppTheme.AlertDialogTheme" parent="ThemeOverlay.AppCompat.Dialog.Alert">
+        <item name="colorAccent">@android:color/black</item>
+        <item name="colorPrimary">#FF000000</item>
+        <item name="android:textAppearanceMedium">@style/AppTheme.AlertDialogTheme.MyTextAppearanceMedium</item>
+        <item name="android:textSize">14dp</item>
+        <item name="android:windowTitleStyle">@style/AppTheme.AlertDialogTheme.WindowTitle</item>
+        <item name="buttonBarNegativeButtonStyle">@style/AppTheme.AlertDialogTheme.Button</item>
+    </style>
+
+    <style name="AppTheme.AlertDialogTheme.WindowTitle" parent="RtlOverlay.DialogWindowTitle.AppCompat">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">20dp</item>
+    </style>
+
+    <style name="AppTheme.AlertDialogTheme.Button" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <item name="android:textColor">@android:color/darker_gray</item>
+    </style>
+
+    <style name="AppTheme.AlertDialogTheme.MyTextAppearanceMedium" parent="TextAppearance.AppCompat.Medium">
+        <item name="android:textSize">14dp</item>
     </style>
 </resources>

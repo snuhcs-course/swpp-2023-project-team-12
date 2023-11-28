@@ -62,7 +62,8 @@ public class PermissionSupport {
     //요청한 권한에 대한 결과값 판단 및 처리
     public boolean permissionResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults){
         //우선 requestCode가 아까 위에 final로 선언하였던 숫자와 맞는지, 결과값의 길이가 0보다는 큰지 먼저 체크
-        if(requestCode == MULTIPLE_PERMISSIONS && (grantResults.length >0)) {
+        //if(requestCode == MULTIPLE_PERMISSIONS && (grantResults.length >0)) {
+        if((grantResults.length >0)) {
             for(int i=0; i< grantResults.length; i++){
                 //grantResults 가 0이면 사용자가 허용한 것 / -1이면 거부한 것
                 //-1이 있는지 체크하여 하나라도 -1이 나온다면 false를 리턴
