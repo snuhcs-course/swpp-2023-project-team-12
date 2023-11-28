@@ -26,7 +26,8 @@ public class RoomManager implements Serializable {
         int roomId = atomicInteger.incrementAndGet();
 
         MultiModeRoom room = new MultiModeRoom(roomId, roomCreateInfo);
-        room.enterUser(owner);
+        RoomObserver observer = new RoomObserver(room);
+        room.addUser(owner);
         room.setRoomOwner(owner);
         room.addOutputStream(o);
         roomList.add(room);
