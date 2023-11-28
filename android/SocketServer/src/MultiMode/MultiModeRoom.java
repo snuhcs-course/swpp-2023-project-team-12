@@ -1,5 +1,6 @@
 package MultiMode;
 
+import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.time.Duration;
@@ -17,6 +18,7 @@ public class MultiModeRoom implements Serializable {
     private final int GAME_STARTED = 1;
     private final int GAME_NOT_STARTED = 0;
     private final transient List<ObjectOutputStream> clientOutputStreams = new ArrayList<>();
+    private transient RoomObserver observer;
     private final HashSet<Long> finishedUserSet = new HashSet<>();
     private final Queue<UserDistance> updateQueue = new LinkedList<>();
     UserDistance[] top3UserDistances;
@@ -53,10 +55,38 @@ public class MultiModeRoom implements Serializable {
     public MultiModeRoom() {
 
     }
+    public void registerObserver(RoomObserver observer) {
+        this.observer = observer;
+    }
 
-    public void enterUser(MultiModeUser user) {
+    public void notifyObserver(Packet packet) {
+        this.observer.update(packet);
+    }
+
+    public void addUser(MultiModeUser user) {
         user.enterRoom(this);
         userList.add(user);
+    }
+
+    public void enterUser(MultiModeUser user, ObjectOutputStream oos) throws IOException {
+        addUser(user);
+        Packet enterRoomPacket = new PacketBuilder()
+                .protocol(Protocol.ENTER_ROOM)
+                .user(user)
+                .selectedRoom(this)
+                .getPacket();
+        oos.reset();
+        oos.writeObject(enterRoomPacket);
+        oos.flush();
+
+        Packet updateRoomPacket = new PacketBuilder()
+                .protocol(Protocol.UPDATE_ROOM)
+                .user(user)
+                .selectedRoom(this)
+                .getPacket();
+        notifyObserver(updateRoomPacket);
+        addOutputStream(oos);
+
     }
 
     public int exitUser(MultiModeUser user) {
@@ -89,6 +119,9 @@ public class MultiModeRoom implements Serializable {
             }
         }
 
+        if (index != -1)
+            removeOutputStream(index);
+
         if (userList.size() < 1) {
             System.out.println("exitroom - roomId is " + id);
             System.out.println();
@@ -97,10 +130,19 @@ public class MultiModeRoom implements Serializable {
             RoomManager.removeRoom(this);
             return index;
         }
-
         if (this.roomOwner.equals(user)) {
             this.roomOwner = userList.get(0);
         }
+
+        if(status == GAME_NOT_STARTED) {
+            Packet exitRoomPacket = new PacketBuilder()
+                    .protocol(Protocol.EXIT_ROOM)
+                    .user(user)
+                    .selectedRoom(this)
+                    .getPacket();
+            notifyObserver(exitRoomPacket);
+        }
+
         return index;
     }
 
@@ -196,9 +238,6 @@ public class MultiModeRoom implements Serializable {
         clientOutputStreams.remove(index);
     }
 
-    public void addUser(MultiModeUser user) {
-        userList.add(user);
-    }
 
     public boolean isRoomOwner(MultiModeUser user) {
         return user.getId() == roomOwner.getId();
@@ -267,6 +306,12 @@ public class MultiModeRoom implements Serializable {
 
     public void startGame() {
         status = GAME_STARTED;
+
+        Packet startGamePacket = new PacketBuilder()
+                .protocol(Protocol.START_GAME)
+                .selectedRoom(this)
+                .getPacket();
+        notifyObserver(startGamePacket);
     }
 
     public boolean canUpdate() {
