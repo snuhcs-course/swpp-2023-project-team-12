@@ -24,7 +24,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
             "height",
             "weight",
             "age",
-            
         ]
 
 

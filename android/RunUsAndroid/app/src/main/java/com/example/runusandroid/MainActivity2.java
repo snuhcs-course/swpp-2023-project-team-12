@@ -8,9 +8,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -172,21 +174,89 @@ public class MainActivity2 extends AppCompatActivity {
     // Request Permission에 대한 결과 값 받아와
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        //여기서도 리턴이 false로 들어온다면 (사용자가 권한 허용 거부)
-        Log.d("test:permission", "onRequestPermissionsResult");
-        if (!permission.permissionResult(requestCode, permissions, grantResults)) {
+        // 권한이 전부 있다면 정상적으로 진행
+        if (permission.checkPermission()) {
+            Log.d("test:permission", "allPermissionGranted");
             // 다시 permission 요청
-            //permission.requestPermission();
-            Log.d("test:permission", "denied");
-        } else{
-            Log.d("test:permission", "accepted");
             createNotificationChannel();
             activityManager.removeActivityTransitions(pendingIntent);
             this.unregisterReceiver(activityReceiver);
             this.registerReceiver(activityReceiver, filter, RECEIVER_EXPORTED);
             activityManager.registerActivityTransitions(pendingIntent);
+        } else if (ActivityCompat.shouldShowRequestPermissionRationale(
+                this, Manifest.permission.ACTIVITY_RECOGNITION)) {
+            Log.d("test:permission", "showRationaleActivityRecognition");
+            showRationaleActivityRecognition();
+        } else if (ActivityCompat.shouldShowRequestPermissionRationale(
+                this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
+            Log.d("test:permission", "showRationaleAccessLocation");
+            showRationaleAccessLocation();
+        }else if (ActivityCompat.shouldShowRequestPermissionRationale(
+                this, Manifest.permission.POST_NOTIFICATIONS)) {
+            Log.d("test:permission", "showRationalePostNotifications");
+            showRationalePostNotifications();
+        }else{
+            Log.d("test:permission", "unableToUseApp");
+            showPermissionDialog();
         }
+
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    // 최후통첩, 설정으로 가서 권한설정하고 오든가 앱을 떠나든가 해라
+    private void showPermissionDialog() {
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this, R.style.AppTheme_AlertDialogTheme);
+        builder.setTitle("권한 요청");
+        builder.setMessage("앱을 사용하기 위해서는 권한이 필요합니다.");
+        builder.setPositiveButton("설정", (dialog, which) -> {
+            Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    .setData(Uri.parse("package:" + getPackageName()));
+            startActivity(intent);
+            finish();
+        });
+        builder.setNegativeButton("종료", (dialog, which) -> finish());
+
+        builder.setCancelable(false);
+        builder.show();
+    }
+
+    private void showRationaleActivityRecognition() {
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this, R.style.AppTheme_AlertDialogTheme);
+        builder.setTitle("활동 권한");
+        builder.setMessage("달리기 상태를 인식하기 위해 활동 권한이 필요합니다. RunUs는 어떠한 형태로도 수집된 활동 정보를 저장하지 않습니다.");
+        builder.setPositiveButton("재설정", (dialog, which) -> {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACTIVITY_RECOGNITION}, 1001);
+        });
+        builder.setNegativeButton("종료", (dialog, which) -> finish());
+
+        builder.setCancelable(false);
+        builder.show();
+    }
+
+    private void showRationaleAccessLocation() {
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this, R.style.AppTheme_AlertDialogTheme);
+        builder.setTitle("위치 권한");
+        builder.setMessage("달리기 거리를 확인하기 위해 위치 권한이 필요합니다. RunUs는 유저 개인을 위한 목표 추천 목적 외 어떠한 형태로도 위치 정보를 저장 및 활용하지 않습니다.");
+        builder.setPositiveButton("재설정", (dialog, which) -> {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1002);
+        });
+        builder.setNegativeButton("종료", (dialog, which) -> finish());
+
+        builder.setCancelable(false);
+        builder.show();
+    }
+
+    private void showRationalePostNotifications() {
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this, R.style.AppTheme_AlertDialogTheme);
+        builder.setTitle("알림 권한");
+        builder.setMessage("예정된 시작 시간을 알리기 위해 알림 권한이 필요합니다.");
+        builder.setPositiveButton("재설정", (dialog, which) -> {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1003);
+        });
+        builder.setNegativeButton("종료", (dialog, which) -> finish());
+
+        builder.setCancelable(false);
+        builder.show();
     }
 
 }

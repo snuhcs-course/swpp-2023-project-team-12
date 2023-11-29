@@ -221,7 +221,7 @@ public class SingleModeFragment extends Fragment {
                         String paceString = "--'--\"";
                         currentPaceText.setText(paceString);
                     }
-                    currentDistanceText.setText(String.format(Locale.getDefault(), "%.2f " + "km", distance));
+                    currentDistanceText.setText(String.format(Locale.getDefault(), "%.1f " + "km", Math.floor(distance * 10) / 10));
 
                     lastLocation = location;
 
@@ -824,7 +824,7 @@ public class SingleModeFragment extends Fragment {
         lastLocation = null;
         distance = 0;
         currentPace.setVisibility(View.VISIBLE);
-        currentDistanceText.setText("0.00 km");
+        currentDistanceText.setText("0.0 km");
         runningNow = true;
         currentTimeText.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
             public void onChronometerTick(Chronometer chronometer) {
@@ -879,6 +879,7 @@ public class SingleModeFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
+        Log.d("test:singlemode:lifecycle", "onDestroyView");
         super.onDestroyView();
         binding = null;
         currentTimeText.stop();
@@ -927,17 +928,19 @@ public class SingleModeFragment extends Fragment {
         };
 
         requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
+        Log.d("test:singlemode:lifecycle", "onResume, startlocation : " + startlocation);
         if (!startlocation) {
-            if (ActivityCompat.checkSelfPermission(mainActivity,
-                    Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-                        1001);
-            }
-            if (ActivityCompat.checkSelfPermission(mainActivity,
-                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        1002);
-            }
+//            if (ActivityCompat.checkSelfPermission(mainActivity,
+//                    Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//                ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+//                        1001);
+//            }
+//            if (ActivityCompat.checkSelfPermission(mainActivity,
+//                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//                ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+//                        1002);
+//            }
+            Log.d("test:singlemode:lifecycle", "initiate location service");
             Intent intent = new Intent(getContext(), BackGroundLocationService.class);
             intent.setAction(START_LOCATION_SERVICE);
             getActivity().startForegroundService(intent);
@@ -951,6 +954,13 @@ public class SingleModeFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+        Log.d("test:singlemode:lifecycle", "onPause, startlocation : " + startlocation);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.d("test:singlemode:lifecycle", "onStop");
     }
 
     void saveHistoryDataOnSingleMode() throws JSONException {
@@ -1190,7 +1200,7 @@ public class SingleModeFragment extends Fragment {
                 goalTimeText.setText("");
                 lastLocation = null;
                 distance = 0;
-                currentDistanceText.setText("0.00 km");
+                currentDistanceText.setText("0.0 km");
                 currentTimeText.setBase(SystemClock.elapsedRealtime());
             }
         });

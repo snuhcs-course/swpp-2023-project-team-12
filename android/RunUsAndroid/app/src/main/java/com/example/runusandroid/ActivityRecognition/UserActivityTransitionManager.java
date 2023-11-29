@@ -66,7 +66,7 @@ public class UserActivityTransitionManager {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACTIVITY_RECOGNITION)
                     != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(context, "permission not granted", Toast.LENGTH_LONG).show();
+                //Toast.makeText(context, "permission not granted", Toast.LENGTH_LONG).show();
                 return;
             }
         }
@@ -83,7 +83,7 @@ public class UserActivityTransitionManager {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACTIVITY_RECOGNITION)
                     != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(context, "permission not granted", Toast.LENGTH_LONG).show();
+                //Toast.makeText(context, "permission not granted", Toast.LENGTH_LONG).show();
                 return;
             }
         }
