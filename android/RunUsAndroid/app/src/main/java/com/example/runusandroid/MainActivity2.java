@@ -55,6 +55,7 @@ public class MainActivity2 extends AppCompatActivity {
     private final SocketManager socketManager = SocketManager.getInstance();
     static final String START_SOCKET_SERVICE = "start";
     static final String STOP_SOCKET_SERVICE = "stop";
+    private boolean isLogin = true;
 
     public UserActivityBroadcastReceiver activityReceiver;
     UserActivityTransitionManager activityManager;
@@ -64,8 +65,6 @@ public class MainActivity2 extends AppCompatActivity {
     public NavController navController;
     private PermissionSupport permission;
     IntentFilter filter;
-    Handler heartbeatHandler;
-    Runnable heartbeatRunnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +81,7 @@ public class MainActivity2 extends AppCompatActivity {
 
         if (elapsedTime >= 432000 || token == null) {
             // 토큰이 저장되어 있지 않으면 로그인되어 있지 않다고 판단하고 LoginActivity로 전환
+            isLogin = false;
             Intent intent = new Intent(MainActivity2.this, LoginActivity.class);
             startActivity(intent);
             finish();  // MainActivity2를 종료
@@ -154,6 +154,7 @@ public class MainActivity2 extends AppCompatActivity {
 
             }).start();
         }
+        Log.d("socket service","start");
         Intent intent = new Intent(this, BackGroundSocketService.class);
         intent.setAction(START_SOCKET_SERVICE);
         this.startForegroundService(intent);
@@ -217,9 +218,11 @@ public class MainActivity2 extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Intent intent = new Intent(this, BackGroundSocketService.class);
-        intent.setAction(STOP_SOCKET_SERVICE);
-        this.startForegroundService(intent);
+        if(isLogin) {
+            Intent intent = new Intent(this, BackGroundSocketService.class);
+            intent.setAction(STOP_SOCKET_SERVICE);
+            this.startForegroundService(intent);
+        }
         //heartbeatHandler.removeCallbacks(heartbeatRunnable);
     }
 
