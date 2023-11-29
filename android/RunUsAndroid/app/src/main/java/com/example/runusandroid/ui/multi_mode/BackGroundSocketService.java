@@ -25,6 +25,7 @@ public class BackGroundSocketService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d("start service","socket service come");
         if(intent==null){
             return START_STICKY;
         }
@@ -34,6 +35,7 @@ public class BackGroundSocketService extends Service {
             startForeground(1133, notification);
 
         } else if (Objects.equals(intent.getAction(), STOP_SOCKET_SERVICE)) {
+            Log.d("start service","socket service stop");
             stopForeground(true);
             stopSelf();
         }
@@ -41,10 +43,10 @@ public class BackGroundSocketService extends Service {
     }
 
     private Notification getNotification() {
-        NotificationChannel channel = new NotificationChannel("1_location_channel", "location", NotificationManager.IMPORTANCE_HIGH);
+        NotificationChannel channel = new NotificationChannel("1_Socket_channel", "location", NotificationManager.IMPORTANCE_LOW);
         NotificationManager notificationManager = getSystemService(NotificationManager.class);
         notificationManager.createNotificationChannel(channel);
-        Notification.Builder builder = new Notification.Builder(getApplicationContext(), "1_location_channel").setAutoCancel(false);
+        Notification.Builder builder = new Notification.Builder(getApplicationContext(), "1_Socket_channel").setAutoCancel(false);
 
         return builder.build();
     }
