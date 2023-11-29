@@ -73,7 +73,7 @@ public class BackGroundLocationService extends Service {
                 startForeground(1122, notification);
             }
 
-        } else if (intent != null && intent.getAction().equals(STOP_LOCATION_SERVICE)) {
+        } else if (intent != null && intent.getAction().equals(STOP_LOCATION_SERVICE) && fusedLocationClient != null) {
             fusedLocationClient.removeLocationUpdates(mLocationCallback);
             stopForeground(true);
             stopSelf();
