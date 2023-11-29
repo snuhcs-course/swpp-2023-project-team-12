@@ -27,29 +27,45 @@
         tools:targetApi="31">
         <activity
             android:name=".MainActivity2"
-            android:exported="true">
+            android:exported="true"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <service
             android:name=".ui.single_mode.BackGroundLocationService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true"
+            android:screenOrientation="portrait"></service>
 
         <activity
             android:name=".MainActivity"
-            android:exported="false"></activity>
+            android:exported="false"
+            android:screenOrientation="portrait"></activity>
 
-        <activity android:name=".LoginActivity"></activity>
-        <activity android:name=".SignUpStep1Activity"></activity>
-        <activity android:name=".SignUpStep2Activity"></activity>
-        <activity android:name=".SignUpStep3Activity"></activity>
-        <activity android:name=".SignUpStep4Activity"></activity>
-        <activity android:name=".FindIdActivity"></activity>
-        <activity android:name=".ResetPasswordActivity"></activity>
+        <activity
+            android:name=".LoginActivity"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".SignUpStep1Activity"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".SignUpStep2Activity"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".SignUpStep3Activity"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".SignUpStep4Activity"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".FindIdActivity"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".ResetPasswordActivity"
+            android:screenOrientation="portrait"></activity>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
