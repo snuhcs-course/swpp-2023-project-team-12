@@ -206,7 +206,7 @@ public class SingleModeFragment extends Fragment {
                             Log.d("test:distance:total", "Distance:" + distance);
                         }
                     }
-                    currentDistanceText.setText(String.format(Locale.getDefault(), "%.2f " + "km", distance));
+                    currentDistanceText.setText(String.format(Locale.getDefault(), "%.1f " + "km", distance));
 
                     lastLocation = location;
 
@@ -797,7 +797,7 @@ public class SingleModeFragment extends Fragment {
         lastLocation = null;
         distance = 0;
         currentPace.setVisibility(View.VISIBLE);
-        currentDistanceText.setText("0.00 km");
+        currentDistanceText.setText("0.0 km");
         runningNow = true;
         currentTimeText.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
             public void onChronometerTick(Chronometer chronometer) {
@@ -1163,7 +1163,7 @@ public class SingleModeFragment extends Fragment {
                 goalTimeText.setText("");
                 lastLocation = null;
                 distance = 0;
-                currentDistanceText.setText("0.00 km");
+                currentDistanceText.setText("0.0 km");
                 currentTimeText.setBase(SystemClock.elapsedRealtime());
             }
         });
