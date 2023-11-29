@@ -1,14 +1,12 @@
 import random
 import secrets
 import string
-import json
-from datetime import datetime, timedelta
-from django.http import JsonResponse
+from datetime import timedelta
 from venv import logger
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from account.models import CustomUser
-from history.models import history_record, group_history_record
+from history.models import HistoryRecord, GroupHistoryRecord
 from .serializers import (
     EmailSerializer,
     ResetPasswordSerializer,
@@ -118,7 +116,6 @@ class FindUsernameAndSendEmailView(APIView):
             return Response({"message": "User not found"}, status=404)
 
 
-
 # 임시 비밀번호 생성기
 def generate_temp_password(length=10):
     characters = string.ascii_letters + string.digits + string.punctuation
@@ -190,30 +187,39 @@ class UserProfileView(APIView):
         print(serializer.data)
 
         return Response(serializer.data)
-    
+
+
 def processBadgeCollection(badge_collection, history_instance):
-    #return 1000000000 #for reset(testing)
+    # return 1000000000 #for reset(testing)
     if badge_collection % 10 != 1:
         print("badge1")
-        history_instances = history_record.objects.filter(user_id = history_instance.user_id)
+        history_instances = HistoryRecord.objects.filter(
+            user_id=history_instance.user_id
+        )
         print("history count : ", len(history_instances))
         if len(history_instances) >= 5:
             badge_collection += 1
-    if ((int) (badge_collection/10)) % 10 != 1:
+    if ((int)(badge_collection / 10)) % 10 != 1:
         print("badge2")
         if history_instance.is_group is True:
-            
-            group_history_list = group_history_record.objects.filter(id=history_instance.group_history_id)
+            group_history_list = GroupHistoryRecord.objects.filter(
+                id=history_instance.group_history_id
+            )
             print(group_history_list)
             group_history_instance = None
             if len(group_history_list) >= 1:
                 group_history_instance = group_history_list[0]
-                if group_history_instance.first_place_user_id == history_instance.user_id:
+                if (
+                    group_history_instance.first_place_user_id
+                    == history_instance.user_id
+                ):
                     badge_collection += 10
 
-    if ((int) (badge_collection/100)) % 10 != 1:
+    if ((int)(badge_collection / 100)) % 10 != 1:
         print("badge3")
-        history_instances = history_record.objects.filter(user_id = history_instance.user_id)
+        history_instances = HistoryRecord.objects.filter(
+            user_id=history_instance.user_id
+        )
         count = 0
         for history in history_instances:
             if history.is_mission_succeeded > 0:
@@ -222,9 +228,11 @@ def processBadgeCollection(badge_collection, history_instance):
         if count >= 5:
             badge_collection += 100
 
-    if ((int) (badge_collection/1000)) % 10 != 1:
+    if ((int)(badge_collection / 1000)) % 10 != 1:
         print("badge4")
-        history_instances = history_record.objects.filter(user_id = history_instance.user_id)
+        history_instances = HistoryRecord.objects.filter(
+            user_id=history_instance.user_id
+        )
         count = 0
         current_date = history_instance.start_time.date()
         print(current_date)
@@ -235,44 +243,50 @@ def processBadgeCollection(badge_collection, history_instance):
                     current_date = current_date - timedelta(days=1)
                     print(current_date)
                     break
-        if count >= 4: badge_collection += 1000
-    if ((int) (badge_collection/10000)) % 10 != 1:
+        if count >= 4:
+            badge_collection += 1000
+    if ((int)(badge_collection / 10000)) % 10 != 1:
         print("badge5")
         if history_instance.is_group is True:
-            group_history_list = group_history_record.objects.filter(first_place_user_id = history_instance.user_id)
+            group_history_list = GroupHistoryRecord.objects.filter(
+                first_place_user_id=history_instance.user_id
+            )
             if len(group_history_list) >= 10:
                 badge_collection += 10000
-    if ((int) (badge_collection/100000)) % 10 != 1:
+    if ((int)(badge_collection / 100000)) % 10 != 1:
         print("badge6")
 
-        if history_instance.distance > 5: 
+        if history_instance.distance > 5:
             duration_seconds = history_instance.duration.total_seconds()
             print(history_instance.duration)
             print(duration_seconds)
             if duration_seconds != 0:
                 avg_speed = history_instance.distance / (duration_seconds / 3600)
-            else: avg_speed = 0
-            if avg_speed > 12: badge_collection += 100000
+            else:
+                avg_speed = 0
+            if avg_speed > 12:
+                badge_collection += 100000
 
-
-    if ((int) (badge_collection/1000000)) % 10 != 1:
+    if ((int)(badge_collection / 1000000)) % 10 != 1:
         print("badge7")
 
         if history_instance.distance >= 21:
             badge_collection += 1000000
-    if ((int) (badge_collection/10000000)) % 10 != 1:
+    if ((int)(badge_collection / 10000000)) % 10 != 1:
         print("badge8")
 
         if history_instance.distance >= 42.195:
             badge_collection += 10000000
 
-    if ((int) (badge_collection/100000000)) % 10 != 1:
+    if ((int)(badge_collection / 100000000)) % 10 != 1:
         print("badge9")
 
         if history_instance.distance >= 42.195 and history_instance.is_group is True:
-            group_history_instance = group_history_record.objects.get(id=history_instance.group_history_id)
+            group_history_instance = GroupHistoryRecord.objects.get(
+                id=history_instance.group_history_id
+            )
             if group_history_instance.first_place_user_id == history_instance.user_id:
                 badge_collection += 100000000
 
-    print("return badge_collection :" , badge_collection)
+    print("return badge_collection :", badge_collection)
     return badge_collection
