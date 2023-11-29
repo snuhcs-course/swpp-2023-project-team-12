@@ -1,6 +1,8 @@
 package com.example.runusandroid;
 
+
 import android.Manifest;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -20,6 +22,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
@@ -27,8 +30,10 @@ import androidx.navigation.ui.NavigationUI;
 import com.example.runusandroid.ActivityRecognition.UserActivityBroadcastReceiver;
 import com.example.runusandroid.ActivityRecognition.UserActivityTransitionManager;
 import com.example.runusandroid.databinding.ActivityMain2Binding;
+import com.example.runusandroid.ui.multi_mode.BackGroundSocketService;
 import com.example.runusandroid.ui.multi_mode.MultiModePlayFragment;
 import com.example.runusandroid.ui.multi_mode.SocketManager;
+import com.example.runusandroid.ui.single_mode.BackGroundLocationService;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -48,6 +53,8 @@ import MultiMode.Protocol;
 public class MainActivity2 extends AppCompatActivity {
 
     private final SocketManager socketManager = SocketManager.getInstance();
+    static final String START_SOCKET_SERVICE = "start";
+    static final String STOP_SOCKET_SERVICE = "stop";
 
     public UserActivityBroadcastReceiver activityReceiver;
     UserActivityTransitionManager activityManager;
@@ -128,7 +135,6 @@ public class MainActivity2 extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        Log.d("test:lifecycle:main", "onStart");
         this.registerReceiver(activityReceiver, filter, RECEIVER_EXPORTED);
         activityManager.registerActivityTransitions(pendingIntent);
 
@@ -144,10 +150,14 @@ public class MainActivity2 extends AppCompatActivity {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                heartbeatHandler.post(heartbeatRunnable);
+                //heartbeatHandler.post(heartbeatRunnable);
 
             }).start();
         }
+        Intent intent = new Intent(this, BackGroundSocketService.class);
+        intent.setAction(START_SOCKET_SERVICE);
+        this.startForegroundService(intent);
+        /*
         heartbeatHandler = new Handler(Looper.getMainLooper());
         heartbeatRunnable = new Runnable() {
             @Override
@@ -163,6 +173,7 @@ public class MainActivity2 extends AppCompatActivity {
                         try {
                             e.printStackTrace();
                             SocketManager.getInstance().resetInstance();
+                            heartbeatHandler.postDelayed(this, 5000);
                         } catch (IOException ex) {
                             ex.printStackTrace();
                             throw new RuntimeException(ex);
@@ -171,13 +182,34 @@ public class MainActivity2 extends AppCompatActivity {
                 }).start();
             }
         };
+        */
+    }
+    /*
+    @Override
+    protected void onPause() {
+        Intent notificationIntent = new Intent(this, MainActivity2.class);
+        PendingIntent pendingIntent =
+                PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+
+        Notification notification =
+                new Notification.Builder(this,"MultiModeWait")
+                        .setContentTitle("RunUs")
+                        .setContentText("앱이실행중입니다.")
+                        .setSmallIcon(R.drawable.runus_logo)
+                        .setContentIntent(pendingIntent)
+                        .build();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            startForeground(ONGOING_NOTIFICATION_ID, notification);
+        }
+        Log.d("test:lifecycle:main", "onpause");
+        super.onPause();
     }
 
-
+     */
 
     @Override
     protected void onStop() {
-        Log.d("test:lifecycle:main", "onStop");
         activityManager.removeActivityTransitions(pendingIntent);
         this.unregisterReceiver(activityReceiver);
         super.onStop();
@@ -185,8 +217,10 @@ public class MainActivity2 extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d("test:lifecycle:main", "ondestroy");
-        heartbeatHandler.removeCallbacks(heartbeatRunnable);
+        Intent intent = new Intent(this, BackGroundSocketService.class);
+        intent.setAction(STOP_SOCKET_SERVICE);
+        this.startForegroundService(intent);
+        //heartbeatHandler.removeCallbacks(heartbeatRunnable);
     }
 
 

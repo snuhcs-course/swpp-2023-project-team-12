@@ -39,6 +39,11 @@
             android:enabled="true"
             android:exported="true"
             android:screenOrientation="portrait" />
+        <service
+            android:name=".ui.multi_mode.BackGroundSocketService"
+            android:enabled="true"
+            android:exported="true"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".MainActivity"
