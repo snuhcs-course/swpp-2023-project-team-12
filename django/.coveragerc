@@ -1,0 +1,4 @@
+[run]
+omit =
+    /opt/homebrew/lib/*
+    ../virtualenvs/landlord_reputation_venv/*
