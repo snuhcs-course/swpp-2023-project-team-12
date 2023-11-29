@@ -65,9 +65,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Queue;
 
 import MultiMode.MultiModeRoom;
 import MultiMode.MultiModeUser;
@@ -120,6 +123,7 @@ public class MultiModePlayFragment extends Fragment {
     Handler sendDataHandler;
     Runnable sendDataRunnable;
     UserDistance[] userDistances;
+    double distance_for_pace;
     private Handler remainTimeHandler;
     private long playLeaveButtonLastClickTime = 0;
     private long backButtonLastClickTime = 0;
@@ -135,6 +139,7 @@ public class MultiModePlayFragment extends Fragment {
     private SendFinishedTask finishedTask;
     private Runnable remainTimeRunnable;
     private GoogleMap mMap;
+    private Queue<Double> pace_distance_queue;
     private final BroadcastReceiver locationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -158,9 +163,9 @@ public class MultiModePlayFragment extends Fragment {
                 }
 
                 // get distance
-                if (newPoint != null) {
+                if (newPoint != null && RunningState.getIsRunning()) {
                     // first few points might be noisy
-                    if (pathPoints.size() > 5 && RunningState.getIsRunning()) {
+                    if (pathPoints.size() > 1) {
                         Location lastLocation = new Location("");
                         lastLocation.setLatitude(pathPoints.get(pathPoints.size() - 2).latitude);
                         lastLocation.setLongitude(pathPoints.get(pathPoints.size() - 2).longitude);
@@ -168,21 +173,32 @@ public class MultiModePlayFragment extends Fragment {
                         double last_distance_5s_kilometer = location.distanceTo(lastLocation) / (double) 1000;
 
                         distance += last_distance_5s_kilometer;
+                        if (pace_distance_queue.size() < 3) {
+                            pace_distance_queue.add(last_distance_5s_kilometer);
+                        } else {
+                            pace_distance_queue.poll();
+                            pace_distance_queue.add(last_distance_5s_kilometer);
+                        }
+                        distance_for_pace = sumQueue();
                         //Log.d("test:distance:5sec", "Last 5 second Distance :" + location.distanceTo(lastLocation) / (double) 1000);
                         if (last_distance_5s_kilometer != 0) {
-                            int paceMinute = (int) (1 / (last_distance_5s_kilometer / 5)) / 60;
-                            int paceSecond = (int) (1 / (last_distance_5s_kilometer / 5)) % 60;
-                            if (paceMinute <= 30) {
+                            int paceMinute = (int) (1 / (distance_for_pace / (5 * pace_distance_queue.size()))) / 60;
+                            int paceSecond = (int) (1 / (distance_for_pace / (5 * pace_distance_queue.size()))) % 60;
+                            Log.d("test:distance:5sec", "distance : " + distance_for_pace + " and queue size is " + pace_distance_queue.size() + " pace :" + paceMinute + "' " + paceSecond + "''");
+                            if (true) {
                                 String paceString = String.format("%02d'%02d\"", paceMinute, paceSecond);
                                 pacePresentContentTextView.setText(paceString);
                             } else {
                                 String paceString = "--'--\"";
                                 pacePresentContentTextView.setText(paceString);
                             }
-                        } else {
-                            String paceString = "--'--\"";
-                            pacePresentContentTextView.setText(paceString);
                         }
+//                        } else {
+//                            Log.d("test:distance:5sec", "distance : " + last_distance_5s_kilometer);
+//
+//                            String paceString = "--'--\"";
+//                            pacePresentContentTextView.setText(paceString);
+//                        }
 
                         // log distance into file
                         //FileLogger.logToFileAndLogcat(mainActivity, "test:distance:5sec", "" + location.distanceTo(lastLocation) / (double) 1000);
@@ -202,6 +218,9 @@ public class MultiModePlayFragment extends Fragment {
                         }
                         //Log.d("test:distance:total", "Distance:" + distance);
                     }
+                } else {
+                    String paceString = "--'--\"";
+                    pacePresentContentTextView.setText(paceString);
                 }
                 distancePresentContentTextView.setText(String.format(Locale.getDefault(), "%.2f" + "km", distance));
                 //lastLocation = location;
@@ -209,6 +228,15 @@ public class MultiModePlayFragment extends Fragment {
         }
     };
     private int updatedBadgeCollection;
+
+    private double sumQueue() {
+        double sum = 0;
+        Iterator<Double> iterator = pace_distance_queue.iterator();
+        while (iterator.hasNext()) {
+            sum += iterator.next();
+        }
+        return sum;
+    }
 //    private int updatedExp;
 //    private float medianSpeed;
 //    private HistoryApi historyApi;
@@ -216,7 +244,6 @@ public class MultiModePlayFragment extends Fragment {
 //    private int isFinished;
 //    private int groupHistoryId = 999;
 //    private SendFinishedTask finishedTask;
-
 
     private void showExitGameDialog() {
         @SuppressLint("InflateParams")
@@ -239,6 +266,8 @@ public class MultiModePlayFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        distance_for_pace = 0;
+        pace_distance_queue = new LinkedList<>();
         finishedTask = new SendFinishedTask();
         gameStartTime = (LocalDateTime) getArguments().getSerializable("startTime");
         //경과 시간 업데이트
@@ -294,7 +323,6 @@ public class MultiModePlayFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.d("response", "createPlayFragment");
-
 
         mainActivity = (MainActivity2) getActivity();
         maxSpeed = 0;
