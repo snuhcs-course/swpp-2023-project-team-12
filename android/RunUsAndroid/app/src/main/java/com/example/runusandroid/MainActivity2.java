@@ -11,6 +11,8 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -25,11 +27,27 @@ import androidx.navigation.ui.NavigationUI;
 import com.example.runusandroid.ActivityRecognition.UserActivityBroadcastReceiver;
 import com.example.runusandroid.ActivityRecognition.UserActivityTransitionManager;
 import com.example.runusandroid.databinding.ActivityMain2Binding;
+import com.example.runusandroid.ui.multi_mode.MultiModePlayFragment;
+import com.example.runusandroid.ui.multi_mode.SocketManager;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.SocketException;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Locale;
+
+import MultiMode.Packet;
+import MultiMode.PacketBuilder;
+import MultiMode.Protocol;
+
+
 public class MainActivity2 extends AppCompatActivity {
+
+    private final SocketManager socketManager = SocketManager.getInstance();
 
     public UserActivityBroadcastReceiver activityReceiver;
     UserActivityTransitionManager activityManager;
@@ -39,6 +57,8 @@ public class MainActivity2 extends AppCompatActivity {
     public NavController navController;
     private PermissionSupport permission;
     IntentFilter filter;
+    Handler heartbeatHandler;
+    Runnable heartbeatRunnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,13 +134,61 @@ public class MainActivity2 extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (socketManager.getOIS() == null) {
+            new Thread(() -> {
+                try {
+                    socketManager.openSocket();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                heartbeatHandler.post(heartbeatRunnable);
+
+            }).start();
+        }
+        heartbeatHandler = new Handler(Looper.getMainLooper());
+        heartbeatRunnable = new Runnable() {
+            @Override
+            public void run() {
+                new Thread(() -> {
+                    try{
+                        ObjectOutputStream oos = socketManager.getOOS();
+                        oos.reset();
+                        oos.writeObject("Heartbeat");
+                        oos.flush();
+                        heartbeatHandler.postDelayed(this, 5000);
+                    } catch (IOException e) {
+                        try {
+                            e.printStackTrace();
+                            SocketManager.getInstance().resetInstance();
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }).start();
+            }
+        };
+    }
+
+
 
     @Override
     protected void onStop() {
+        Log.d("test:lifecycle:main", "onStop");
         activityManager.removeActivityTransitions(pendingIntent);
         this.unregisterReceiver(activityReceiver);
         super.onStop();
     }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d("test:lifecycle:main", "ondestroy");
+        heartbeatHandler.removeCallbacks(heartbeatRunnable);
+    }
+
 
     public FusedLocationProviderClient getFusedLocationClient() {
         return fusedLocationClient;
