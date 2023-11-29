@@ -2,3 +2,6 @@
 omit =
     /opt/homebrew/lib/*
     ../virtualenvs/landlord_reputation_venv/*
+    DATA_APP/*
+    testApp/*
+    manage.py
