@@ -47,6 +47,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 public class SingleModeResultFragment extends Fragment {
@@ -230,7 +231,7 @@ public class SingleModeResultFragment extends Fragment {
         requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
 
         goalDistanceText.setText(floatToFirstDeciStr(goalDistance) + "km");
-        currentDistanceText.setText(doubleToFirstDeciStr(currentDistance) + "km");
+        currentDistanceText.setText(String.format(Locale.getDefault(), "%.1f " + "km", Math.floor(currentDistance * 10) / 10));
         goalTimeText.setText(goalTime + " 분");
         currentTimeText.setText(dateFormat.format(currentTime));
         if (isMapReady) {

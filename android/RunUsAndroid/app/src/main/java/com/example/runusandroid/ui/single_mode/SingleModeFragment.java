@@ -206,7 +206,7 @@ public class SingleModeFragment extends Fragment {
                             Log.d("test:distance:total", "Distance:" + distance);
                         }
                     }
-                    currentDistanceText.setText(String.format(Locale.getDefault(), "%.1f " + "km", distance));
+                    currentDistanceText.setText(String.format(Locale.getDefault(), "%.1f " + "km", Math.floor(distance * 10) / 10));
 
                     lastLocation = location;
 
