@@ -12,7 +12,7 @@ class HistoryDetailTestCase(TestCase):
         self.client = APIClient()
 
     def test_create_history(self):
-        url = "/history/"  # 해당 URL 패턴의 이름을 사용합니다.
+        url = "/history/"
         data = {
             "user_id": 9,
             "distance": 10.0,
@@ -53,7 +53,7 @@ class GroupHistoryDetailTestCase(TestCase):
         self.client = APIClient()
 
     def test_create_group_history(self):
-        url = "/history/group/"  # 해당 URL 패턴의 이름을 사용합니다.
+        url = "/history/group/"
         data = {
             "roomname": "Room1",
             "start_time": "2023-11-03T13:06:33",
@@ -77,8 +77,7 @@ class MonthlyDataViewTest(TestCase):
         self.year = 2023
         self.month = 1  # Example month
 
-        # Creating sample history records for the test user
-        for day in range(1, 31):  # Assuming January with 30 days
+        for day in range(1, 31):
             HistoryRecord.objects.create(
                 user_id=self.user_id,
                 distance=5.0,
