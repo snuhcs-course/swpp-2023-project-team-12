@@ -1,14 +1,22 @@
+from datetime import datetime, timedelta
 from django.test import TestCase
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
+from rest_framework import status
 from rest_framework_simplejwt.tokens import AccessToken
 from django.core.files.storage import default_storage
 
 from PIL import Image
 from io import BytesIO
 from django.core.files.uploadedfile import SimpleUploadedFile
+
+from account.models import CustomUser
+
+from history.models import HistoryRecord
+
+from account.views import processBadgeCollection
 
 
 def generate_dummy_image():
@@ -68,3 +76,149 @@ class ProfileImageUploadTest(TestCase):
             default_storage.delete(self.user.profile_image.name)
 
         super().tearDown()
+
+
+class SignupViewTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_signup_with_valid_data(self):
+        valid_data = {
+            "username": "newuser",
+            "password": "newpassword",
+            "email": "newuser@example.com",
+            "nickname": "Djangotest",
+            "phone_num": "01000000000",
+            "gender": 1,
+            "height": 170,
+            "weight": 70,
+            "age": 25,
+        }
+        response = self.client.post(reverse("signup"), valid_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn("name", response.data)
+
+    def test_signup_with_invalid_data(self):
+        invalid_data = {
+            "username": "",
+            "password": "",
+            # 유효하지 않은 데이터
+        }
+        response = self.client.post(reverse("signup"), invalid_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class ResetPasswordViewTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            username="testuser",
+            password="testpassword",
+            email="test@test.com",
+            nickname="Djangotest",
+            phone_num="01000000000",
+            gender=1,
+            height=170,
+            weight=70,
+            age=25,
+        )
+
+    def test_reset_password_with_valid_info(self):
+        response = self.client.post(
+            reverse("reset_password"),
+            {"username": "testuser", "email": "test@test.com"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_reset_password_with_invalid_info(self):
+        response = self.client.post
+
+
+class FindUsernameAndSendEmailViewTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            username="testuser",
+            password="testpassword",
+            email="test@test.com",
+            nickname="Djangotest",
+            phone_num="01000000000",
+            gender=1,
+            height=170,
+            weight=70,
+            age=25,
+        )
+
+    def test_send_email_with_existing_email(self):
+        response = self.client.post(
+            reverse("find_username"), {"email": "test@test.com"}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class LoginViewTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            username="testuser",
+            password="testpassword",
+            email="test@test.com",
+            nickname="Djangotest",
+            phone_num="01000000000",
+            gender=1,
+            height=170,
+            weight=70,
+            age=25,
+        )
+
+    def test_login_with_valid_credentials(self):
+        response = self.client.post(
+            reverse("login"),
+            {"username": "testuser", "password": "testpassword"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("jwt_token", response.data)
+
+
+class ProcessBadgeCollectionTest(TestCase):
+    def setUp(self):
+        self.user = CustomUser.objects.create_user(
+            username="testuser",
+            password="testpassword",
+            email="test@test.com",
+            nickname="Djangotest",
+            phone_num="01000000000",
+            gender=1,
+            height=170,
+            weight=70,
+            age=25,
+        )
+        self.year = 2023
+        self.month = 1
+        for day in range(1, 31):
+            HistoryRecord.objects.create(
+                user_id=self.user.id,
+                distance=5.0,
+                duration=timedelta(hours=1),
+                calories=300.0,
+                start_time=datetime(self.year, self.month, day, 12, 0),
+                finish_time=datetime(self.year, self.month, day, 13, 0),
+                is_completed=True,
+                is_group=False,
+            )
+
+    def test_badge_acquisition(self):
+        # 뱃지 1 테스트
+        badge_collection = 0
+        history_instance = HistoryRecord.objects.last()
+        badge_collection = processBadgeCollection(badge_collection, history_instance)
+        self.assertEqual(badge_collection % 10, 1)
+
+    def test_badge_non_duplication(self):
+        # 뱃지 1 중복 획득 방지 테스트
+        badge_collection = 1
+        history_instance = HistoryRecord.objects.last()
+        badge_collection = processBadgeCollection(badge_collection, history_instance)
+        self.assertEqual(badge_collection % 10, 1)
