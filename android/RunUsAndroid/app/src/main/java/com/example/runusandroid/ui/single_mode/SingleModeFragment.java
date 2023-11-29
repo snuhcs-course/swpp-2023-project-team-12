@@ -852,6 +852,7 @@ public class SingleModeFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
+        Log.d("test:singlemode:lifecycle", "onDestroyView");
         super.onDestroyView();
         binding = null;
         currentTimeText.stop();
@@ -900,17 +901,19 @@ public class SingleModeFragment extends Fragment {
         };
 
         requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
+        Log.d("test:singlemode:lifecycle", "onResume, startlocation : " + startlocation);
         if (!startlocation) {
-            if (ActivityCompat.checkSelfPermission(mainActivity,
-                    Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-                        1001);
-            }
-            if (ActivityCompat.checkSelfPermission(mainActivity,
-                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        1002);
-            }
+//            if (ActivityCompat.checkSelfPermission(mainActivity,
+//                    Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//                ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+//                        1001);
+//            }
+//            if (ActivityCompat.checkSelfPermission(mainActivity,
+//                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//                ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+//                        1002);
+//            }
+            Log.d("test:singlemode:lifecycle", "initiate location service");
             Intent intent = new Intent(getContext(), BackGroundLocationService.class);
             intent.setAction(START_LOCATION_SERVICE);
             getActivity().startForegroundService(intent);
@@ -924,6 +927,13 @@ public class SingleModeFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+        Log.d("test:singlemode:lifecycle", "onPause, startlocation : " + startlocation);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.d("test:singlemode:lifecycle", "onStop");
     }
 
     void saveHistoryDataOnSingleMode() throws JSONException {
