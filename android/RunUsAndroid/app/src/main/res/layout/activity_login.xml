@@ -112,7 +112,7 @@
         android:id="@+id/forgotPasswordText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="20dp"
         android:fontFamily="@font/pretendardregular"
         android:text="비밀번호를 잊어버리셨나요? 비밀번호 찾기"
         app:layout_constraintEnd_toEndOf="parent"

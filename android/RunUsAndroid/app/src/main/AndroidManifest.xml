@@ -47,7 +47,6 @@
         <activity android:name=".SignUpStep1Activity"></activity>
         <activity android:name=".SignUpStep2Activity"></activity>
         <activity android:name=".SignUpStep3Activity"></activity>
-        <activity android:name=".SignUpStep4Activity"></activity>
         <activity android:name=".FindIdActivity"></activity>
         <activity android:name=".ResetPasswordActivity"></activity>
 
