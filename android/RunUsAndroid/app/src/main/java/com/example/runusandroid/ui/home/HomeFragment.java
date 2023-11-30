@@ -99,6 +99,7 @@ public class HomeFragment extends Fragment {
         return root;
     }
 
+    /*
     @Override
     public void onResume() {
         super.onResume();
@@ -113,6 +114,8 @@ public class HomeFragment extends Fragment {
             }).start();
         }
     }
+
+     */
 
     @Override
     public void onDestroyView() {

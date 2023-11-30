@@ -34,11 +34,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <service
             android:name=".ui.single_mode.BackGroundLocationService"
             android:enabled="true"
             android:exported="true"
-            android:screenOrientation="portrait"></service>
+            android:screenOrientation="portrait" />
+        <service
+            android:name=".ui.multi_mode.BackGroundSocketService"
+            android:enabled="true"
+            android:exported="true"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".MainActivity"

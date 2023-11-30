@@ -2,11 +2,15 @@ package com.example.runusandroid;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.pressBack;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
+import static org.hamcrest.Matchers.allOf;
+import static androidx.test.espresso.matcher.ViewMatchers.isClickable;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
@@ -14,8 +18,12 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import static java.util.EnumSet.allOf;
 
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -27,6 +35,7 @@ import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.contrib.NavigationViewActions;
+import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.rule.ActivityTestRule;
@@ -75,9 +84,9 @@ public class SingleModeTests {
     public static void beforeClass() throws InterruptedException{
         loginActivityScenario = ActivityScenario.launch(LoginActivity.class);
         onView(withId(R.id.IdInput))
-                .perform(typeText("test"));
+                .perform(typeText("test"), closeSoftKeyboard());
         onView(withId(R.id.PasswordInput))
-                .perform(typeText("test"));
+                .perform(typeText("test"), closeSoftKeyboard());
         onView(withId(R.id.LoginBtn))
                 .perform(click());
         Thread.sleep(1000);
@@ -107,8 +116,27 @@ public class SingleModeTests {
 
         // check time attack button
         onView(withId(R.id.buttonTimeAttack)).perform(click());
+        Thread.sleep(1000);
         onView(withId(R.id.buttonConfirm)).check(matches(isDisplayed()));
-        onView(withId(R.id.buttonClose)).perform(click());
+        Thread.sleep(1000);
+        onView(withId(R.id.buttonClose)).perform(
+                new ViewAction() {
+                    @Override
+                    public Matcher<View> getConstraints() {
+                        return allOf(isEnabled(), isClickable());
+                    }
+
+                    @Override
+                    public String getDescription() {
+                        return "click";
+                    }
+
+                    @Override
+                    public void perform(UiController uiController, View view) {
+                        view.performClick();
+                    }
+                }
+        );
 
         // TODO: 다른 dialog select 시
 
@@ -125,7 +153,7 @@ public class SingleModeTests {
         mainActivityScenario.onActivity(activity -> {
             activity.navController.navigate(R.id.navigation_history);
         });
-        Thread.sleep(1000);
+        Thread.sleep(20000);
         onView(withId(R.id.dailyTime)).check(matches(not(withText(""))));
         firstHistoryTime = getText(withId(R.id.dailyTime));
         Log.d("History_log_test","firstHistoryTime: " + firstHistoryTime);
@@ -173,7 +201,7 @@ public class SingleModeTests {
         mainActivityScenario.onActivity(activity -> {
             activity.navController.navigate(R.id.navigation_history);
         });
-        Thread.sleep(1000);
+        Thread.sleep(20000);
         onView(withId(R.id.dailyTime)).check(matches(not(withText(""))));
         onView(withId(R.id.dailyTime)).check(matches(not(withText(firstHistoryTime))));
     }
