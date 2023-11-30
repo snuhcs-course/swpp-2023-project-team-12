@@ -6,6 +6,19 @@
     android:layout_height="match_parent"
     tools:context=".SignUpStep2Activity">
 
+
+    <TextView
+        android:id="@+id/phoneNumberText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="65dp"
+        android:text="휴대폰 번호"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/SignUpNicknameInput" />
+
     <ImageView
         android:id="@+id/logoInStep2"
         android:layout_width="wrap_content"
@@ -18,11 +31,22 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageButton
+        android:id="@+id/buttonBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:padding="10dp"
+        android:layout_margin="20dp"
+        android:src="@drawable/ic_back"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
         android:id="@+id/NickNameText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="65dp"
         android:fontFamily="@font/pretendardregular"
         android:text="닉네임"
         android:textSize="25sp"
@@ -36,7 +60,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="15dp"
-        android:layout_marginTop="65dp"
+        android:layout_marginTop="40dp"
         android:layout_marginRight="15dp"
         android:background="@drawable/round_shape_for_field"
         android:fontFamily="@font/pretendardregular"
@@ -47,12 +71,40 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/NickNameText" />
 
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/SignUpPhoneNumberInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginRight="15dp"
+        android:background="@drawable/round_shape_for_field"
+        android:fontFamily="@font/pretendardregular"
+        android:hint="휴대폰 번호"
+        android:inputType="number"
+        android:maxLength="11"
+        android:paddingLeft="10dp"
+        android:text="010"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/phoneNumberText" />
+
+    <TextView
+        android:id="@+id/passwordHintText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/pretendardregular"
+        android:text="   하이픈 (-) 없이 010XXXXXXXX 형태로 입력해 주세요."
+        app:layout_constraintLeft_toLeftOf="@id/SignUpPhoneNumberInput"
+        app:layout_constraintTop_toBottomOf="@id/SignUpPhoneNumberInput" />
+
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/nextButton2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="15dp"
-        android:layout_marginTop="350dp"
+        android:layout_marginBottom="100dp"
         android:layout_marginRight="15dp"
         android:background="@drawable/round_shape_green"
         android:fontFamily="@font/pretendardregular"
@@ -60,5 +112,5 @@
         android:textColor="@color/white"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/SignUpNicknameInput" />
+        app:layout_constraintBottom_toBottomOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

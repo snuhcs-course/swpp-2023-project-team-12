@@ -46,23 +46,26 @@
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".MainActivity"
-            android:exported="false" />
-
-        <activity android:name=".LoginActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".SignUpStep1Activity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".SignUpStep2Activity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".SignUpStep3Activity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".SignUpStep4Activity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".FindIdActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".ResetPasswordActivity"
-            android:screenOrientation="portrait"/>
+            android:exported="false"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".LoginActivity"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".SignUpStep1Activity"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".SignUpStep2Activity"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".SignUpStep3Activity"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".FindIdActivity"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".ResetPasswordActivity"
+            android:screenOrientation="portrait"></activity>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

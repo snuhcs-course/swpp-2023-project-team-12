@@ -7,6 +7,7 @@ import android.text.Spanned;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,7 +17,7 @@ public class SignUpStep1Activity extends AppCompatActivity {
     private TextView signUpPasswordInput;
     private TextView signUpEmailInput;
     private Button nextButton1;
-
+    private ImageButton backButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,8 +27,24 @@ public class SignUpStep1Activity extends AppCompatActivity {
         signUpPasswordInput = findViewById(R.id.SignUpPasswordInput);
         signUpEmailInput = findViewById(R.id.SignUpEmailInput);
         nextButton1 = findViewById(R.id.nextButton1);
+        backButton = findViewById(R.id.buttonBack);
         EditText IdText = findViewById(R.id.SignUpIdInput);
         EditText editText = findViewById(R.id.SignUpEmailInput);
+
+        Intent intent = getIntent();
+        String userName = intent.getStringExtra("userName");
+        String password = intent.getStringExtra("password");
+        String email = intent.getStringExtra("email");
+        String nickname = intent.getStringExtra("nickname");
+        String phoneNumber = intent.getStringExtra("phoneNumber");
+        String height = intent.getStringExtra("height");
+        String weight = intent.getStringExtra("weight");
+        String age = intent.getStringExtra("age");
+        String gender = intent.getStringExtra("gender");
+
+        signUpIdInput.setText(userName);
+        signUpPasswordInput.setText(password);
+        signUpEmailInput.setText(email);
 
         //아이디는 영어 대,소문자와 숫자만 입력 가능함.
         InputFilter Idfilter = new InputFilter() {
@@ -72,9 +89,22 @@ public class SignUpStep1Activity extends AppCompatActivity {
                 intent.putExtra("userName", Id);
                 intent.putExtra("password", password);
                 intent.putExtra("email", email);
+                intent.putExtra("nickname", nickname);
+                intent.putExtra("phoneNumber", phoneNumber);
+                intent.putExtra("height", height);
+                intent.putExtra("weight", weight);
+                intent.putExtra("gender", gender);
+                intent.putExtra("age",age);
                 startActivity(intent);
             }
         });
 
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intentToLogin = new Intent(SignUpStep1Activity.this, LoginActivity.class);
+                startActivity(intentToLogin);
+            }
+        });
     }
 }
