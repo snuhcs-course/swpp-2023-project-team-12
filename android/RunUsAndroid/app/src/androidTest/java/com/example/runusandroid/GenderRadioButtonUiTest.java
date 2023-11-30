@@ -17,7 +17,7 @@ import org.junit.runner.RunWith;
 public class GenderRadioButtonUiTest {
 
     @Rule
-    public ActivityScenarioRule<SignUpStep4Activity> activityRule = new ActivityScenarioRule<>(SignUpStep4Activity.class);
+    public ActivityScenarioRule<SignUpStep3Activity> activityRule = new ActivityScenarioRule<>(SignUpStep3Activity.class);
 
     @Test
     public void radioButtonSelectionTest() {
