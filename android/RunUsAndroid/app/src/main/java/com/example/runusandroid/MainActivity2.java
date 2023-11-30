@@ -89,6 +89,11 @@ public class MainActivity2 extends AppCompatActivity {
         AccountAPIFactory accountFactory = AccountAPIFactory.getInstance();
         accountFactory.refreshToken(this);
 
+        Log.d("socket service","start");
+        Intent intent = new Intent(this, BackGroundSocketService.class);
+        intent.setAction(START_SOCKET_SERVICE);
+        this.startForegroundService(intent);
+
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
@@ -154,10 +159,13 @@ public class MainActivity2 extends AppCompatActivity {
 
             }).start();
         }
+        /*
         Log.d("socket service","start");
         Intent intent = new Intent(this, BackGroundSocketService.class);
         intent.setAction(START_SOCKET_SERVICE);
         this.startForegroundService(intent);
+
+         */
         /*
         heartbeatHandler = new Handler(Looper.getMainLooper());
         heartbeatRunnable = new Runnable() {
