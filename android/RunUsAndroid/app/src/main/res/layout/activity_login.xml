@@ -52,8 +52,7 @@
         android:fontFamily="@font/pretendardregular"
         android:text="비밀번호"
         app:layout_constraintBottom_toTopOf="@id/PasswordInput"
-        app:layout_constraintLeft_toLeftOf="@id/PasswordInput"
-        app:layout_constraintTop_toBottomOf="@id/IdInput" />
+        app:layout_constraintLeft_toLeftOf="@id/PasswordInput" />
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/PasswordInput"
@@ -61,6 +60,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
+        android:layout_marginTop="70dp"
         android:background="@drawable/round_shape_for_field"
         android:fontFamily="@font/pretendardregular"
         android:hint="비밀번호를 입력해 주세요."
@@ -68,14 +68,14 @@
         android:paddingLeft="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/PasswordText" />
+        app:layout_constraintTop_toBottomOf="@id/IdInput" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/LoginBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="15dp"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="70dp"
         android:layout_marginRight="15dp"
         android:background="@drawable/round_shape_green"
         android:fontFamily="@font/pretendardregular"
@@ -100,23 +100,23 @@
         android:id="@+id/ForgotIdText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
         android:clickable="true"
+        android:layout_marginRight="15dp"
+        android:padding="5dp"
         android:fontFamily="@font/pretendardregular"
         android:text="아이디를 잊어버리셨나요? 아이디 찾기"
-        app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/SignInMessage" />
+        app:layout_constraintTop_toBottomOf="@id/IdInput" />
 
     <TextView
         android:id="@+id/forgotPasswordText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
         android:fontFamily="@font/pretendardregular"
+        android:layout_marginRight="15dp"
+        android:padding="5dp"
         android:text="비밀번호를 잊어버리셨나요? 비밀번호 찾기"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ForgotIdText" />
+        app:layout_constraintTop_toBottomOf="@id/PasswordInput" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
