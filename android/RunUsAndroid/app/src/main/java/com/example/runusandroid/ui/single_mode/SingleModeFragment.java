@@ -56,7 +56,6 @@ import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
 import com.example.runusandroid.RetrofitClient;
 import com.example.runusandroid.databinding.FragmentSingleModeBinding;
-import com.example.runusandroid.ActivityRecognition.RunningState;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -80,8 +79,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Queue;
 
 import Logging.FileLogger;
 import okhttp3.ResponseBody;
@@ -122,6 +124,7 @@ public class SingleModeFragment extends Fragment {
     Button quitButton;
     LinearLayout currentPace;
     Button startButton;
+    double distance_for_pace;
     private int updatedExp;
     private List<LatLng> pathPoints = new ArrayList<>();
     private List<Float> speedList = new ArrayList<>(); // 매 km 마다 속력 (km/h)
@@ -136,6 +139,7 @@ public class SingleModeFragment extends Fragment {
     private float goalTime;
     private float nowGoalTime;
     private boolean runningNow;
+    private Queue<Double> pace_distance_queue;
     private final BroadcastReceiver locationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -164,18 +168,26 @@ public class SingleModeFragment extends Fragment {
                     // get distance
                     if (newPoint != null && RunningState.getIsRunning()) {
                         // first few points might be noisy
-                        if (pathPoints.size() > 5) {
+                        if (pathPoints.size() > 1) {
                             Location lastLocation = new Location("");
                             lastLocation.setLatitude(pathPoints.get(pathPoints.size() - 2).latitude);
                             lastLocation.setLongitude(pathPoints.get(pathPoints.size() - 2).longitude);
                             // unit : meter -> kilometer
                             double last_distance_5s_kilometer = location.distanceTo(lastLocation) / (double) 1000;
                             distance += last_distance_5s_kilometer;
+                            if (pace_distance_queue.size() < 3) {
+                                pace_distance_queue.add(last_distance_5s_kilometer);
+                            } else {
+                                pace_distance_queue.poll();
+                                pace_distance_queue.add(last_distance_5s_kilometer);
+                            }
+                            distance_for_pace = sumQueue();
                             Log.d("test:distance:5sec", "Last 5 second Distance :" + location.distanceTo(lastLocation) / (double) 1000);
-                            if (last_distance_5s_kilometer != 0) {
-                                int paceMinute = (int) (1 / (last_distance_5s_kilometer / 5)) / 60;
-                                int paceSecond = (int) (1 / (last_distance_5s_kilometer / 5)) % 60;
-                                if (paceMinute <= 30) {
+                            if (last_distance_5s_kilometer > 0) {
+                                int paceMinute = (int) (1 / (distance_for_pace / (5 * pace_distance_queue.size()))) / 60;
+                                int paceSecond = (int) (1 / (distance_for_pace / (5 * pace_distance_queue.size()))) % 60;
+                                Log.d("test:distance:5sec", "distance : " + distance_for_pace + " and queue size is " + pace_distance_queue.size() + " pace :" + paceMinute + "' " + paceSecond + "''");
+                                if (true) {
                                     String paceString = String.format("%02d'%02d\"", paceMinute, paceSecond);
                                     currentPaceText.setText(paceString);
                                 } else {
@@ -205,6 +217,9 @@ public class SingleModeFragment extends Fragment {
 //                            }
                             Log.d("test:distance:total", "Distance:" + distance);
                         }
+                    } else {
+                        String paceString = "--'--\"";
+                        currentPaceText.setText(paceString);
                     }
                     currentDistanceText.setText(String.format(Locale.getDefault(), "%.1f " + "km", Math.floor(distance * 10) / 10));
 
@@ -229,13 +244,26 @@ public class SingleModeFragment extends Fragment {
     private MappedByteBuffer tfliteModel;
     private boolean startlocation = false;
 
+    public SingleModeFragment() {
+    }
+
+    private double sumQueue() {
+        double sum = 0;
+        Iterator<Double> iterator = pace_distance_queue.iterator();
+        while (iterator.hasNext()) {
+            sum += iterator.next();
+        }
+        return sum;
+    }
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         SingleModeViewModel singleModeViewModel = new ViewModelProvider(this).get(SingleModeViewModel.class);
 
         binding = FragmentSingleModeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-
+        distance_for_pace = 0;
+        pace_distance_queue = new LinkedList<>();
         mainActivity = (MainActivity2) getActivity();
         historyApi = RetrofitClient.getClient().create(HistoryApi.class);
         currentPace = binding.currentPace;
@@ -416,7 +444,7 @@ public class SingleModeFragment extends Fragment {
         dialog.getWindow().setAttributes(params);
 
         boolean enoughHistory = modelInput[4][2] != 0;
-        if (!enoughHistory || goalDistance==0) {
+        if (!enoughHistory || goalDistance == 0) {
             setStandard();
         }
 
@@ -586,7 +614,7 @@ public class SingleModeFragment extends Fragment {
         dialog.getWindow().setAttributes(params);
 
         boolean enoughHistory = modelInput[4][2] != 0;
-        if (!enoughHistory || goalDistance==0) {
+        if (!enoughHistory || goalDistance == 0) {
             setStandard();
             nowGoalDistance = goalDistance * 1.5f;
         } else {
@@ -673,7 +701,7 @@ public class SingleModeFragment extends Fragment {
         String nickname = sharedPreferences.getString("nickname", "");
 
         boolean enoughHistory = modelInput[4][2] != 0;
-        if (!enoughHistory || goalDistance==0) {
+        if (!enoughHistory || goalDistance == 0) {
             setStandard();
             nowGoalDistance = goalDistance;
             missionInfo.setText("5회 러닝 전에는 " + nickname + "님과 비슷한 그룹의 \n평균 러닝이 추천돼요!");
@@ -691,7 +719,6 @@ public class SingleModeFragment extends Fragment {
             }
         }
         nowGoalTime = goalTime;
-
 
 
         Button buttonConfirm = dialogView.findViewById(R.id.buttonConfirm);

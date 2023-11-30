@@ -65,6 +65,7 @@ public class MultiModeResultFragment extends Fragment {
     RecordDialog dialog;
     boolean isDialogOpenedBefore = false;
     View bronzeProfileBox;
+    View silverProfileBox;
     private ImageView goldProfileImageView, silverProfileImageView, bronzeProfileImageView;
     private TextView goldLevelTextView, silverLevelTextView, bronzeLevelTextView;
     private TextView goldNickNameTextView, silverNickNameTextView, bronzeNickNameTextView;
@@ -121,7 +122,7 @@ public class MultiModeResultFragment extends Fragment {
             goldNickNameTextView = goldProfileBox.findViewById(R.id.multi_result_nickname);
             goldDistanceTextView = view.findViewById(R.id.firstPlaceKm);
 
-            View silverProfileBox = view.findViewById(R.id.secondPlaceProfileBox);
+            silverProfileBox = view.findViewById(R.id.secondPlaceProfileBox);
             silverProfileImageView = silverProfileBox.findViewById(R.id.multi_result_profile);
             silverLevelTextView = silverProfileBox.findViewById(R.id.multi_result_level);
             silverNickNameTextView = silverProfileBox.findViewById(R.id.multi_result_nickname);
@@ -211,7 +212,9 @@ public class MultiModeResultFragment extends Fragment {
             bronzeDistanceTextView.setVisibility(GONE);
         }
         if (userDistances.length < 2) {
-            secondPlaceLayout.setVisibility(GONE);
+            silverProfileBox.setVisibility(GONE);
+            silverDistanceTextView.setVisibility(GONE);
+
         }
         if (userDistances.length >= 1) {
             goldNickNameTextView.setText(userDistances[0].getUser().getNickName());

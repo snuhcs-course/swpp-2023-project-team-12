@@ -1,4 +1,5 @@
 package com.example.runusandroid.ui.single_mode;
+
 import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -9,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.IBinder;
 import android.os.Looper;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
@@ -26,16 +26,7 @@ public class BackGroundLocationService extends Service {
 
     static final String START_LOCATION_SERVICE = "start";
     static final String STOP_LOCATION_SERVICE = "stop";
-
-    FusedLocationProviderClient fusedLocationClient;
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
-
-    private LocationCallback mLocationCallback  = new LocationCallback() {
+    private final LocationCallback mLocationCallback = new LocationCallback() {
         @Override
         public void onLocationResult(LocationResult locationResult) {
             if (locationResult != null) {
@@ -52,10 +43,17 @@ public class BackGroundLocationService extends Service {
             }
         }
     };
+    FusedLocationProviderClient fusedLocationClient;
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if(intent==null){
+        if (intent == null) {
             return START_STICKY;
         }
         if (intent != null && intent.getAction().equals(START_LOCATION_SERVICE)) {
@@ -65,7 +63,7 @@ public class BackGroundLocationService extends Service {
 
                 LocationRequest locationRequest = LocationRequest.create();
                 locationRequest.setInterval(5000);
-                locationRequest.setFastestInterval(1000);
+                locationRequest.setFastestInterval(5000);
                 locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
                 fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);

@@ -31,7 +31,7 @@ public class SocketManager { // 모든 fragment에서 공통의 소켓을 활용
 
     public void openSocket() throws IOException { //소켓 열기
         if (socket == null || socket.isClosed()) {
-            //socket = new Socket("10.22.84.103", 5001);
+            //socket = new Socket("175.198.66.37", 5001);
             //socket = new Socket("10.0.2.2", 5001);
             socket = new Socket("ec2-3-36-116-64.ap-northeast-2.compute.amazonaws.com", 5001);
             System.out.println("open socket");
