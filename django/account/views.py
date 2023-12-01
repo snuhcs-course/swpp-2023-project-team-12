@@ -110,7 +110,7 @@ class FindUsernameAndSendEmailView(APIView):
             recipient_list = [
                 user.email,
             ]
-            # send_mail(subject, message, email_from, recipient_list)
+            send_mail(subject, message, email_from, recipient_list)
 
             return Response({"message": "Email sent successfully"})
         except CustomUser.DoesNotExist:
@@ -134,13 +134,13 @@ class ResetPasswordView(APIView):
             try:
                 user = CustomUser.objects.get(username=username, email=email)
                 temp_password = generate_temp_password()
-                # send_mail(
-                #     "[RunUs]인증번호",
-                #     f"인증번호: {temp_password}",
-                #     "from@example.com",
-                #     [email],
-                #     fail_silently=False,
-                # )
+                send_mail(
+                    "[RunUs]인증번호",
+                    f"인증번호: {temp_password}",
+                    "from@example.com",
+                    [email],
+                    fail_silently=False,
+                )
                 return Response({"message": temp_password}, status=200)
             except CustomUser.DoesNotExist:
                 return Response({"error": "No matching user found."}, status=404)
