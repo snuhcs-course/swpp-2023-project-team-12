@@ -66,9 +66,14 @@ public class UserSettingFragment extends Fragment {
     ImageView marathonerImageView;
     ImageView marathonWinnerImageView;
     ProgressBar userExpProgressbar;
+    Button creditButton;
+
+    CreditDialog dialog;
+
     private FragmentUserSettingBinding binding;
     private Uri imageUri;
     private ActivityResultLauncher<String> imagePickerLauncher;
+
 
     private Button testButton;
     private int badgeCollection;
@@ -115,6 +120,9 @@ public class UserSettingFragment extends Fragment {
         halfMarathonerImageView = binding.halfMarathonerImage;
         marathonerImageView = binding.marathonerImage;
         marathonWinnerImageView = binding.marathonWinnerImage;
+        creditButton = binding.creditButton;
+
+        dialog = new CreditDialog(requireContext());
         //testButton = binding.testButton;
 //        testButton.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -205,6 +213,13 @@ public class UserSettingFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 logoutUser();
+            }
+        });
+
+        creditButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.show();
             }
         });
 

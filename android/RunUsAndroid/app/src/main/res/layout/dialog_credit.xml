@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/round_shape_dialog">
+
+    <LinearLayout
+        android:id="@+id/running_record_layout"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="5dp">
+
+        <ImageButton
+            android:id="@+id/buttonCloseCreditDialog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:background="@android:color/transparent"
+            android:padding="15dp"
+            android:src="@drawable/ic_close" />
+
+        <TextView
+            android:id="@+id/creditText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#000000" />
+
+    </LinearLayout>
+
+</ScrollView>
