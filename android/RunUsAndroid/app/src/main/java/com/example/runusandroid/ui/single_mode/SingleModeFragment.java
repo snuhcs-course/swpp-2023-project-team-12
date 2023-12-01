@@ -187,11 +187,11 @@ public class SingleModeFragment extends Fragment {
                                 int paceMinute = (int) (1 / (distance_for_pace / (5 * pace_distance_queue.size()))) / 60;
                                 int paceSecond = (int) (1 / (distance_for_pace / (5 * pace_distance_queue.size()))) % 60;
                                 Log.d("test:distance:5sec", "distance : " + distance_for_pace + " and queue size is " + pace_distance_queue.size() + " pace :" + paceMinute + "' " + paceSecond + "''");
-                                if (true) {
+                                if (paceMinute < 60) {
                                     String paceString = String.format("%02d'%02d\"", paceMinute, paceSecond);
                                     currentPaceText.setText(paceString);
                                 } else {
-                                    String paceString = "--'--\"";
+                                    String paceString = "59'59\"";
                                     currentPaceText.setText(paceString);
                                 }
                             } else {
