@@ -13,6 +13,7 @@ from .serializers import (
     UserCreateSerializer,
     LoginSerializer,
     UserProfileSerializer,
+    UsernameEmailSerializer
 )
 from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -109,7 +110,7 @@ class FindUsernameAndSendEmailView(APIView):
             recipient_list = [
                 user.email,
             ]
-            send_mail(subject, message, email_from, recipient_list)
+            # send_mail(subject, message, email_from, recipient_list)
 
             return Response({"message": "Email sent successfully"})
         except CustomUser.DoesNotExist:
@@ -124,29 +125,70 @@ def generate_temp_password(length=10):
 
 class ResetPasswordView(APIView):
     def post(self, request):
-        serializer = ResetPasswordSerializer(data=request.data)
+        serializer = UsernameEmailSerializer(data=request.data)
+        print(serializer)
         if serializer.is_valid():
+            print("hi")
             username = serializer.validated_data["username"]
             email = serializer.validated_data["email"]
-
             try:
                 user = CustomUser.objects.get(username=username, email=email)
                 temp_password = generate_temp_password()
-                user.set_password(temp_password)
-                user.save()
-
-                send_mail(
-                    "[RunUs]임시 비밀번호",
-                    f"임시 비밀번호: {temp_password}",
-                    "from@example.com",
-                    [email],
-                    fail_silently=False,
-                )
-                return Response({"message": "Temporary password sent to your email."})
+                # send_mail(
+                #     "[RunUs]인증번호",
+                #     f"인증번호: {temp_password}",
+                #     "from@example.com",
+                #     [email],
+                #     fail_silently=False,
+                # )
+                return Response({"message": temp_password}, status=200)
             except CustomUser.DoesNotExist:
                 return Response({"error": "No matching user found."}, status=404)
         else:
             return Response(serializer.errors, status=400)
+        
+    def patch(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        print(serializer)
+        if serializer.is_valid():
+            username = serializer.validated_data["username"]
+            email = serializer.validated_data["email"]
+            new_password = serializer.validated_data["password"]
+            try:
+                user = CustomUser.objects.get(username=username, email=email)
+                user.set_password(new_password)
+                user.save()
+                return Response({"message": "Success."}, status=200)
+            except CustomUser.DoesNotExist:
+                return Response({"error": "No matching user found."}, status=404)
+        else:
+            print(serializer.errors)
+            return Response(serializer.errors, status=400) 
+
+    # def post(self, request):
+    #     serializer = UsernameEmailSerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         username = serializer.validated_data["username"]
+    #         email = serializer.validated_data["email"]
+
+    #         try:
+    #             user = CustomUser.objects.get(username=username, email=email)
+    #             temp_password = generate_temp_password()
+    #             user.set_password(temp_password)
+    #             user.save()
+
+    #             send_mail(
+    #                 "[RunUs]임시 비밀번호",
+    #                 f"임시 비밀번호: {temp_password}",
+    #                 "from@example.com",
+    #                 [email],
+    #                 fail_silently=False,
+    #             )
+    #             return Response({"message": "Temporary password sent to your email."})
+    #         except CustomUser.DoesNotExist:
+    #             return Response({"error": "No matching user found."}, status=404)
+    #     else:
+    #         return Response(serializer.errors, status=400)
 
 
 class ProfileImageView(APIView):

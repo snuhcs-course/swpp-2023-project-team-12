@@ -64,7 +64,10 @@
             android:name=".FindIdActivity"
             android:screenOrientation="portrait"></activity>
         <activity
-            android:name=".ResetPasswordActivity"
+            android:name=".ResetPasswordActivity1"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".ResetPasswordActivity2"
             android:screenOrientation="portrait"></activity>
 
         <meta-data
