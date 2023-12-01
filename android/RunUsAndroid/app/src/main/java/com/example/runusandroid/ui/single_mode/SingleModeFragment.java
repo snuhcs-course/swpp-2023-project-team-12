@@ -161,7 +161,7 @@ public class SingleModeFragment extends Fragment {
                         mMap.clear(); // Remove previous polylines
                         mMap.addPolyline(new PolylineOptions().addAll(pathPoints).color(Color.parseColor("#4AA570")).width(10));
                         if (newPoint != null) {
-                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 20));
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 16));
                         }
                     }
 
@@ -230,7 +230,7 @@ public class SingleModeFragment extends Fragment {
                     if (mMap != null) {
                         mMap.clear(); // Remove previous polylines
                         if (newPoint != null) {
-                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 16));
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 15));
                         }
                     }
                 }
@@ -825,18 +825,18 @@ public class SingleModeFragment extends Fragment {
         distance = 0;
         currentPace.setVisibility(View.VISIBLE);
         currentDistanceText.setText("0.0 km");
-        runningNow = true;
         currentTimeText.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
             public void onChronometerTick(Chronometer chronometer) {
                 currentTime = SystemClock.elapsedRealtime() - chronometer.getBase();
                 chronometer.setText(dateFormat.format(currentTime));
             }
         });
+        hideBottomNavigation(true);
         currentTimeText.setBase(SystemClock.elapsedRealtime());
         currentTimeText.start();
         startButton.setVisibility(View.GONE);
         quitButton.setVisibility(View.VISIBLE);
-        hideBottomNavigation(true);
+        runningNow = true;
     }
 
     private void setTextBold(TextView wantView, String[] words) {
