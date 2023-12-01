@@ -86,6 +86,8 @@ public class ResetPasswordActivity1 extends AppCompatActivity {
 //                            builder.setTitle("성공");
 //                            builder.setMessage("인증번호가 이메일로 발송되었습니다.");
                             try {
+                                usernameInput.setEnabled(false);
+                                emailInput.setEnabled(false);
                                 JSONObject jsonObject = new JSONObject(response.body().string());
                                 // "message" 키를 사용하여 temp_password 추출
                                 authString = jsonObject.getString("message");
