@@ -161,7 +161,7 @@ public class SingleModeFragment extends Fragment {
                         mMap.clear(); // Remove previous polylines
                         mMap.addPolyline(new PolylineOptions().addAll(pathPoints).color(Color.parseColor("#4AA570")).width(10));
                         if (newPoint != null) {
-                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 16));
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 15));
                         }
                     }
 
