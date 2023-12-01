@@ -2,6 +2,7 @@ package com.example.runusandroid;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -49,9 +50,9 @@ public class LoginTests {
         Thread.sleep(1000);
         loginActivityScenario = ActivityScenario.launch(LoginActivity.class);
         onView(withId(R.id.IdInput))
-                .perform(typeText("test"));
+                .perform(typeText("test"), closeSoftKeyboard());
         onView(withId(R.id.PasswordInput))
-                .perform(typeText("test"));
+                .perform(typeText("test"), closeSoftKeyboard());
         onView(withId(R.id.LoginBtn))
                 .perform(click());
         Thread.sleep(1000);
@@ -67,17 +68,17 @@ public class LoginTests {
         });
 
         // perform logout
-        onView(withId(R.id.LogoutBtn)).check(matches(isDisplayed()));
-        onView(withId(R.id.LogoutBtn)).perform(click());
+        onView(withId(R.id.logoutBtn)).check(matches(isDisplayed()));
+        onView(withId(R.id.logoutBtn)).perform(click());
         Thread.sleep(1000);
         onView(withId(R.id.LoginBtn)).check(matches(isDisplayed()));
 
         // check relogin with other account
 
         onView(withId(R.id.IdInput))
-                .perform(typeText("testroro"));
+                .perform(typeText("test"), closeSoftKeyboard());
         onView(withId(R.id.PasswordInput))
-                .perform(typeText("testroro"));
+                .perform(typeText("test"), closeSoftKeyboard());
         onView(withId(R.id.LoginBtn))
                 .perform(click());
         Thread.sleep(1000);

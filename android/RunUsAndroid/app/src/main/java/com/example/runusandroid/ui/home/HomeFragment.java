@@ -38,10 +38,10 @@ public class HomeFragment extends Fragment {
         View root = binding.getRoot();
 
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", MODE_PRIVATE);
-        String userName = sharedPreferences.getString("username", "사용자");
+        String nickname = sharedPreferences.getString("nickname", "사용자");
         long userId = sharedPreferences.getLong("userid", -1);
         TextView welcomeText = root.findViewById(R.id.welcomeText);
-        welcomeText.setText(userName + "님, 오늘의 운동을 시작해 보세요!");
+        welcomeText.setText(nickname + "님, 오늘의 운동을 시작해 보세요!");
 
         ViewPager viewPager = root.findViewById(R.id.viewPager);
         HomePageAdapter adapter = new HomePageAdapter();
@@ -99,6 +99,7 @@ public class HomeFragment extends Fragment {
         return root;
     }
 
+    /*
     @Override
     public void onResume() {
         super.onResume();
@@ -113,6 +114,8 @@ public class HomeFragment extends Fragment {
             }).start();
         }
     }
+
+     */
 
     @Override
     public void onDestroyView() {

@@ -105,9 +105,9 @@ public class MultiModeTests {
     public static void beforeClass() throws InterruptedException{
         loginActivityScenario = ActivityScenario.launch(LoginActivity.class);
         onView(withId(R.id.IdInput))
-                .perform(typeText("test"));
+                .perform(typeText("test"), closeSoftKeyboard());
         onView(withId(R.id.PasswordInput))
-                .perform(typeText("test"));
+                .perform(typeText("test"), closeSoftKeyboard());
         onView(withId(R.id.LoginBtn))
                 .perform(click());
         Thread.sleep(1000);
@@ -174,7 +174,7 @@ public class MultiModeTests {
         // 게임중 화면에서 확인
         Thread.sleep(1000 * 60);
         onView(withId(R.id.play_leaveButton)).check(matches(isDisplayed()));
-        onView(withId(R.id.time_present_content)).check(matches(not(withText("00:00:00"))));
+        onView(withId(R.id.remain_time)).check(matches(not(withText("00:00:00"))));
 
         // TODO: 게임결과 화면 확인되지 않음
 

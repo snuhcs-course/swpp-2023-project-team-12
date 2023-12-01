@@ -34,17 +34,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <service
             android:name=".ui.single_mode.BackGroundLocationService"
             android:enabled="true"
             android:exported="true"
-            android:screenOrientation="portrait"></service>
+            android:screenOrientation="portrait" />
+        <service
+            android:name=".ui.multi_mode.BackGroundSocketService"
+            android:enabled="true"
+            android:exported="true"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".MainActivity"
             android:exported="false"
             android:screenOrientation="portrait"></activity>
-
         <activity
             android:name=".LoginActivity"
             android:screenOrientation="portrait"></activity>
@@ -56,9 +61,6 @@
             android:screenOrientation="portrait"></activity>
         <activity
             android:name=".SignUpStep3Activity"
-            android:screenOrientation="portrait"></activity>
-        <activity
-            android:name=".SignUpStep4Activity"
             android:screenOrientation="portrait"></activity>
         <activity
             android:name=".FindIdActivity"
