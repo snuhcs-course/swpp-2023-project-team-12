@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -48,6 +49,7 @@ public class MainActivity2 extends AppCompatActivity {
     private ActivityMain2Binding binding;
     private FusedLocationProviderClient fusedLocationClient;
     private PermissionSupport permission;
+    public Location initialLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,6 +121,7 @@ public class MainActivity2 extends AppCompatActivity {
 
             }).start();
         }
+        getLastLocation();
     }
 
     @Override
@@ -161,6 +164,7 @@ public class MainActivity2 extends AppCompatActivity {
             } else {
                 Log.d("test:location:main", "Location failed");
             }
+            initialLocation = location;
         });
     }
 
@@ -196,12 +200,12 @@ public class MainActivity2 extends AppCompatActivity {
         // 권한이 전부 있다면 정상적으로 진행
         if (permission.checkPermission()) {
             Log.d("test:permission", "allPermissionGranted");
-            // 다시 permission 요청
             createNotificationChannel();
             activityManager.removeActivityTransitions(pendingIntent);
             this.unregisterReceiver(activityReceiver);
             this.registerReceiver(activityReceiver, filter, RECEIVER_EXPORTED);
             activityManager.registerActivityTransitions(pendingIntent);
+            getLastLocation();
         } else if (ActivityCompat.shouldShowRequestPermissionRationale(
                 this, Manifest.permission.ACTIVITY_RECOGNITION)) {
             Log.d("test:permission", "showRationaleActivityRecognition");
