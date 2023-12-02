@@ -7,6 +7,7 @@ import com.example.runusandroid.RetrofitClient;
 import junit.framework.TestCase;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,6 +17,7 @@ import java.util.List;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
 
 
@@ -23,6 +25,7 @@ public class SingleModeFragmentTest extends TestCase {
     HistoryApi historyApi;
 
     private SingleModeFragment fragment;
+    boolean result;
 
     @Before
     public void setUp() {
@@ -35,18 +38,36 @@ public class SingleModeFragmentTest extends TestCase {
     public void testSaveHistoryDataOnSingleMode() {
         try {
             HistoryData requestData = new HistoryData(1, 10.0f, 3600, true, "2023-11-03T13:06:33", "2023-11-03T13:06:33", 500, false, 15.0f, 0, 10.0f, new ArrayList<>(), -1, 0, 5);
-            Call<ResponseBody> call = historyApi.postHistoryData(requestData);
-            Response<ResponseBody> response = call.execute();
+            historyApi.postHistoryData(requestData).enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    if (response.isSuccessful()) {
+                        result = true;
+                        try {
+                            String responseBodyString = response.body().string();
+                            JSONObject jsonObject = new JSONObject(responseBodyString);
+                        } catch (JSONException e) {
+                            throw new RuntimeException(e);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
 
-            assertTrue(response.isSuccessful());
-
+                    }
+                    else {
+                        result = false;
+                    }
+                }
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    result = false;
+                }
+            });
+            //assertTrue(response.isSuccessful());
+            assertTrue(result);
         } catch (JSONException e) {
             e.printStackTrace();
             fail("IOException occurred");
 
-        } catch (IOException e) {
-            e.printStackTrace();
-            fail("IOException occurred");
         }
     }
 

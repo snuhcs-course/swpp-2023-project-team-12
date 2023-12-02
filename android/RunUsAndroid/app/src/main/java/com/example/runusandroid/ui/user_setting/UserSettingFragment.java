@@ -158,12 +158,19 @@ public class UserSettingFragment extends Fragment {
                     editor.apply();
                     String imageUrl = response.body().getProfileImageUrl();
                     Log.d("prfile", "profile=" + imageUrl);
-                    updateProfileImageInView(imageUrl);
+                    if(isVisible() && isAdded()) {
+                        updateProfileImageInView(imageUrl);
+                    }
+                    else{
+                        Log.d("profile", "pass load profile");
+                    }
                 } else {
-                    Glide.with(UserSettingFragment.this)
-                            .load("").placeholder(R.drawable.runus_logo)
-                            .apply(RequestOptions.circleCropTransform())
-                            .into(profileImageView);
+                    if(isVisible() && isAdded()) {
+                        Glide.with(UserSettingFragment.this)
+                                .load("").placeholder(R.drawable.runus_logo)
+                                .apply(RequestOptions.circleCropTransform())
+                                .into(profileImageView);
+                    }
                 }
             }
 

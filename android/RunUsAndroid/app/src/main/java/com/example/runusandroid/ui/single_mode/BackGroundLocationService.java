@@ -80,7 +80,7 @@ public class BackGroundLocationService extends Service {
     }
 
     private Notification getNotification() {
-        NotificationChannel channel = new NotificationChannel("1_location_channel", "location", NotificationManager.IMPORTANCE_HIGH);
+        NotificationChannel channel = new NotificationChannel("1_location_channel", "location", NotificationManager.IMPORTANCE_LOW);
         NotificationManager notificationManager = getSystemService(NotificationManager.class);
         notificationManager.createNotificationChannel(channel);
         Notification.Builder builder = new Notification.Builder(getApplicationContext(), "1_location_channel").setAutoCancel(false);
