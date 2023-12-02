@@ -3,11 +3,13 @@ package com.example.runusandroid;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -37,6 +39,7 @@ public class FindIdActivity extends AppCompatActivity {
         findIdButton.setOnClickListener(v -> {
             if (SystemClock.elapsedRealtime() - completeButtonLastClickTime < 2000) {
                 return;
+
             }
             completeButtonLastClickTime = SystemClock.elapsedRealtime();
             String email = emailInput.getText().toString();

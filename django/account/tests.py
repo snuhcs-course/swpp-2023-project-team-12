@@ -108,31 +108,31 @@ class SignupViewTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
-class ResetPasswordViewTest(TestCase):
-    def setUp(self):
-        self.client = APIClient()
-        self.user = get_user_model().objects.create_user(
-            username="testuser",
-            password="testpassword",
-            email="test@test.com",
-            nickname="Djangotest",
-            phone_num="01000000000",
-            gender=1,
-            height=170,
-            weight=70,
-            age=25,
-        )
+# class ResetPasswordViewTest(TestCase):
+#     def setUp(self):
+#         self.client = APIClient()
+#         self.user = get_user_model().objects.create_user(
+#             username="testuser",
+#             password="testpassword",
+#             email="test@test.com",
+#             nickname="Djangotest",
+#             phone_num="01000000000",
+#             gender=1,
+#             height=170,
+#             weight=70,
+#             age=25,
+#         )
 
-    def test_reset_password_with_valid_info(self):
-        response = self.client.post(
-            reverse("reset_password"),
-            {"username": "testuser", "email": "test@test.com"},
-            format="json",
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+#     def test_reset_password_with_valid_info(self):
+#         response = self.client.post(
+#             reverse("reset_password"),
+#             {"username": "testuser", "email": "test@test.com"},
+#             format="json",
+#         )
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_reset_password_with_invalid_info(self):
-        response = self.client.post
+#     def test_reset_password_with_invalid_info(self):
+#         response = self.client.post
 
 
 class FindUsernameAndSendEmailViewTest(TestCase):

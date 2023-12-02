@@ -15,9 +15,6 @@ public class UserActivityBroadcastReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-//        if (!Objects.equals(intent.getAction(), UserActivityTransitionManager.CUSTOM_INTENT_USER_ACTION)) {
-//            return;
-//        }
         if (ActivityTransitionResult.hasResult(intent)) {
             ActivityTransitionResult result = ActivityTransitionResult.extractResult(intent);
             for (ActivityTransitionEvent event : result.getTransitionEvents()) {
@@ -26,15 +23,18 @@ public class UserActivityBroadcastReceiver extends BroadcastReceiver {
                 String transitionType;
 
                 if (event.getActivityType() == DetectedActivity.WALKING) activityType = "WALKING";
-                else if (event.getActivityType() == DetectedActivity.RUNNING) activityType = "RUNNING";
+                else if (event.getActivityType() == DetectedActivity.RUNNING)
+                    activityType = "RUNNING";
                 else if (event.getActivityType() == DetectedActivity.STILL) activityType = "STILL";
                 else activityType = "illegal";
 
-                if(event.getTransitionType() == ActivityTransition.ACTIVITY_TRANSITION_ENTER) transitionType = "ENTER";
-                else if(event.getTransitionType() == ActivityTransition.ACTIVITY_TRANSITION_EXIT) transitionType = "EXIT";
+                if (event.getTransitionType() == ActivityTransition.ACTIVITY_TRANSITION_ENTER)
+                    transitionType = "ENTER";
+                else if (event.getTransitionType() == ActivityTransition.ACTIVITY_TRANSITION_EXIT)
+                    transitionType = "EXIT";
                 else transitionType = "illegal";
 
-                Toast.makeText(context, "activity detected, " + transitionType+ " " + activityType, Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "activity detected, " + transitionType + " " + activityType, Toast.LENGTH_LONG).show();
                 RunningState.saveState(activityType, transitionType);
             }
         }

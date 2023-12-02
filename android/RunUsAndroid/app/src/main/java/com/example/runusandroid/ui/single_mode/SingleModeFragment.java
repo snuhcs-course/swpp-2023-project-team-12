@@ -193,11 +193,11 @@ public class SingleModeFragment extends Fragment {
                                 int paceMinute = (int) (1 / (distance_for_pace / (5 * pace_distance_queue.size()))) / 60;
                                 int paceSecond = (int) (1 / (distance_for_pace / (5 * pace_distance_queue.size()))) % 60;
                                 Log.d("test:distance:5sec", "distance : " + distance_for_pace + " and queue size is " + pace_distance_queue.size() + " pace :" + paceMinute + "' " + paceSecond + "''");
-                                if (true) {
+                                if (paceMinute < 60) {
                                     String paceString = String.format("%02d'%02d\"", paceMinute, paceSecond);
                                     currentPaceText.setText(paceString);
                                 } else {
-                                    String paceString = "--'--\"";
+                                    String paceString = "59'59\"";
                                     currentPaceText.setText(paceString);
                                 }
                             } else {
@@ -207,20 +207,6 @@ public class SingleModeFragment extends Fragment {
 
                             // log distance into file
                             FileLogger.logToFileAndLogcat(mainActivity, "test:distance:5sec", "" + location.distanceTo(lastLocation) / (double) 1000);
-                            // Below code seems to cause NullPointerException after 10 minutes or so (on Duration.between)
-//                            if ((int) distance != lastDistanceInt) {
-//                                LocalDateTime currentTime = LocalDateTime.now();
-//                                Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
-//                                long secondsDuration = iterationDuration.getSeconds();
-//                                float newPace = (float) (1.0 / (secondsDuration / 3600.0));
-//                                if (newPace > maxSpeed)
-//                                    maxSpeed = newPace;
-//                                if (newPace < minSpeed)
-//                                    minSpeed = newPace;
-//                                speedList.add(newPace);
-//                                iterationStartTime = currentTime;
-//
-//                            }
                             Log.d("test:distance:total", "Distance:" + distance);
                         }
                     } else {

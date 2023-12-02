@@ -46,4 +46,8 @@
     <style name="Custom.Indicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
         <item name="android:color">#704AA570</item>
     </style>
+
+    <style name="AlertDialogCustom" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="colorAccent">#4AA570</item>
+    </style>
 </resources>

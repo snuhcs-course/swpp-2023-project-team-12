@@ -6,6 +6,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
@@ -21,6 +22,9 @@ public interface AccountApi {
     Call<ResponseBody> findUsername(@Body EmailData emailData);
 
     @POST("/account/reset_password/")
+    Call<ResponseBody> sendMail(@Body SendMailData data);
+
+    @PATCH("/account/reset_password/")
     Call<ResponseBody> resetPassword(@Body ResetPasswordData data);
 
     @Multipart

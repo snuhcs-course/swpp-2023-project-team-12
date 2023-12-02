@@ -4,6 +4,8 @@ import static android.content.Context.MODE_PRIVATE;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -66,9 +68,14 @@ public class UserSettingFragment extends Fragment {
     ImageView marathonerImageView;
     ImageView marathonWinnerImageView;
     ProgressBar userExpProgressbar;
+    Button creditButton;
+
+    CreditDialog dialog;
+
     private FragmentUserSettingBinding binding;
     private Uri imageUri;
     private ActivityResultLauncher<String> imagePickerLauncher;
+
 
     private Button testButton;
     private int badgeCollection;
@@ -96,10 +103,6 @@ public class UserSettingFragment extends Fragment {
         View root = binding.getRoot();
         mainActivity = (MainActivity2) getActivity();
 
-        //final TextView textView = binding.TextUserName;
-        //userSettingViewModel.setText(userName + "님 환영해요!");
-        //userSettingViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
-
         userNicknameTextView = binding.userNickname;
         userLevelTextView = binding.userLevel;
         userExpPercentTextView = binding.userExpPercent;
@@ -115,23 +118,9 @@ public class UserSettingFragment extends Fragment {
         halfMarathonerImageView = binding.halfMarathonerImage;
         marathonerImageView = binding.marathonerImage;
         marathonWinnerImageView = binding.marathonWinnerImage;
-        //testButton = binding.testButton;
-//        testButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                int tempBadgeCollection = 1111111111;
-//                updateBadge(tempBadgeCollection);
-//                // 1초 뒤에 다른 작업 수행
-//                new android.os.Handler().postDelayed(
-//                        new Runnable() {
-//                            public void run() {
-//                                updateBadge(badgeCollection);
-//                            }
-//                        },
-//                        1000 // 1초 지연
-//                );
-//            }
-//        });
+        creditButton = binding.creditButton;
+
+        dialog = new CreditDialog(requireContext());
 
         AppCompatButton logoutButton = root.findViewById(R.id.logoutBtn);
 
@@ -212,6 +201,13 @@ public class UserSettingFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 logoutUser();
+            }
+        });
+
+        creditButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.show();
             }
         });
 
@@ -310,15 +306,17 @@ public class UserSettingFragment extends Fragment {
     }
 
     private byte[] toByteArray(InputStream inputStream) throws IOException {
+        Bitmap originalBitmap = BitmapFactory.decodeStream(inputStream);
+
+        int width = originalBitmap.getWidth() / 2;
+        int height = originalBitmap.getHeight() / 2;
+        Bitmap resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, width, height, true);
+
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        int read;
-        while ((read = inputStream.read(buffer)) != -1) {
-            bos.write(buffer, 0, read);
-        }
-        bos.close();
+        resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 10, bos);
         return bos.toByteArray();
     }
+
 
     private void updateProfileImageInView(String imageUrl) {
         Glide.with(UserSettingFragment.this)

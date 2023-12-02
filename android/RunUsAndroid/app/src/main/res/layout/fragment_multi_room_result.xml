@@ -17,7 +17,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.66" />
+        app:layout_constraintGuide_percent="0.69" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_vertical_3"
@@ -25,7 +25,6 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.5" />
-    <!-- 나머지 레이아웃 요소들은 기존과 동일하게 유지됩니다. -->
 
 
     <TextView
@@ -57,8 +56,8 @@
 
     <ImageView
         android:id="@+id/podium"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="190dp"
         android:src="@drawable/podium"
         app:layout_constraintBottom_toTopOf="@id/guideline_vertical_2"
         app:layout_constraintLeft_toLeftOf="parent"
