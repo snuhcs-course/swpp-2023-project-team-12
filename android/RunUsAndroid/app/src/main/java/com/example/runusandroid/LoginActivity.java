@@ -12,7 +12,6 @@ import android.text.Spanned;
 import android.text.TextPaint;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
-import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -107,7 +106,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View textView) {
                 // ResetPasswordActivity로 이동
-                Intent intent = new Intent(LoginActivity.this, ResetPasswordActivity.class);
+                Intent intent = new Intent(LoginActivity.this, ResetPasswordActivity1.class);
                 startActivity(intent);
             }
 

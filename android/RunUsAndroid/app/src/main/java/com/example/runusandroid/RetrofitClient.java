@@ -20,7 +20,7 @@ public class RetrofitClient {
     //django settings.py에 현재 ip주소 입력
     //서버 켤 때 python manage.py runserver 0.0.0.0:8000 커맨드로 실행
     //Base_URL ip 주소 넣는 부분에 현재 ip주소 넣고 실행
-    //private final static String BASE_URL = "http://10.22.84.103:8000/";
+    //private final static String BASE_URL = "http://192.168.0.4:8000/";
 
 
     private static String authToken = null;
