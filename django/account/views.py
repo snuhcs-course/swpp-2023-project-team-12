@@ -1,4 +1,4 @@
-import random
+import hashlib
 import secrets
 import string
 from datetime import timedelta
@@ -13,7 +13,7 @@ from .serializers import (
     UserCreateSerializer,
     LoginSerializer,
     UserProfileSerializer,
-    UsernameEmailSerializer
+    UsernameEmailSerializer,
 )
 from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -22,7 +22,6 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.core.mail import send_mail
-from django.db import transaction
 from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import UserProfileImageSerializer
 
@@ -146,7 +145,7 @@ class ResetPasswordView(APIView):
                 return Response({"error": "No matching user found."}, status=404)
         else:
             return Response(serializer.errors, status=400)
-        
+
     def patch(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
         print(serializer)
@@ -163,49 +162,23 @@ class ResetPasswordView(APIView):
                 return Response({"error": "No matching user found."}, status=404)
         else:
             print(serializer.errors)
-            return Response(serializer.errors, status=400) 
-
-    # def post(self, request):
-    #     serializer = UsernameEmailSerializer(data=request.data)
-    #     if serializer.is_valid():
-    #         username = serializer.validated_data["username"]
-    #         email = serializer.validated_data["email"]
-
-    #         try:
-    #             user = CustomUser.objects.get(username=username, email=email)
-    #             temp_password = generate_temp_password()
-    #             user.set_password(temp_password)
-    #             user.save()
-
-    #             send_mail(
-    #                 "[RunUs]임시 비밀번호",
-    #                 f"임시 비밀번호: {temp_password}",
-    #                 "from@example.com",
-    #                 [email],
-    #                 fail_silently=False,
-    #             )
-    #             return Response({"message": "Temporary password sent to your email."})
-    #         except CustomUser.DoesNotExist:
-    #             return Response({"error": "No matching user found."}, status=404)
-    #     else:
-    #         return Response(serializer.errors, status=400)
+            return Response(serializer.errors, status=400)
 
 
 class ProfileImageView(APIView):
     parser_classes = [MultiPartParser, FormParser]
     permission_classes = [IsAuthenticated]
 
-    @transaction.atomic
     def post(self, request, format=None):
         logger.debug(f"Received data: {request.data}")
         user = request.user
         serializer = UserProfileImageSerializer(user, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            random_number = random.randint(1, 100000)
-            updated_image_url = f"{request.build_absolute_uri(user.profile_image.url)}?v={random_number}"
-            ##logger.debug(f"updated_image_url: {updated_image_url}")
-            print(user.badge_collection)
+            file_hash = generate_file_hash(user.profile_image.path)
+            updated_image_url = (
+                f"{request.build_absolute_uri(user.profile_image.url)}?v={file_hash}"
+            )
             return Response(
                 {
                     "message": "Profile Image Updated Successfully",
@@ -332,3 +305,11 @@ def processBadgeCollection(badge_collection, history_instance):
 
     print("return badge_collection :", badge_collection)
     return badge_collection
+
+
+def generate_file_hash(file_path):
+    hasher = hashlib.md5()
+    with open(file_path, "rb") as file:
+        buf = file.read()
+        hasher.update(buf)
+    return hasher.hexdigest()

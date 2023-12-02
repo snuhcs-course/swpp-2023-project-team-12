@@ -193,16 +193,6 @@ public class MultiModePlayFragment extends Fragment {
                                 pacePresentContentTextView.setText(paceString);
                             }
                         }
-//                        } else {
-//                            Log.d("test:distance:5sec", "distance : " + last_distance_5s_kilometer);
-//
-//                            String paceString = "--'--\"";
-//                            pacePresentContentTextView.setText(paceString);
-//                        }
-
-                        // log distance into file
-                        //FileLogger.logToFileAndLogcat(mainActivity, "test:distance:5sec", "" + location.distanceTo(lastLocation) / (double) 1000);
-                        //Below code seems to cause NullPointerException after 10 minutes or so (on Duration.between)
                         if ((int) distance != lastDistanceInt) {
                             LocalDateTime currentTime = LocalDateTime.now();
                             Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
@@ -216,7 +206,6 @@ public class MultiModePlayFragment extends Fragment {
                             iterationStartTime = currentTime;
 
                         }
-                        //Log.d("test:distance:total", "Distance:" + distance);
                     }
                 } else {
                     String paceString = "--'--\"";
@@ -237,13 +226,6 @@ public class MultiModePlayFragment extends Fragment {
         }
         return sum;
     }
-//    private int updatedExp;
-//    private float medianSpeed;
-//    private HistoryApi historyApi;
-//    private TextView timePresentContentTextView;
-//    private int isFinished;
-//    private int groupHistoryId = 999;
-//    private SendFinishedTask finishedTask;
 
     private void showExitGameDialog() {
         @SuppressLint("InflateParams")
@@ -512,11 +494,6 @@ public class MultiModePlayFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-//        if (socketListenerThread != null) {
-//            socketListenerThread.interrupt();
-//        }
-        //fusedLocationClient.removeLocationUpdates(locationCallback);
-        //finishedTask.cancel(true);
     }
 
     @Override

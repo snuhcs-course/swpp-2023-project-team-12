@@ -45,8 +45,7 @@ public class HistoryDataforRendering {
         private float distance;
         private String time;
         private float calories;
-
-        // getters
+        
         public String getDate() {
             return date;
         }
