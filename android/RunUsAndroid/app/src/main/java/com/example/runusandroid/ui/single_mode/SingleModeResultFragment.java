@@ -177,14 +177,6 @@ public class SingleModeResultFragment extends Fragment {
                 if (!isDialogOpenedBefore) {
                     Log.d("speedList", speedList.size() + "");
                     double section = 1.0;
-                    //for test
-//                    currentDistance = 4.579f;
-//                    speedList = new ArrayList<>();
-//                    speedList.add(12.0f);
-//                    speedList.add(10.0f);
-//                    speedList.add(15.0f);
-//                    speedList.add(20.0f);
-//                    speedList.add(12.0f);
 
                     while (true) {
                         if (currentDistance - section >= 0) {

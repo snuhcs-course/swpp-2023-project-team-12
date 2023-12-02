@@ -99,24 +99,11 @@ public class ResetPasswordActivity1 extends AppCompatActivity {
                             } catch (IOException | JSONException e) {
                                 throw new RuntimeException(e);
                             }
-//                            builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
-//                                public void onClick(DialogInterface dialog, int id) {
-//                                    // LoginActivity로 이동
-//                                    Intent intent = new Intent(ResetPasswordActivity1.this, LoginActivity.class);
-//                                    startActivity(intent);
-//                                    finish();
-//                                }
-//                            });
 
                         } else {
                             authInput.setVisibility(View.GONE);
                             sendMailValidationMessage.setVisibility(View.VISIBLE);
-//                            builder.setTitle("실패");
-//                            builder.setMessage("아이디나 이메일이 잘못되었습니다. 다시 시도해주세요.");
-//                            builder.setPositiveButton("확인", null); // 단순 확인 버튼
                         }
-//                        AlertDialog dialog = builder.create();
-//                        dialog.show();
                     }
 
                     @Override

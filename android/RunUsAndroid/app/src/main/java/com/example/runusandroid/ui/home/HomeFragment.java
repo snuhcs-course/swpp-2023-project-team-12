@@ -21,7 +21,6 @@ import com.example.runusandroid.RetrofitClient;
 import com.example.runusandroid.databinding.FragmentHomeBinding;
 import com.example.runusandroid.ui.multi_mode.SocketManager;
 
-import java.io.IOException;
 import java.util.Calendar;
 
 public class HomeFragment extends Fragment {
@@ -31,7 +30,7 @@ public class HomeFragment extends Fragment {
     private HistoryApi historyApi;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
-            ViewGroup container, Bundle savedInstanceState) {
+                             ViewGroup container, Bundle savedInstanceState) {
         HomeViewModel homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
 
         binding = FragmentHomeBinding.inflate(inflater, container, false);
@@ -75,47 +74,8 @@ public class HomeFragment extends Fragment {
         int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
         historyApi = RetrofitClient.getClient().create(HistoryApi.class);
 
-        // // NOTE: 공사중
-        // historyApi.getDailyData(year, month + 1, dayOfMonth, userId).enqueue(new
-        // Callback<HistoryDataforRendering>() {
-        // @Override
-        // public void onResponse(Call<HistoryDataforRendering> call,
-        // Response<HistoryDataforRendering> response) {
-        // if (response.isSuccessful()) {
-        // Log.d("HistoryApi", "Response Success");
-        // HistoryDataforRendering data = response.body();
-        // todayRunningHistoryTextView.setText("오늘의 달리기 기록\n\n" + "거리: " +
-        // String.format("%.2f", data.getDistance()) + " km\n\n시간: " + data.getTime());
-        // }
-        // }
-        //
-        // @Override
-        // public void onFailure(Call<HistoryDataforRendering> call, Throwable t) {
-        // Log.d("HistoryApi", "Response Failed");
-        // // 오류 처리
-        // }
-        // });
-
         return root;
     }
-
-    /*
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (socketManager.getOIS() == null) {
-            new Thread(() -> {
-                try {
-                    socketManager.openSocket();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-
-            }).start();
-        }
-    }
-
-     */
 
     @Override
     public void onDestroyView() {
