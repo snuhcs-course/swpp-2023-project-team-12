@@ -39,7 +39,6 @@ public class FindIdActivity extends AppCompatActivity {
         findIdButton.setOnClickListener(v -> {
             if (SystemClock.elapsedRealtime() - completeButtonLastClickTime < 2000) {
                 return;
-
             }
             completeButtonLastClickTime = SystemClock.elapsedRealtime();
             String email = emailInput.getText().toString();
