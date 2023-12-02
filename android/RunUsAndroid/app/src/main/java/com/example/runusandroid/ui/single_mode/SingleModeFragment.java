@@ -3,6 +3,7 @@ package com.example.runusandroid.ui.single_mode;
 import static android.content.Context.MODE_PRIVATE;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -56,6 +57,7 @@ import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
 import com.example.runusandroid.RetrofitClient;
 import com.example.runusandroid.databinding.FragmentSingleModeBinding;
+import com.example.runusandroid.ui.multi_mode.MultiModePlayFragment;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -83,9 +85,13 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Queue;
 
 import Logging.FileLogger;
+import MultiMode.Packet;
+import MultiMode.PacketBuilder;
+import MultiMode.Protocol;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -816,8 +822,8 @@ public class SingleModeFragment extends Fragment {
         goalDistanceText.setText(floatTo1stDecimal(goalDistance) + " km");
         if (ActivityCompat.checkSelfPermission(mainActivity,
                 Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(mainActivity, background_location_permission,
-                    200);
+            //ActivityCompat.requestPermissions(mainActivity, background_location_permission, 200);
+            showBackgroundLocationPermissionDialog();
         }
 
         gameStartTime = LocalDateTime.now();
@@ -837,6 +843,23 @@ public class SingleModeFragment extends Fragment {
         startButton.setVisibility(View.GONE);
         quitButton.setVisibility(View.VISIBLE);
         runningNow = true;
+    }
+
+    private void showBackgroundLocationPermissionDialog() {
+        @SuppressLint("InflateParams")
+        View exitGameDialog = getLayoutInflater().inflate(R.layout.dialog_multimode_play_finish, null);
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        Objects.requireNonNull(dialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.setContentView(exitGameDialog);
+        TextView textView = exitGameDialog.findViewById(R.id.textViewExitGame);
+        textView.setText("원활한 앱 이용을 위해 위치 정보 접근 권한을 \n항상 허용으로 설정해주세요");
+        Button buttonConfirmPlayExit = exitGameDialog.findViewById(R.id.buttonConfirmPlayExit);
+        buttonConfirmPlayExit.setOnClickListener(v -> {
+            dialog.dismiss();
+            ActivityCompat.requestPermissions(mainActivity, background_location_permission, 200);
+        });
+        dialog.show();
     }
 
     private void setTextBold(TextView wantView, String[] words) {
@@ -1117,10 +1140,12 @@ public class SingleModeFragment extends Fragment {
 
     public void hideBottomNavigation(Boolean hide) {
         BottomNavigationView nav_view = getActivity().findViewById(R.id.nav_view);
-        if (hide)
-            nav_view.setVisibility(View.GONE);
-        else
-            nav_view.setVisibility(View.VISIBLE);
+        if(nav_view != null) {
+            if (hide)
+                nav_view.setVisibility(View.GONE);
+            else
+                nav_view.setVisibility(View.VISIBLE);
+        }
     }
 
     private void finishPlaySingleMode() {
