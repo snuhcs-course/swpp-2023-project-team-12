@@ -18,6 +18,7 @@ import android.icu.text.SimpleDateFormat;
 import android.icu.util.TimeZone;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.text.Editable;
 import android.text.Spannable;
@@ -56,6 +57,9 @@ import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
 import com.example.runusandroid.RetrofitClient;
 import com.example.runusandroid.databinding.FragmentSingleModeBinding;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -342,7 +346,17 @@ public class SingleModeFragment extends Fragment {
                     Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 mMap.setMyLocationEnabled(true);
             }
+            // set initial point to on saved already in mainActivity, if null, set to default location (남산타워)
+            LatLng initialPoint;
+            if (mainActivity.initialLocation != null) {
+                initialPoint = new LatLng(mainActivity.initialLocation.getLatitude(), mainActivity.initialLocation.getLongitude());
+            } else{
+                initialPoint = new LatLng(37.55225, 126.9873);
+            }
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPoint, 14));
         });
+//        Location initialLocation = mainActivity.getFusedLocationClient().getLastLocation().getResult();
+//        LatLng initialPoint = new LatLng(initialLocation.getLatitude(), initialLocation.getLongitude());
 
         // Viewmodel contains status, and when status changes (observe), the text will
         // change
