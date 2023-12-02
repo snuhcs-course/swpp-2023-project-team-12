@@ -157,18 +157,20 @@ public class UserSettingFragment extends Fragment {
                     Log.d("badgeFromServer", Integer.toString(badgeCollection));
                     editor.apply();
                     String imageUrl = response.body().getProfileImageUrl();
+                    imageUrl = imageUrl + "?timestamp=" + System.currentTimeMillis();
+
                     Log.d("prfile", "profile=" + imageUrl);
-                    if(isVisible() && isAdded()) {
+                    if (isVisible() && isAdded()) {
                         updateProfileImageInView(imageUrl);
-                    }
-                    else{
+                    } else {
                         Log.d("profile", "pass load profile");
                     }
                 } else {
-                    if(isVisible() && isAdded()) {
+                    if (isVisible() && isAdded()) {
                         Glide.with(UserSettingFragment.this)
                                 .load("").placeholder(R.drawable.runus_logo)
                                 .apply(RequestOptions.circleCropTransform())
+                                .skipMemoryCache(true)
                                 .into(profileImageView);
                     }
                 }
@@ -322,6 +324,7 @@ public class UserSettingFragment extends Fragment {
         Glide.with(UserSettingFragment.this)
                 .load(imageUrl).placeholder(R.drawable.runus_logo)
                 .apply(RequestOptions.circleCropTransform())
+                .skipMemoryCache(true)
                 .into(binding.profileImage);
     }
 
