@@ -156,7 +156,14 @@ public class SingleModeResultFragment extends Fragment {
                     Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 mMap.setMyLocationEnabled(true);
             }
-
+            // set initial point to on saved already in mainActivity, if null, set to default location (남산타워)
+            LatLng initialPoint;
+            if (mainActivity.initialLocation != null) {
+                initialPoint = new LatLng(mainActivity.initialLocation.getLatitude(), mainActivity.initialLocation.getLongitude());
+            } else {
+                initialPoint = new LatLng(37.55225, 126.9873);
+            }
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPoint, 14));
             isMapReady = true;
 
             updateMap();
