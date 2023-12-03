@@ -37,7 +37,7 @@
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/viewPager"
         android:layout_width="0dp"
-        android:layout_height="400dp"
+        android:layout_height="380dp"
         app:layout_constraintBottom_toTopOf="@id/runningRecordCard"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -64,12 +64,33 @@
         app:layout_constraintTop_toBottomOf="@id/viewPager">
 
         <TextView
-            android:id="@+id/todayRunningHistoryTextView"
+            android:id="@+id/todayQuotesTitleText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/pretendardregular"
+            android:fontFamily="@font/pretendardsemibold"
+            android:gravity="left"
             android:padding="16dp"
-            android:text="메인화면 정비중입니다. 감사합니다." />
+            android:text="당신을 위한 한마디"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/todayQuotesText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:text="메인화면 정비중입니다. 감사합니다."
+            app:layout_constraintTop_toBottomOf="@+id/todayQuotesTitleText" />
+
+        <TextView
+            android:id="@+id/todayQuotesAuthorText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:paddingTop="8dp"
+            android:paddingRight="16dp"
+            android:paddingBottom="8dp"
+            android:text=""
+            app:layout_constraintTop_toBottomOf="@+id/todayQuotesText" />
 
     </androidx.cardview.widget.CardView>
 
