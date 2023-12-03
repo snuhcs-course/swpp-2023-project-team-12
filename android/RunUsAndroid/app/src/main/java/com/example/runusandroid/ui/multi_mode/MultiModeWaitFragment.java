@@ -277,6 +277,7 @@ public class MultiModeWaitFragment extends Fragment {
             public void onResponse(Call<UserProfileResponse> call, Response<UserProfileResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     String imageUrl = response.body().getProfileImageUrl();
+                    imageUrl = imageUrl + "?timestamp=" + System.currentTimeMillis();
                     Log.d("prfile", "profile=" + imageUrl);
                     Glide.with(MultiModeWaitFragment.this)
                             .load(imageUrl)
