@@ -2,7 +2,6 @@ package com.example.runusandroid;
 
 
 import android.Manifest;
-import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -10,19 +9,16 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
@@ -31,40 +27,29 @@ import com.example.runusandroid.ActivityRecognition.UserActivityBroadcastReceive
 import com.example.runusandroid.ActivityRecognition.UserActivityTransitionManager;
 import com.example.runusandroid.databinding.ActivityMain2Binding;
 import com.example.runusandroid.ui.multi_mode.BackGroundSocketService;
-import com.example.runusandroid.ui.multi_mode.MultiModePlayFragment;
 import com.example.runusandroid.ui.multi_mode.SocketManager;
-import com.example.runusandroid.ui.single_mode.BackGroundLocationService;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.net.SocketException;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.Locale;
-
-import MultiMode.Packet;
-import MultiMode.PacketBuilder;
-import MultiMode.Protocol;
 
 
 public class MainActivity2 extends AppCompatActivity {
 
-    private final SocketManager socketManager = SocketManager.getInstance();
     static final String START_SOCKET_SERVICE = "start";
     static final String STOP_SOCKET_SERVICE = "stop";
-    private boolean isLogin = true;
-
+    private final SocketManager socketManager = SocketManager.getInstance();
     public UserActivityBroadcastReceiver activityReceiver;
+    public NavController navController;
     UserActivityTransitionManager activityManager;
     PendingIntent pendingIntent;
+    IntentFilter filter;
+    private boolean isLogin = true;
     private ActivityMain2Binding binding;
     private FusedLocationProviderClient fusedLocationClient;
-    public NavController navController;
     private PermissionSupport permission;
-    IntentFilter filter;
+    public Location initialLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +62,7 @@ public class MainActivity2 extends AppCompatActivity {
         String token = sharedPreferences.getString("token", null);
         Long lastLoginTime = sharedPreferences.getLong("lastLoginTime", 0);
         Long currentTime = System.currentTimeMillis();
-        double elapsedTime = (currentTime - lastLoginTime)/1000.0;
+        double elapsedTime = (currentTime - lastLoginTime) / 1000.0;
 
         if (elapsedTime >= 432000 || token == null) {
             // 토큰이 저장되어 있지 않으면 로그인되어 있지 않다고 판단하고 LoginActivity로 전환
@@ -89,7 +74,7 @@ public class MainActivity2 extends AppCompatActivity {
         AccountAPIFactory accountFactory = AccountAPIFactory.getInstance();
         accountFactory.refreshToken(this);
 
-        Log.d("socket service","start");
+        Log.d("socket service", "start");
         Intent intent = new Intent(this, BackGroundSocketService.class);
         intent.setAction(START_SOCKET_SERVICE);
         this.startForegroundService(intent);
@@ -100,28 +85,6 @@ public class MainActivity2 extends AppCompatActivity {
         navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main2);
         NavigationUI.setupWithNavController(binding.navView, navController);
         permissionCheck();
-        // REMOVAL : permission check moved to PermissionSupport.java
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
-//                    != PackageManager.PERMISSION_GRANTED) {
-//                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACTIVITY_RECOGNITION}, 1001);
-//            }
-//        }
-//        // Request location permission
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-//                != PackageManager.PERMISSION_GRANTED) {
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1002);
-//        }
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-//                != PackageManager.PERMISSION_GRANTED) {
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1003);
-//        }
-//        if (Build.VERSION.SDK_INT >= 33) {
-//            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-//                    != PackageManager.PERMISSION_GRANTED) {
-//                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1004);
-//            }
-//        }
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -155,67 +118,11 @@ public class MainActivity2 extends AppCompatActivity {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                //heartbeatHandler.post(heartbeatRunnable);
 
             }).start();
         }
-        /*
-        Log.d("socket service","start");
-        Intent intent = new Intent(this, BackGroundSocketService.class);
-        intent.setAction(START_SOCKET_SERVICE);
-        this.startForegroundService(intent);
-
-         */
-        /*
-        heartbeatHandler = new Handler(Looper.getMainLooper());
-        heartbeatRunnable = new Runnable() {
-            @Override
-            public void run() {
-                new Thread(() -> {
-                    try{
-                        ObjectOutputStream oos = socketManager.getOOS();
-                        oos.reset();
-                        oos.writeObject("Heartbeat");
-                        oos.flush();
-                        heartbeatHandler.postDelayed(this, 5000);
-                    } catch (IOException e) {
-                        try {
-                            e.printStackTrace();
-                            SocketManager.getInstance().resetInstance();
-                            heartbeatHandler.postDelayed(this, 5000);
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                            throw new RuntimeException(ex);
-                        }
-                    }
-                }).start();
-            }
-        };
-        */
+        getLastLocation();
     }
-    /*
-    @Override
-    protected void onPause() {
-        Intent notificationIntent = new Intent(this, MainActivity2.class);
-        PendingIntent pendingIntent =
-                PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
-
-        Notification notification =
-                new Notification.Builder(this,"MultiModeWait")
-                        .setContentTitle("RunUs")
-                        .setContentText("앱이실행중입니다.")
-                        .setSmallIcon(R.drawable.runus_logo)
-                        .setContentIntent(pendingIntent)
-                        .build();
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            startForeground(ONGOING_NOTIFICATION_ID, notification);
-        }
-        Log.d("test:lifecycle:main", "onpause");
-        super.onPause();
-    }
-
-     */
 
     @Override
     protected void onStop() {
@@ -223,10 +130,11 @@ public class MainActivity2 extends AppCompatActivity {
         this.unregisterReceiver(activityReceiver);
         super.onStop();
     }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(isLogin) {
+        if (isLogin) {
             Intent intent = new Intent(this, BackGroundSocketService.class);
             intent.setAction(STOP_SOCKET_SERVICE);
             this.startForegroundService(intent);
@@ -256,6 +164,7 @@ public class MainActivity2 extends AppCompatActivity {
             } else {
                 Log.d("test:location:main", "Location failed");
             }
+            initialLocation = location;
         });
     }
 
@@ -266,6 +175,7 @@ public class MainActivity2 extends AppCompatActivity {
         NotificationManager notificationManager = getSystemService(NotificationManager.class);
         notificationManager.createNotificationChannel(channel);
     }
+
     @Override
     public void onBackPressed() {
         super.onBackPressed();
@@ -278,7 +188,7 @@ public class MainActivity2 extends AppCompatActivity {
         permission = new PermissionSupport(this, this);
 
         // 권한 체크 후 리턴이 false로 들어오면
-        if (!permission.checkPermission()){
+        if (!permission.checkPermission()) {
             //권한 요청
             permission.requestPermission();
         }
@@ -290,12 +200,12 @@ public class MainActivity2 extends AppCompatActivity {
         // 권한이 전부 있다면 정상적으로 진행
         if (permission.checkPermission()) {
             Log.d("test:permission", "allPermissionGranted");
-            // 다시 permission 요청
             createNotificationChannel();
             activityManager.removeActivityTransitions(pendingIntent);
             this.unregisterReceiver(activityReceiver);
             this.registerReceiver(activityReceiver, filter, RECEIVER_EXPORTED);
             activityManager.registerActivityTransitions(pendingIntent);
+            getLastLocation();
         } else if (ActivityCompat.shouldShowRequestPermissionRationale(
                 this, Manifest.permission.ACTIVITY_RECOGNITION)) {
             Log.d("test:permission", "showRationaleActivityRecognition");
@@ -304,11 +214,11 @@ public class MainActivity2 extends AppCompatActivity {
                 this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
             Log.d("test:permission", "showRationaleAccessLocation");
             showRationaleAccessLocation();
-        }else if (ActivityCompat.shouldShowRequestPermissionRationale(
+        } else if (ActivityCompat.shouldShowRequestPermissionRationale(
                 this, Manifest.permission.POST_NOTIFICATIONS)) {
             Log.d("test:permission", "showRationalePostNotifications");
             showRationalePostNotifications();
-        }else{
+        } else {
             Log.d("test:permission", "unableToUseApp");
             showPermissionDialog();
         }

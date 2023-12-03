@@ -193,16 +193,6 @@ public class MultiModePlayFragment extends Fragment {
                                 pacePresentContentTextView.setText(paceString);
                             }
                         }
-//                        } else {
-//                            Log.d("test:distance:5sec", "distance : " + last_distance_5s_kilometer);
-//
-//                            String paceString = "--'--\"";
-//                            pacePresentContentTextView.setText(paceString);
-//                        }
-
-                        // log distance into file
-                        //FileLogger.logToFileAndLogcat(mainActivity, "test:distance:5sec", "" + location.distanceTo(lastLocation) / (double) 1000);
-                        //Below code seems to cause NullPointerException after 10 minutes or so (on Duration.between)
                         if ((int) distance != lastDistanceInt) {
                             LocalDateTime currentTime = LocalDateTime.now();
                             Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
@@ -216,7 +206,6 @@ public class MultiModePlayFragment extends Fragment {
                             iterationStartTime = currentTime;
 
                         }
-                        //Log.d("test:distance:total", "Distance:" + distance);
                     }
                 } else {
                     String paceString = "--'--\"";
@@ -237,13 +226,6 @@ public class MultiModePlayFragment extends Fragment {
         }
         return sum;
     }
-//    private int updatedExp;
-//    private float medianSpeed;
-//    private HistoryApi historyApi;
-//    private TextView timePresentContentTextView;
-//    private int isFinished;
-//    private int groupHistoryId = 999;
-//    private SendFinishedTask finishedTask;
 
     private void showExitGameDialog() {
         @SuppressLint("InflateParams")
@@ -362,6 +344,14 @@ public class MultiModePlayFragment extends Fragment {
                         Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     mMap.setMyLocationEnabled(true);
                 }
+                // set initial point to on saved already in mainActivity, if null, set to default location (남산타워)
+                LatLng initialPoint;
+                if (mainActivity.initialLocation != null) {
+                    initialPoint = new LatLng(mainActivity.initialLocation.getLatitude(), mainActivity.initialLocation.getLongitude());
+                } else{
+                    initialPoint = new LatLng(37.55225, 126.9873);
+                }
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPoint, 14));
             });
         }
 
@@ -512,11 +502,6 @@ public class MultiModePlayFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-//        if (socketListenerThread != null) {
-//            socketListenerThread.interrupt();
-//        }
-        //fusedLocationClient.removeLocationUpdates(locationCallback);
-        //finishedTask.cancel(true);
     }
 
     @Override

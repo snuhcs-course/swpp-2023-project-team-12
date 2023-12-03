@@ -277,6 +277,7 @@ public class MultiModeWaitFragment extends Fragment {
             public void onResponse(Call<UserProfileResponse> call, Response<UserProfileResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     String imageUrl = response.body().getProfileImageUrl();
+                    imageUrl = imageUrl + "?timestamp=" + System.currentTimeMillis();
                     Log.d("prfile", "profile=" + imageUrl);
                     Glide.with(MultiModeWaitFragment.this)
                             .load(imageUrl)
@@ -482,8 +483,6 @@ public class MultiModeWaitFragment extends Fragment {
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
             if (success) {
-                //NavController navController = Navigation.findNavController(requireView());
-                //navController.navigate(R.id.navigation_multi_mode);
                 Log.d("ExitGameBackSendPacket", "Packet sent successfully!");
             } else {
                 Log.d("ExitgamebackSendPacket", "Failed to send packet!");

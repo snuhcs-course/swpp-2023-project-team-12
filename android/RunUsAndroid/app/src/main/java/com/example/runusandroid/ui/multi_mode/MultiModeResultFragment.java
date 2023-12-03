@@ -226,6 +226,7 @@ public class MultiModeResultFragment extends Fragment {
                 public void onResponse(Call<UserProfileResponse> call, Response<UserProfileResponse> response) {
                     if (response.isSuccessful() && response.body() != null) {
                         String imageUrl = response.body().getProfileImageUrl();
+                        imageUrl = imageUrl + "?timestamp=" + System.currentTimeMillis();
                         Glide.with(MultiModeResultFragment.this)
                                 .load(imageUrl).placeholder(R.drawable.runus_logo)
                                 .apply(RequestOptions.circleCropTransform())
@@ -255,6 +256,7 @@ public class MultiModeResultFragment extends Fragment {
                     public void onResponse(Call<UserProfileResponse> call, Response<UserProfileResponse> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             String imageUrl = response.body().getProfileImageUrl();
+                            imageUrl = imageUrl + "?timestamp=" + System.currentTimeMillis();
                             Glide.with(MultiModeResultFragment.this)
                                     .load(imageUrl).placeholder(R.drawable.runus_logo)
                                     .apply(RequestOptions.circleCropTransform())
@@ -284,6 +286,7 @@ public class MultiModeResultFragment extends Fragment {
                         public void onResponse(Call<UserProfileResponse> call, Response<UserProfileResponse> response) {
                             if (response.isSuccessful() && response.body() != null) {
                                 String imageUrl = response.body().getProfileImageUrl();
+                                imageUrl = imageUrl + "?timestamp=" + System.currentTimeMillis();
                                 Glide.with(MultiModeResultFragment.this)
                                         .load(imageUrl).placeholder(R.drawable.runus_logo)
                                         .apply(RequestOptions.circleCropTransform())

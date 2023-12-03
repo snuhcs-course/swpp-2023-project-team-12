@@ -25,7 +25,6 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.5" />
-    <!-- 나머지 레이아웃 요소들은 기존과 동일하게 유지됩니다. -->
 
 
     <TextView

@@ -3,6 +3,7 @@ package com.example.runusandroid.ui.single_mode;
 import static android.content.Context.MODE_PRIVATE;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -18,6 +19,7 @@ import android.icu.text.SimpleDateFormat;
 import android.icu.util.TimeZone;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.text.Editable;
 import android.text.Spannable;
@@ -56,6 +58,10 @@ import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
 import com.example.runusandroid.RetrofitClient;
 import com.example.runusandroid.databinding.FragmentSingleModeBinding;
+import com.example.runusandroid.ui.multi_mode.MultiModePlayFragment;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -83,9 +89,13 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Queue;
 
 import Logging.FileLogger;
+import MultiMode.Packet;
+import MultiMode.PacketBuilder;
+import MultiMode.Protocol;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -201,20 +211,6 @@ public class SingleModeFragment extends Fragment {
 
                             // log distance into file
                             FileLogger.logToFileAndLogcat(mainActivity, "test:distance:5sec", "" + location.distanceTo(lastLocation) / (double) 1000);
-                            // Below code seems to cause NullPointerException after 10 minutes or so (on Duration.between)
-//                            if ((int) distance != lastDistanceInt) {
-//                                LocalDateTime currentTime = LocalDateTime.now();
-//                                Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
-//                                long secondsDuration = iterationDuration.getSeconds();
-//                                float newPace = (float) (1.0 / (secondsDuration / 3600.0));
-//                                if (newPace > maxSpeed)
-//                                    maxSpeed = newPace;
-//                                if (newPace < minSpeed)
-//                                    minSpeed = newPace;
-//                                speedList.add(newPace);
-//                                iterationStartTime = currentTime;
-//
-//                            }
                             Log.d("test:distance:total", "Distance:" + distance);
                         }
                     } else {
@@ -356,7 +352,17 @@ public class SingleModeFragment extends Fragment {
                     Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 mMap.setMyLocationEnabled(true);
             }
+            // set initial point to on saved already in mainActivity, if null, set to default location (남산타워)
+            LatLng initialPoint;
+            if (mainActivity.initialLocation != null) {
+                initialPoint = new LatLng(mainActivity.initialLocation.getLatitude(), mainActivity.initialLocation.getLongitude());
+            } else{
+                initialPoint = new LatLng(37.55225, 126.9873);
+            }
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPoint, 14));
         });
+//        Location initialLocation = mainActivity.getFusedLocationClient().getLastLocation().getResult();
+//        LatLng initialPoint = new LatLng(initialLocation.getLatitude(), initialLocation.getLongitude());
 
         // Viewmodel contains status, and when status changes (observe), the text will
         // change
@@ -816,8 +822,8 @@ public class SingleModeFragment extends Fragment {
         goalDistanceText.setText(floatTo1stDecimal(goalDistance) + " km");
         if (ActivityCompat.checkSelfPermission(mainActivity,
                 Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(mainActivity, background_location_permission,
-                    200);
+            //ActivityCompat.requestPermissions(mainActivity, background_location_permission, 200);
+            showBackgroundLocationPermissionDialog();
         }
 
         gameStartTime = LocalDateTime.now();
@@ -837,6 +843,23 @@ public class SingleModeFragment extends Fragment {
         startButton.setVisibility(View.GONE);
         quitButton.setVisibility(View.VISIBLE);
         runningNow = true;
+    }
+
+    private void showBackgroundLocationPermissionDialog() {
+        @SuppressLint("InflateParams")
+        View exitGameDialog = getLayoutInflater().inflate(R.layout.dialog_multimode_play_finish, null);
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        Objects.requireNonNull(dialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.setContentView(exitGameDialog);
+        TextView textView = exitGameDialog.findViewById(R.id.textViewExitGame);
+        textView.setText("원활한 앱 이용을 위해 위치 정보 접근 권한을 \n항상 허용으로 설정해주세요");
+        Button buttonConfirmPlayExit = exitGameDialog.findViewById(R.id.buttonConfirmPlayExit);
+        buttonConfirmPlayExit.setOnClickListener(v -> {
+            dialog.dismiss();
+            ActivityCompat.requestPermissions(mainActivity, background_location_permission, 200);
+        });
+        dialog.show();
     }
 
     private void setTextBold(TextView wantView, String[] words) {
@@ -1117,10 +1140,12 @@ public class SingleModeFragment extends Fragment {
 
     public void hideBottomNavigation(Boolean hide) {
         BottomNavigationView nav_view = getActivity().findViewById(R.id.nav_view);
-        if (hide)
-            nav_view.setVisibility(View.GONE);
-        else
-            nav_view.setVisibility(View.VISIBLE);
+        if(nav_view != null) {
+            if (hide)
+                nav_view.setVisibility(View.GONE);
+            else
+                nav_view.setVisibility(View.VISIBLE);
+        }
     }
 
     private void finishPlaySingleMode() {

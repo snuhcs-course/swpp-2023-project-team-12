@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -37,6 +38,7 @@ public class ResetPasswordActivity1 extends AppCompatActivity {
     private AccountApi accountApi;
 
     private String authString = "";
+    private long completeButtonLastClickTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +73,10 @@ public class ResetPasswordActivity1 extends AppCompatActivity {
         sendMailButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (SystemClock.elapsedRealtime() - completeButtonLastClickTime < 2000) {
+                    return;
+                }
+                completeButtonLastClickTime = SystemClock.elapsedRealtime();
                 String username = usernameInput.getText().toString();
                 String email = emailInput.getText().toString();
                 SendMailData data = new SendMailData(username, email);
@@ -99,24 +105,11 @@ public class ResetPasswordActivity1 extends AppCompatActivity {
                             } catch (IOException | JSONException e) {
                                 throw new RuntimeException(e);
                             }
-//                            builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
-//                                public void onClick(DialogInterface dialog, int id) {
-//                                    // LoginActivity로 이동
-//                                    Intent intent = new Intent(ResetPasswordActivity1.this, LoginActivity.class);
-//                                    startActivity(intent);
-//                                    finish();
-//                                }
-//                            });
 
                         } else {
                             authInput.setVisibility(View.GONE);
                             sendMailValidationMessage.setVisibility(View.VISIBLE);
-//                            builder.setTitle("실패");
-//                            builder.setMessage("아이디나 이메일이 잘못되었습니다. 다시 시도해주세요.");
-//                            builder.setPositiveButton("확인", null); // 단순 확인 버튼
                         }
-//                        AlertDialog dialog = builder.create();
-//                        dialog.show();
                     }
 
                     @Override

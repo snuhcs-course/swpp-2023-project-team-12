@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,6 +25,7 @@ public class ResetPasswordActivity2 extends AppCompatActivity {
     private Button resetPasswordButton;
     private TextView passwordValidationText;
     private AccountApi accountApi;
+    private long completeButtonLastClickTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +44,10 @@ public class ResetPasswordActivity2 extends AppCompatActivity {
         resetPasswordButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (SystemClock.elapsedRealtime() - completeButtonLastClickTime < 2000) {
+                    return;
+                }
+                completeButtonLastClickTime = SystemClock.elapsedRealtime();
                 if (resetPassword.getText().toString().length() < 8) {
                     passwordValidationText.setVisibility(View.VISIBLE);
                     return;
