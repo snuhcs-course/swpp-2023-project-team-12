@@ -90,7 +90,7 @@ public class MultiModePlayFragment extends Fragment {
     private final List<Float> speedList = new ArrayList<>(); // 매 km 마다 속력 (km/h)
     private final Location lastLocation = null;
     LocalDateTime iterationStartTime;
-    MultiModeUser user = MultiModeFragment.user;
+    MultiModeUser user;
     SocketManager socketManager = SocketManager.getInstance();
     OnBackPressedCallback backPressedCallBack;
     MultiModeRoom selectedRoom;
@@ -248,6 +248,7 @@ public class MultiModePlayFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        user = MultiModeFragment.user;
         distance_for_pace = 0;
         pace_distance_queue = new LinkedList<>();
         finishedTask = new SendFinishedTask();
@@ -348,7 +349,7 @@ public class MultiModePlayFragment extends Fragment {
                 LatLng initialPoint;
                 if (mainActivity.initialLocation != null) {
                     initialPoint = new LatLng(mainActivity.initialLocation.getLatitude(), mainActivity.initialLocation.getLongitude());
-                } else{
+                } else {
                     initialPoint = new LatLng(37.55225, 126.9873);
                 }
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPoint, 14));

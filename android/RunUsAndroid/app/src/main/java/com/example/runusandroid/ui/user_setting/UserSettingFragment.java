@@ -37,6 +37,8 @@ import com.example.runusandroid.R;
 import com.example.runusandroid.RetrofitClient;
 import com.example.runusandroid.UserProfileResponse;
 import com.example.runusandroid.databinding.FragmentUserSettingBinding;
+import com.example.runusandroid.ui.multi_mode.MultiModeFragment;
+import com.example.runusandroid.ui.multi_mode.SocketManager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -202,7 +204,11 @@ public class UserSettingFragment extends Fragment {
         logoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                logoutUser();
+                try {
+                    logoutUser();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
 
@@ -233,13 +239,15 @@ public class UserSettingFragment extends Fragment {
         return root;
     }
 
-    private void logoutUser() {
+    private void logoutUser() throws IOException {
         // SharedPreferences에서 모든 데이터 삭제
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.clear();
         editor.apply();
-
+        SocketManager socketManager = SocketManager.getInstance();
+        socketManager.closeSocket();
+        MultiModeFragment.socketListenerThread = null;
         // LoginActivity로 이동
         Intent intent = new Intent(getActivity(), LoginActivity.class);
         startActivity(intent);
