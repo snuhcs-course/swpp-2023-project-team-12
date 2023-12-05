@@ -156,6 +156,7 @@ public class MultiModeFragment extends Fragment {
         sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
         long userId = sharedPreferences.getLong("userid", 99999);
         String nickName = sharedPreferences.getString("nickname", "guest");
+        Log.d("multimodefragment nickname : ", nickName);
         int level = sharedPreferences.getInt("level", 0);
         user = new MultiModeUser((int) userId, nickName, level, "");
         accountApi.getUserProfile(String.valueOf(userId)).enqueue(new Callback<UserProfileResponse>() {
@@ -294,6 +295,7 @@ public class MultiModeFragment extends Fragment {
             try {
                 ObjectOutputStream oos = socketManager.getOOS();
                 PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.CREATE_ROOM).user(user).roomCreateInfo(roomInfo[0]);
+                Log.d("create_room", "before send packet + " + user.getNickname());
                 Packet requestPacket = packetBuilder.getPacket();
 
                 oos.reset();

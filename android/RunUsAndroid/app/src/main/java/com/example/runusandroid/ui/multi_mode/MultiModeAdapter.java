@@ -38,7 +38,7 @@ import MultiMode.Protocol;
 
 public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.ViewHolder> {
     private final SocketManager socketManager = SocketManager.getInstance(); // SocketManager 인스턴스를 가져옴
-    MultiModeUser user = MultiModeFragment.user;
+    MultiModeUser user;
     MultiModeRoom selectedRoom;
     private long enterButtonLastClickTime = 0;
     // MultiMode List 화면에서 각 Room Button과 관련된 Adapter
@@ -67,6 +67,7 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.room_item_layout, parent, false);
+        user = MultiModeFragment.user;
         return new ViewHolder(view);
     }
 

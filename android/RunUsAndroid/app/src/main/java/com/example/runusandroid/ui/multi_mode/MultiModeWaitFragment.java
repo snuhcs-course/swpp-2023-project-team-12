@@ -71,7 +71,7 @@ public class MultiModeWaitFragment extends Fragment {
     public boolean isFragmentVisible = true;
     SocketListenerThread socketListenerThread = MultiModeFragment.socketListenerThread;
     OnBackPressedCallback backPressedCallBack;
-    MultiModeUser user = MultiModeFragment.user;
+    MultiModeUser user;
     SocketManager socketManager = SocketManager.getInstance();  // SocketManager 인스턴스를 가져옴
     private boolean navRoomListWhenResumed = false;
     private boolean notificatedOneMinuteLeft = false;
@@ -176,6 +176,7 @@ public class MultiModeWaitFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        user = MultiModeFragment.user;
     }
 
     @Override

@@ -109,6 +109,7 @@ public class SocketListenerThread extends Thread implements Serializable { // ì†
                     } else if (packet.getProtocol() == Protocol.CREATE_ROOM) {
                         handler.post(() -> {
                             selectedRoom = packet.getSelectedRoom();
+                            Log.d("create_room", selectedRoom.getRoomOwner().getNickname());
                             multiModeFragment.navigateRoomWait(selectedRoom);
                         });
                     } else if (packet.getProtocol() == Protocol.EXIT_ROOM ||

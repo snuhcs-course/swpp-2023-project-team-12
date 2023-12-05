@@ -90,7 +90,7 @@ public class Server {
                             System.out.println("create_room request came");
                             RoomCreateInfo roomCreateInfo = ((Packet) data).getRoomCreateInfo();
                             MultiModeRoom selectedRoom = RoomManager.createRoom(user, roomCreateInfo, oos);
-                            System.out.println(RoomManager.getRoomList().get(0).getOwner().getProfileImageUrl());
+                            System.out.println(selectedRoom.getOwner().getProfileImageUrl());
                             System.out.println(selectedRoom.toString());
                             packetBuilder = new PacketBuilder().protocol(Protocol.CREATE_ROOM).roomList(RoomManager.getRoomList()).selectedRoom(selectedRoom);
                             Packet createRoomPacket = packetBuilder.getPacket();
