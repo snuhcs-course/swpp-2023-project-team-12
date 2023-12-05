@@ -231,7 +231,11 @@ public class SingleModeResultFragment extends Fragment {
 
         goalDistanceText.setText(floatToFirstDeciStr(goalDistance) + "km");
         currentDistanceText.setText(String.format(Locale.getDefault(), "%.1f " + "km", Math.floor(currentDistance * 10) / 10));
-        goalTimeText.setText(goalTime + " 분");
+        if (goalTime != -1) {
+            goalTimeText.setText(goalTime + " 분");
+        } else {
+            goalTimeText.setText("--");
+        }
         currentTimeText.setText(dateFormat.format(currentTime));
         if (isMapReady) {
             updateMap();
