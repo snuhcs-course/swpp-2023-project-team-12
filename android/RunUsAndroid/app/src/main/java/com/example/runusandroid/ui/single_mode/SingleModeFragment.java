@@ -19,7 +19,6 @@ import android.icu.text.SimpleDateFormat;
 import android.icu.util.TimeZone;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Looper;
 import android.os.SystemClock;
 import android.text.Editable;
 import android.text.Spannable;
@@ -58,10 +57,6 @@ import com.example.runusandroid.MainActivity2;
 import com.example.runusandroid.R;
 import com.example.runusandroid.RetrofitClient;
 import com.example.runusandroid.databinding.FragmentSingleModeBinding;
-import com.example.runusandroid.ui.multi_mode.MultiModePlayFragment;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -93,9 +88,6 @@ import java.util.Objects;
 import java.util.Queue;
 
 import Logging.FileLogger;
-import MultiMode.Packet;
-import MultiMode.PacketBuilder;
-import MultiMode.Protocol;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -356,7 +348,7 @@ public class SingleModeFragment extends Fragment {
             LatLng initialPoint;
             if (mainActivity.initialLocation != null) {
                 initialPoint = new LatLng(mainActivity.initialLocation.getLatitude(), mainActivity.initialLocation.getLongitude());
-            } else{
+            } else {
                 initialPoint = new LatLng(37.55225, 126.9873);
             }
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPoint, 14));
@@ -598,6 +590,7 @@ public class SingleModeFragment extends Fragment {
         buttonConfirm.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
                 goalDistance = nowGoalDistance;
+                Log.d("goalDistance", goalDistance + "");
                 goalTime = nowGoalTime;
                 dialog.dismiss();
                 setRunningStart();
@@ -659,6 +652,8 @@ public class SingleModeFragment extends Fragment {
             public void onClick(View v) {
                 dialog.dismiss();
                 goalDistance = nowGoalDistance;
+                goalTime = -1;
+                Log.d("goalDistance", goalDistance + "");
                 isMissionSucceeded = 2;
                 setRunningStart();
             }
@@ -793,6 +788,7 @@ public class SingleModeFragment extends Fragment {
         buttonConfirm.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
                 goalDistance = nowGoalDistance;
+                Log.d("goalDistance", goalDistance + "");
                 goalTime = nowGoalTime;
                 isMissionSucceeded = 1;
                 setRunningStart();
@@ -811,7 +807,7 @@ public class SingleModeFragment extends Fragment {
         pathPoints = new ArrayList<>();
         speedList = new ArrayList<>();
         goalDistance = Math.round(goalDistance * 1000) / 1000f;
-
+        Log.d("goalDistance", "setRunningStart" + " " + goalDistance);
         goalDistanceStaticText.setText("목표 거리");
         goalTimeStaticText.setText("목표 시간");
         if (mode == 2) {
@@ -1140,7 +1136,7 @@ public class SingleModeFragment extends Fragment {
 
     public void hideBottomNavigation(Boolean hide) {
         BottomNavigationView nav_view = getActivity().findViewById(R.id.nav_view);
-        if(nav_view != null) {
+        if (nav_view != null) {
             if (hide)
                 nav_view.setVisibility(View.GONE);
             else
@@ -1150,14 +1146,19 @@ public class SingleModeFragment extends Fragment {
 
     private void finishPlaySingleMode() {
         runningNow = false;
-
+        Log.d("goalDistance", "finishPlaySingleMode1 " + goalDistance);
+        float finalGoalDistance = goalDistance;
+        float finalGoalTime = goalTime;
         mainActivity.getLastLocation();
         currentTimeText.stop();
         View dialogView;
         Button confirmButton;
         boolean missionCompleted = false;
+        Log.d("goalDistance", "finishPlaySingleMode2 " + goalDistance);
+
         float wholeDistance = Float.valueOf((String) currentDistanceText.getText().subSequence(0, currentDistanceText.getText().length() - 2));
         float wholeTime = (float) Duration.between(gameStartTime, LocalDateTime.now()).getSeconds();
+
         if (mode == 2) {
             if (wholeDistance >= goalDistance) {
                 missionCompleted = true;
@@ -1169,6 +1170,7 @@ public class SingleModeFragment extends Fragment {
             }
         }
 
+        Log.d("goalDistance", "finishPlaySingleMode3 " + goalDistance);
 
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         if (missionCompleted) {
@@ -1187,11 +1189,13 @@ public class SingleModeFragment extends Fragment {
             elapsedTimeTextView.setText("달린 시간: " + currentTimeText.getText());
             distanceTextView.setText("달린 거리: " + currentDistanceText.getText());
         }
+        Log.d("goalDistance", "finishPlaySingleMode4 " + goalDistance);
 
         Dialog dialog = new Dialog(getContext());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         dialog.setContentView(dialogView);
+        Log.d("goalDistance", "finishPlaySingleMode5 " + goalDistance);
 
 
         confirmButton.setOnClickListener(new View.OnClickListener() {
@@ -1206,10 +1210,12 @@ public class SingleModeFragment extends Fragment {
                     speedList.add(newPace);
                 }
                 Bundle bundle = new Bundle();
+                Log.d("goalDistance", "finishPlaySingleMode6 " + finalGoalDistance);
+
                 bundle.putSerializable("updatedExp", updatedExp);
                 bundle.putSerializable("updatedBadgeCollection", updatedBadgeCollection);
-                bundle.putSerializable("goalDistance", goalDistance);
-                bundle.putSerializable("goalTime", goalTime);
+                bundle.putSerializable("goalDistance", finalGoalDistance);
+                bundle.putSerializable("goalTime", finalGoalTime);
                 bundle.putSerializable("currentDistance", distance);
                 bundle.putSerializable("currentTime", currentTime);
                 bundle.putSerializable("calories", calories);
