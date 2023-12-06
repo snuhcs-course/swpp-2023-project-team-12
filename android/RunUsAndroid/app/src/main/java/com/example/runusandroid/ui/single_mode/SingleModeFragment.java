@@ -647,7 +647,7 @@ public class SingleModeFragment extends Fragment {
         boolean enoughHistory = historyNum>=5;
         if (!enoughHistory || goalDistance < 0.01) {
             setStandard();
-            nowGoalDistance = goalDistance * 1.5f;
+            nowGoalDistance = goalDistance * 1.3f;
         } else {
             float max_distance = 0;
             for (int i = 0; i < modelInput.length; i++) {
@@ -656,7 +656,7 @@ public class SingleModeFragment extends Fragment {
                     max_distance = tmp_distance;
                 }
             }
-            nowGoalDistance = goalDistance * 1.5f;
+            nowGoalDistance = goalDistance * 1.3f;
             if (nowGoalDistance > 2 * max_distance) {
                 nowGoalDistance = goalDistance * 0.6f + max_distance * 0.4f;
             } else if (nowGoalDistance < max_distance) {
@@ -733,6 +733,9 @@ public class SingleModeFragment extends Fragment {
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", MODE_PRIVATE);
         String nickname = sharedPreferences.getString("nickname", "");
 
+
+        Log.e("goalDistance&time Timeattack", "goalDistance&time Timeattack : "+goalDistance+ " " +goalTime);
+
         boolean enoughHistory = historyNum>=5;
         if (!enoughHistory || goalDistance < 0.01) {
             setStandard();
@@ -743,9 +746,11 @@ public class SingleModeFragment extends Fragment {
             float lastDistance = originalData[historyNum-1][0];
             float lastTime = originalData[historyNum-1][1];
 
-            if (nowGoalDistance / goalTime > lastDistance * 1.1 / lastTime) {
+            if (nowGoalDistance / (goalTime/60) > lastDistance * 1.1 / lastTime) {
+                Log.e("difficult running", nowGoalDistance + " "+ goalTime + " " + lastDistance + " "+lastTime);
                 missionInfo.setText(nickname + "님, 오늘은 더 바람을 느끼며 달려 보세요! \n 지난 기록보다 높은 목표를 추천해 드렸어요.");
-            } else if (nowGoalDistance / goalTime < lastDistance * 0.9 / lastTime) {
+            } else if (nowGoalDistance / (goalTime/60) < lastDistance * 0.8 / lastTime) {
+                Log.e("easy running", nowGoalDistance + " "+ goalTime + " " + lastDistance + " "+lastTime);
                 missionInfo.setText(nickname + "님, 오늘은 쉬어가는 러닝을 가져 보세요! \n 지난 기록보다 편한 목표를 추천해 드렸어요.");
             } else {
                 missionInfo.setText("러닝은 꾸준함이 생명! \n 지난 러닝의 감각을 계속해서 익혀 보세요.");
@@ -1142,6 +1147,8 @@ public class SingleModeFragment extends Fragment {
                         for (int i=1; i<jsonArray.length(); i++){
                             modelInput[0][i][0] = modelInput[0][i-1][0]*alpha + modelInput[0][i][0]*(1-alpha);
                             modelInput[0][i][1] = modelInput[0][i-1][1]*alpha + modelInput[0][i][1]*(1-alpha);
+                            // Log.e("goalDistance&time", "goalDistance&time scaled : "+i+" " +modelInput[0][i][0]+ " " +modelInput[0][i][1]);
+
                         }
 
 
@@ -1150,23 +1157,33 @@ public class SingleModeFragment extends Fragment {
                         wholeDistance /= historyNum;
 
                         tflite.run(modelInput, modelOutput);
+                        Log.e("goalDistance&time", "modeloutput : "+modelOutput[0][historyNum-1][0]+ " " +modelOutput[0][historyNum-1][1]);
                         goalDistance = modelOutput[0][historyNum-1][0] * (83.8955084972f - 0.0083549205f) + 0.0083549205f;
                         goalTime = (modelOutput[0][historyNum-1][1] * (4.9963888889f - 0.1391666667f) + 0.1391666667f);
                         Log.e("goalDistance&time", "goalDistance&time : "+goalDistance+ " " +goalTime);
 
-                        if (goalDistance/goalTime >= 1.3*wholeDistance/wholeTime){
-                            goalTime *= 1.3f;
+                        // adjustment
+                        goalDistance *= 1.05f;
+                        if (goalDistance/goalTime >= 1.2*wholeDistance/wholeTime){
+                            goalTime *= 1.2f;
                         }
-                        if (goalDistance >= 1.3f * wholeDistance) {
-                            goalDistance /= 1.3f;
-                            goalTime /= 1.3f;
+                        if (goalDistance >= 1.2f * wholeDistance) {
+                            goalDistance /= 1.2f;
+                            goalTime /= 1.2f;
                         }
-                        if (goalDistance <= 0.7f*wholeDistance){
-                            goalDistance /= 0.7f;
-                            goalTime /= 0.7f;
+                        if (goalDistance <= 0.8f*wholeDistance){
+                            goalDistance /= 0.8f;
+                            goalTime /= 0.8f;
                         }
+                        Log.e("goalDistance&time2", "goalDistance&time2 : "+goalDistance+ " " +goalTime);
                         goalTime *= 60;
+                        Log.e("goalDistance&time3", "goalDistance&time3 : "+goalDistance+ " " +goalTime);
                         goalTime = (int) goalTime;
+                        Log.e("goalDistance&time4", "goalDistance&time3 : "+goalDistance+ " " +goalTime);
+
+                        if(goalTime<2 || goalDistance<=0.01){
+                            setStandard();
+                        }
                     } catch (Exception e) {
                         Log.e("modeloutput error", e.toString());
                         setStandard();
