@@ -1023,6 +1023,7 @@ public class SingleModeFragment extends Fragment {
         long durationInSeconds = duration.getSeconds();
         //NOTE: group_history_id에 null을 넣을 수 없어 싱글모드인 경우 -1로 관리
         int exp = ExpSystem.getExp("single", distance, duration, isMissionSucceeded);
+        Log.d("UAT:exp", "single " + distance + " " +  duration + " "+ isMissionSucceeded + " " + exp);
         HistoryData requestData = new HistoryData(userId, (float) distance, durationInSeconds,
                 true, startTimeString, finishTimeString, calories, false, maxSpeed, minSpeed,
                 calculateMedian(speedList), speedList, -1, isMissionSucceeded, exp);
@@ -1103,6 +1104,7 @@ public class SingleModeFragment extends Fragment {
                 if (response.isSuccessful()) {
                     try {
                         String responseData = response.body().string();
+                        Log.e("whole response", responseData);
 
                         JSONArray jsonArray = new JSONArray(responseData);
                         float wholeDistance = 0f;
@@ -1242,6 +1244,7 @@ public class SingleModeFragment extends Fragment {
                 Log.d("goalDistance", "finishPlaySingleMode6 " + finalGoalDistance);
 
                 bundle.putSerializable("updatedExp", updatedExp);
+                Log.d("UAT:exp", "confirm onClick exp " + updatedExp);
                 bundle.putSerializable("updatedBadgeCollection", updatedBadgeCollection);
                 bundle.putSerializable("goalDistance", finalGoalDistance);
                 bundle.putSerializable("goalTime", finalGoalTime);
