@@ -297,14 +297,14 @@ public class UserSettingFragment extends Fragment {
                             Log.d("UploadImage", "ImageResponse is null");
                         }
                     } else {
-                        //Toast.makeText(getContext(), "업로드 실패: " + response.code(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "업로드 실패: " + response.code(), Toast.LENGTH_SHORT).show();
                     }
                 }
 
                 @Override
                 public void onFailure(Call<ImageResponse> call, Throwable t) {
                     Log.e("UploadImage", "Upload failed", t);
-                    //Toast.makeText(getContext(), "업로드 실패: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "업로드 실패: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         } catch (IOException e) {

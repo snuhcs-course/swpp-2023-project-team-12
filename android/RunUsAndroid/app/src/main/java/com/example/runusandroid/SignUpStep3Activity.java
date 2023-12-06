@@ -131,19 +131,19 @@ public class SignUpStep3Activity extends AppCompatActivity {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         if (response.isSuccessful()) {
-                            //Toast.makeText(SignUpStep3Activity.this, "SignUp Success", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SignUpStep3Activity.this, "회원가입 되었습니다", Toast.LENGTH_SHORT).show();
                             // Redirect to login activity after successful sign up
                             Intent loginIntent = new Intent(SignUpStep3Activity.this, LoginActivity.class);
                             startActivity(loginIntent);
                             finish();
                         } else {
-                            //Toast.makeText(SignUpStep3Activity.this, "SignUp Failed", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SignUpStep3Activity.this, "회원가입 실패", Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        //Toast.makeText(SignUpStep3Activity.this, "Network Error", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(SignUpStep3Activity.this, "네트워크 에러, 다시 시도해 주세요", Toast.LENGTH_SHORT).show();
                         Log.e("Retrofit", "Error: " + t.getMessage());
                     }
                 });
