@@ -163,7 +163,7 @@ public class SingleModeResultFragment extends Fragment {
             } else {
                 initialPoint = new LatLng(37.55225, 126.9873);
             }
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPoint, 14));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPoint, 16));
             isMapReady = true;
 
             updateMap();
@@ -253,16 +253,6 @@ public class SingleModeResultFragment extends Fragment {
     }
 
     private String floatToFirstDeciStr(float num) {
-        DecimalFormat decimalFormat = new DecimalFormat("#.#");
-        return decimalFormat.format(num);
-    }
-
-    private String doubleToThirdDeciStr(double num) {
-        DecimalFormat decimalFormat = new DecimalFormat("#.###");
-        return decimalFormat.format(num);
-    }
-
-    private String doubleToFirstDeciStr(double num) {
         DecimalFormat decimalFormat = new DecimalFormat("#.#");
         return decimalFormat.format(num);
     }
