@@ -97,6 +97,7 @@ public class SingleModeFragment extends Fragment {
 
     static final String START_LOCATION_SERVICE = "start";
     static final String STOP_LOCATION_SERVICE = "stop";
+    private final float[][] originalData = new float[5][2];
     private final float[][] modelInput = new float[5][3];
     private final float[][] modelOutput = new float[1][2];
     private final String[] background_location_permission = {
@@ -1103,6 +1104,7 @@ public class SingleModeFragment extends Fragment {
                 if (response.isSuccessful()) {
                     try {
                         String responseData = response.body().string();
+                        Log.e("whole response", responseData);
 
                         JSONArray jsonArray = new JSONArray(responseData);
                         float wholeDistance = 0f;
@@ -1117,11 +1119,14 @@ public class SingleModeFragment extends Fragment {
                             modelInput[i][0] = (gender - 0.9111115f) / 0.3117750f;
                             modelInput[i][1] = (recentDistance - 1.207809e+01f) / 7.019781e+00f;
                             modelInput[i][2] = (recentDuration - 1.156572e+00f) / 6.457635e-01f;
+                            originalData[i][0] = recentDistance;
+                            originalData[i][1] = recentDuration;
                             wholeDistance += recentDistance;
                             wholeTime += recentDuration;
 
                         }
 
+                        Log.e("original input", convertArrayToString(originalData));
                         Log.e("model input", convertArrayToString(modelInput));
                         wholeTime /= 5;
                         wholeDistance /= 5;
@@ -1160,7 +1165,7 @@ public class SingleModeFragment extends Fragment {
 
     public float convertTimetoHour(String timeString) {
         LocalTime localTime = LocalTime.parse(timeString);
-        return localTime.getHour() + (float) localTime.getMinute() / 60;
+        return localTime.getHour() + (float) localTime.getMinute() / 60 + (float) localTime.getSecond()/3600;
     }
 
     public void hideBottomNavigation(Boolean hide) {
@@ -1240,6 +1245,7 @@ public class SingleModeFragment extends Fragment {
                 }
                 Bundle bundle = new Bundle();
                 Log.d("goalDistance", "finishPlaySingleMode6 " + finalGoalDistance);
+                Log.e("time check", "currenttiime, wholeTime : "+currentTime+" "+wholeTime );
 
                 bundle.putSerializable("updatedExp", updatedExp);
                 bundle.putSerializable("updatedBadgeCollection", updatedBadgeCollection);
