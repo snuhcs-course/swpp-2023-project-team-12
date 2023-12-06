@@ -363,8 +363,8 @@ public class MultiModePlayFragment extends Fragment {
             String lastActivityType = RunningState.getLastActivityType();
             String lastTransitionType = RunningState.getLastTransitionType();
 
-            Toast.makeText(mainActivity, "last detected : " + lastTransitionType + " " + lastActivityType +
-                    " . isRunning " + isRunning, Toast.LENGTH_LONG).show();
+            //Toast.makeText(mainActivity, "last detected : " + lastTransitionType + " " + lastActivityType +
+            //        " . isRunning " + isRunning, Toast.LENGTH_LONG).show();
         });
 
         playLeaveButton.setOnClickListener(v -> {
