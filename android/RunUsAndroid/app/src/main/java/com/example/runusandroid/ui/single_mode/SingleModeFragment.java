@@ -67,8 +67,10 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.support.common.FileUtil;
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -97,9 +99,10 @@ public class SingleModeFragment extends Fragment {
 
     static final String START_LOCATION_SERVICE = "start";
     static final String STOP_LOCATION_SERVICE = "stop";
-    private final float[][] originalData = new float[5][2];
-    private final float[][] modelInput = new float[5][3];
-    private final float[][] modelOutput = new float[1][2];
+    private float[][] originalData;
+    private float[][][] modelInput;
+    private int historyNum;
+    private float[][][] modelOutput;
     private final String[] background_location_permission = {
             Manifest.permission.ACCESS_BACKGROUND_LOCATION
     };
@@ -275,13 +278,12 @@ public class SingleModeFragment extends Fragment {
         hideBottomNavigation(false);
 
         try {
-            tfliteModel = FileUtil.loadMappedFile(mainActivity, "231103_model.tflite");
+            tfliteModel = FileUtil.loadMappedFile(mainActivity, "model_231206.tflite");
             tflite = new Interpreter(tfliteModel);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        Arrays.stream(modelInput).forEach(row -> Arrays.fill(row, 0.0f));
         getMission();
 
         dateFormat = new SimpleDateFormat("HH:mm:ss");
@@ -446,7 +448,7 @@ public class SingleModeFragment extends Fragment {
         params.width = WindowManager.LayoutParams.MATCH_PARENT; // 원하는 너비로 조절
         dialog.getWindow().setAttributes(params);
 
-        boolean enoughHistory = modelInput[4][2] != 0;
+        boolean enoughHistory = historyNum > 5;
         if (!enoughHistory || goalDistance < 0.01) {
             setStandard();
         }
@@ -642,14 +644,14 @@ public class SingleModeFragment extends Fragment {
         params.width = WindowManager.LayoutParams.MATCH_PARENT; // 원하는 너비로 조절
         dialog.getWindow().setAttributes(params);
 
-        boolean enoughHistory = modelInput[4][2] != 0;
+        boolean enoughHistory = historyNum > 5;
         if (!enoughHistory || goalDistance < 0.01) {
             setStandard();
             nowGoalDistance = goalDistance * 1.5f;
         } else {
             float max_distance = 0;
             for (int i = 0; i < modelInput.length; i++) {
-                float tmp_distance = modelInput[i][0] * 7.019781e+00f + 1.207809e+01f;
+                float tmp_distance = originalData[i][0];
                 if (tmp_distance > max_distance) {
                     max_distance = tmp_distance;
                 }
@@ -731,15 +733,15 @@ public class SingleModeFragment extends Fragment {
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", MODE_PRIVATE);
         String nickname = sharedPreferences.getString("nickname", "");
 
-        boolean enoughHistory = modelInput[4][2] != 0;
+        boolean enoughHistory = historyNum > 5;
         if (!enoughHistory || goalDistance < 0.01) {
             setStandard();
             nowGoalDistance = goalDistance;
             missionInfo.setText("5회 러닝 전이나 기존 기록이 지나치게 짧을 때는 \n" + nickname + "님과 비슷한 그룹의 평균을 추천해요!");
         } else {
             nowGoalDistance = goalDistance;
-            float lastDistance = modelInput[0][1] * 7.019781e+00f + 1.207809e+01f;
-            float lastTime = modelInput[0][2] * 6.457635e-01f + 1.156572e+00f;
+            float lastDistance = originalData[historyNum-1][1];
+            float lastTime = originalData[historyNum-1][2];
 
             if (nowGoalDistance / goalTime > lastDistance * 1.1 / lastTime) {
                 missionInfo.setText(nickname + "님, 오늘은 더 바람을 느끼며 달려 보세요! \n 지난 기록보다 높은 목표를 추천해 드렸어요.");
@@ -1110,48 +1112,66 @@ public class SingleModeFragment extends Fragment {
                         float wholeDistance = 0f;
                         float wholeTime = 0f;
 
+                        historyNum = jsonArray.length();
+                        if(historyNum==0){
+                            setStandard();
+                            return;
+                        }
+
+                        originalData = new float[777][2];
+                        modelInput = new float[1][777][2];
+
+                        modelOutput = new float[1][777][2];
                         for (int i = 0; i < jsonArray.length(); i++) {
                             JSONObject historyObject = jsonArray.getJSONObject(i);
 
                             float recentDistance = (float) historyObject.getDouble("distance");
                             float recentDuration = convertTimetoHour(historyObject.getString("duration"));
 
-                            modelInput[i][0] = (gender - 0.9111115f) / 0.3117750f;
-                            modelInput[i][1] = (recentDistance - 1.207809e+01f) / 7.019781e+00f;
-                            modelInput[i][2] = (recentDuration - 1.156572e+00f) / 6.457635e-01f;
                             originalData[i][0] = recentDistance;
                             originalData[i][1] = recentDuration;
+                            modelInput[0][i][0] = (recentDistance - 0.0083549205f) / (83.8955084972f - 0.0083549205f);
+                            modelInput[0][i][1] = (recentDuration - 0.1391666667f) / (4.9963888889f - 0.1391666667f);
                             wholeDistance += recentDistance;
                             wholeTime += recentDuration;
-
+                        }
+                        float alpha = 2f / (1f + 20);
+                        for (int i=1; i<jsonArray.length(); i++){
+                            modelInput[0][i][0] = modelInput[0][i-1][0]*alpha + modelInput[0][i][0]*(1-alpha);
+                            modelInput[0][i][1] = modelInput[0][i-1][1]*alpha + modelInput[0][i][1]*(1-alpha);
                         }
 
-                        Log.e("original input", convertArrayToString(originalData));
-                        Log.e("model input", convertArrayToString(modelInput));
-                        wholeTime /= 5;
-                        wholeDistance /= 5;
 
-                        String inputString = convertArrayToString(modelInput);
+                        // Log.e("original input", "history num & input : "+historyNum+ " " +convertArrayToString(originalData));
+                        wholeTime /= historyNum;
+                        wholeDistance /= historyNum;
+
                         tflite.run(modelInput, modelOutput);
-                        goalDistance = modelOutput[0][0] * 7.019781e+00f + 1.207809e+01f;
-                        goalTime = (int) (modelOutput[0][1] * 6.457635e-01f + 1.156572e+00f);
+                        goalDistance = modelOutput[0][historyNum-1][0] * (83.8955084972f - 0.0083549205f) + 0.0083549205f;
+                        goalTime = (int) (modelOutput[0][historyNum-1][1] * (4.9963888889f - 0.1391666667f) + 0.1391666667f);
+                        Log.e("goalDistance&time", "goalDistance&time : "+goalDistance+ " " +goalTime);
 
-
-                        if (goalDistance / goalTime >= 1.3 * wholeDistance / wholeTime) {
-                            goalDistance = goalTime * 1.3f * wholeDistance / wholeTime;
+                        if (goalDistance/goalTime >= 1.3*wholeDistance/wholeTime){
+                            goalTime *= 1.3f;
                         }
                         if (goalDistance >= 1.3f * wholeDistance) {
                             goalDistance /= 1.3f;
                             goalTime /= 1.3f;
                         }
+                        if (goalDistance <= 0.7f*wholeDistance){
+                            goalDistance /= 0.7f;
+                            goalTime /= 0.7f;
+                        }
                         goalTime *= 60;
                         goalTime = (int) goalTime;
                     } catch (Exception e) {
                         Log.e("modeloutput error", e.toString());
+                        setStandard();
                         e.printStackTrace();
                     }
                 } else {
                     Log.e("MainActivity", "Error: " + response.message());
+                    setStandard();
                 }
             }
 
