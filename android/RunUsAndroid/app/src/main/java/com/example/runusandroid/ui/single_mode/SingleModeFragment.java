@@ -1132,14 +1132,15 @@ public class SingleModeFragment extends Fragment {
                         modelOutput = new float[1][777][2];
                         for (int i = 0; i < jsonArray.length(); i++) {
                             JSONObject historyObject = jsonArray.getJSONObject(i);
+                            int idx = historyNum-1-i;
 
                             float recentDistance = (float) historyObject.getDouble("distance");
                             float recentDuration = convertTimetoHour(historyObject.getString("duration"));
 
-                            originalData[i][0] = recentDistance;
-                            originalData[i][1] = recentDuration;
-                            modelInput[0][i][0] = (recentDistance - 0.0083549205f) / (83.8955084972f - 0.0083549205f);
-                            modelInput[0][i][1] = (recentDuration - 0.1391666667f) / (4.9963888889f - 0.1391666667f);
+                            originalData[idx][0] = recentDistance;
+                            originalData[idx][1] = recentDuration;
+                            modelInput[0][idx][0] = (recentDistance - 0.0083549205f) / (83.8955084972f - 0.0083549205f);
+                            modelInput[0][idx][1] = (recentDuration - 0.1391666667f) / (4.9963888889f - 0.1391666667f);
                             wholeDistance += recentDistance;
                             wholeTime += recentDuration;
                         }
