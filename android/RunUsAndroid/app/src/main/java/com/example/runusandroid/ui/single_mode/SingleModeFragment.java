@@ -212,7 +212,19 @@ public class SingleModeFragment extends Fragment {
                     currentDistanceText.setText(String.format(Locale.getDefault(), "%.1f " + "km", Math.floor(distance * 10) / 10));
 
                     lastLocation = location;
+                    if ((int) distance != lastDistanceInt) {
+                        LocalDateTime currentTime = LocalDateTime.now();
+                        Duration iterationDuration = Duration.between(iterationStartTime, currentTime);
+                        long secondsDuration = iterationDuration.getSeconds();
+                        float newPace = (float) (1.0 / (secondsDuration / 3600.0));
+                        if (newPace > maxSpeed)
+                            maxSpeed = newPace;
+                        if (newPace < minSpeed)
+                            minSpeed = newPace;
+                        speedList.add(newPace);
+                        iterationStartTime = currentTime;
 
+                    }
                 } else {
                     // Update UI (draw line, zoom in)
                     if (mMap != null) {
@@ -1023,6 +1035,8 @@ public class SingleModeFragment extends Fragment {
         long durationInSeconds = duration.getSeconds();
         //NOTE: group_history_id에 null을 넣을 수 없어 싱글모드인 경우 -1로 관리
         int exp = ExpSystem.getExp("single", distance, duration, isMissionSucceeded);
+        Log.d("got exp", exp + "");
+        //Toast.makeText(getActivity(), "경험치 " + exp + "를 획득하셨습니다.", Toast.LENGTH_SHORT).show();
         HistoryData requestData = new HistoryData(userId, (float) distance, durationInSeconds,
                 true, startTimeString, finishTimeString, calories, false, maxSpeed, minSpeed,
                 calculateMedian(speedList), speedList, -1, isMissionSucceeded, exp);
