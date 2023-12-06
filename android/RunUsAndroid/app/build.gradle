@@ -31,12 +31,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    aaptOptions {
+        noCompress "model_231206.tflite"
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
     buildFeatures {
         viewBinding true
+        mlModelBinding true
     }
 }
 
@@ -52,6 +56,7 @@ dependencies {
     implementation 'androidx.navigation:navigation-ui:2.7.4'
     implementation 'androidx.recyclerview:recyclerview:latest_version'
     implementation 'com.github.bumptech.glide:glide:4.12.0'
+    implementation 'org.tensorflow:tensorflow-lite-metadata:0.1.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
@@ -59,6 +64,8 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.8'
     implementation 'org.tensorflow:tensorflow-lite:2.13.0'
     implementation 'org.tensorflow:tensorflow-lite-support:0.4.4'
+    implementation 'org.tensorflow:tensorflow-lite-select-tf-ops:2.13.0'
+
     implementation "androidx.work:work-runtime:2.8.1"
     implementation 'de.hdodenhof:circleimageview:3.1.0'
     implementation 'com.applandeo:material-calendar-view:1.7.0'
