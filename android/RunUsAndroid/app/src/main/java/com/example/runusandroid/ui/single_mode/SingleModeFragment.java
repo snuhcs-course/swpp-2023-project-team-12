@@ -431,6 +431,10 @@ public class SingleModeFragment extends Fragment {
     }
 
     private void showCustomDialog() {
+        final boolean[] validationDistance = {true};
+        final boolean[] validationMinute = {true};
+        final boolean[] validationHour = {true};
+
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_mission_custom, null);
         Dialog dialog = new Dialog(getContext());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -454,6 +458,8 @@ public class SingleModeFragment extends Fragment {
         EditText textDistance = dialogView.findViewById(R.id.editTextGoalDistance);
         EditText textHour = dialogView.findViewById(R.id.editTextGoalHour);
         EditText textMinute = dialogView.findViewById(R.id.editTextGoalMinute);
+        TextView MissionDistanceValidationText = dialog.findViewById(R.id.MissionDistanceValidationText);
+        TextView MissionTimeValidationText = dialog.findViewById(R.id.MissionTimeValidationText);
 
 
         textDistance.setText(floatTo1stDecimal(goalDistance));
@@ -479,6 +485,7 @@ public class SingleModeFragment extends Fragment {
 
                 if (s != null && !s.toString().equals("")) {
                     try {
+                        validationDistance[0] = true;
                         String distanceText = s.toString();
                         nowGoalDistance = (float) Double.parseDouble(distanceText);
                         if (((int) (nowGoalDistance * 10)) / 10f != nowGoalDistance) {
@@ -493,6 +500,7 @@ public class SingleModeFragment extends Fragment {
                         e.printStackTrace();
                     }
                 } else {
+                    validationDistance[0] = false;
                     int new_distance = 0;
                     nowGoalDistance = new_distance;
                 }
@@ -519,6 +527,7 @@ public class SingleModeFragment extends Fragment {
 
                 if (s != null && !s.toString().equals("")) {
                     try {
+                        validationHour[0] = true;
                         String hourText = s.toString();
                         int newHour = Integer.parseInt(hourText);
                         nowGoalTime = newHour * 60 + Integer.parseInt(textMinute.getText().toString());
@@ -528,6 +537,7 @@ public class SingleModeFragment extends Fragment {
                         e.printStackTrace();
                     }
                 } else {
+                    validationHour[0] = false;
                     int new_time = 0;
                     nowGoalTime = new_time;
                 }
@@ -554,6 +564,7 @@ public class SingleModeFragment extends Fragment {
 
                 if (s != null && !s.toString().equals("")) {
                     try {
+                        validationMinute[0] = true;
                         String minuteText = s.toString();
                         int newMinute = Integer.parseInt(minuteText);
                         if (newMinute > 59) {
@@ -568,6 +579,7 @@ public class SingleModeFragment extends Fragment {
                         e.printStackTrace();
                     }
                 } else {
+                    validationMinute[0] = false;
                     int new_time = 0;
                     nowGoalTime = new_time;
                 }
@@ -589,11 +601,28 @@ public class SingleModeFragment extends Fragment {
 
         buttonConfirm.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-                goalDistance = nowGoalDistance;
-                Log.d("goalDistance", goalDistance + "");
-                goalTime = nowGoalTime;
-                dialog.dismiss();
-                setRunningStart();
+                if (validationMinute[0] && validationHour[0]) {
+                    MissionTimeValidationText.setVisibility(View.GONE);
+                }
+                if (validationDistance[0]) {
+                    MissionDistanceValidationText.setVisibility(View.GONE);
+                }
+                if (!(validationMinute[0] && validationHour[0] && validationDistance[0])) {
+                    if (!validationMinute[0] || !validationHour[0]) {
+                        MissionTimeValidationText.setVisibility(View.VISIBLE);
+                    }
+                    if (!validationDistance[0]) {
+                        MissionDistanceValidationText.setVisibility(View.VISIBLE);
+                    }
+                } else {
+                    goalDistance = nowGoalDistance;
+                    Log.d("goalDistance", goalDistance + "");
+                    goalTime = nowGoalTime;
+                    dialog.dismiss();
+                    setRunningStart();
+                }
+
+
             }
         });
 

@@ -7,7 +7,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="450dp"
         android:layout_marginHorizontal="16dp"
         android:background="@drawable/round_shape_dialog"
         android:padding="16dp">
@@ -17,15 +17,45 @@
             android:id="@+id/textViewMissionInfo2"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp"
+            android:layout_margin="3dp"
             android:gravity="center"
-            android:padding="6dp"
+            android:padding="2dp"
             android:text="* 커스텀 모드의 목표 거리는 km 단위로만 설정할 수 있어요."
             android:textSize="11dp"
             app:layout_constraintBottom_toTopOf="@+id/editTextGoalHour"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/editTextGoalDistance" />
+
+        <TextView
+            android:id="@+id/MissionDistanceValidationText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="3dp"
+            android:gravity="left"
+            android:text="거리를 입력해주세요."
+            android:textColor="#FF0000"
+            android:textSize="11dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/editTextGoalHour"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/guideline1"
+            app:layout_constraintTop_toBottomOf="@+id/textViewMissionInfo2" />
+
+        <TextView
+            android:id="@+id/MissionTimeValidationText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="3dp"
+            android:gravity="left"
+            android:text="시간을 입력해주세요."
+            android:textColor="#FF0000"
+            android:textSize="11dp"
+            android:visibility="gone"
+
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/guideline1"
+            app:layout_constraintTop_toBottomOf="@+id/editTextGoalHour" />
 
         <TextView
             android:id="@+id/textViewMissionInfo3"
@@ -143,7 +173,7 @@
             android:layout_height="wrap_content"
             android:background="@drawable/round_shape_light_gray"
             android:gravity="right|center"
-            android:hint="0"
+            android:hint="-"
             android:inputType="numberDecimal"
             android:maxLength="4"
             android:paddingLeft="15dp"
@@ -186,7 +216,7 @@
             android:layout_marginBottom="2dp"
             android:background="@drawable/round_shape_light_gray"
             android:gravity="right|center"
-            android:hint="0"
+            android:hint="-"
             android:inputType="number"
             android:maxLength="2"
             android:paddingLeft="15dp"
@@ -215,7 +245,7 @@
             android:layout_height="wrap_content"
             android:background="@drawable/round_shape_light_gray"
             android:gravity="right|center"
-            android:hint="0"
+            android:hint="-"
             android:inputType="number"
             android:max="59"
             android:maxLength="2"
@@ -250,6 +280,7 @@
             app:layout_constraintHorizontal_weight="0.1"
             app:layout_constraintStart_toEndOf="@+id/editTextGoalDistance"
             app:layout_constraintTop_toBottomOf="@+id/textViewMissionInfo2" />
+
 
         <Button
             android:id="@+id/buttonConfirm"
