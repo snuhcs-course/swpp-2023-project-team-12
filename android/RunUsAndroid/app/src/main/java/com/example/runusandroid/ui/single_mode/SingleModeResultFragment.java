@@ -163,7 +163,7 @@ public class SingleModeResultFragment extends Fragment {
             } else {
                 initialPoint = new LatLng(37.55225, 126.9873);
             }
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPoint, 14));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPoint, 16));
             isMapReady = true;
 
             updateMap();

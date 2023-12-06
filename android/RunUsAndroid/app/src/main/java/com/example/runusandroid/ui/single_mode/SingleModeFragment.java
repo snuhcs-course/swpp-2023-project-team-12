@@ -167,7 +167,7 @@ public class SingleModeFragment extends Fragment {
                         mMap.clear(); // Remove previous polylines
                         mMap.addPolyline(new PolylineOptions().addAll(pathPoints).color(Color.parseColor("#4AA570")).width(10));
                         if (newPoint != null) {
-                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 15));
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 16));
                         }
                     }
 
@@ -222,7 +222,7 @@ public class SingleModeFragment extends Fragment {
                     if (mMap != null) {
                         mMap.clear(); // Remove previous polylines
                         if (newPoint != null) {
-                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 15));
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 16));
                         }
                     }
                 }
@@ -354,7 +354,7 @@ public class SingleModeFragment extends Fragment {
             } else {
                 initialPoint = new LatLng(37.55225, 126.9873);
             }
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPoint, 14));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPoint, 16));
         });
 //        Location initialLocation = mainActivity.getFusedLocationClient().getLastLocation().getResult();
 //        LatLng initialPoint = new LatLng(initialLocation.getLatitude(), initialLocation.getLongitude());
