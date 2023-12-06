@@ -163,7 +163,7 @@ public class SingleModeFragment extends Fragment {
                         mMap.clear(); // Remove previous polylines
                         mMap.addPolyline(new PolylineOptions().addAll(pathPoints).color(Color.parseColor("#4AA570")).width(10));
                         if (newPoint != null) {
-                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 15));
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 16));
                         }
                     }
 
@@ -230,7 +230,7 @@ public class SingleModeFragment extends Fragment {
                     if (mMap != null) {
                         mMap.clear(); // Remove previous polylines
                         if (newPoint != null) {
-                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 15));
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 16));
                         }
                     }
                 }
@@ -308,8 +308,8 @@ public class SingleModeFragment extends Fragment {
                 String lastActivityType = RunningState.getLastActivityType();
                 String lastTransitionType = RunningState.getLastTransitionType();
 
-                Toast.makeText(mainActivity, "last detected : " + lastTransitionType + " " + lastActivityType +
-                        " . isRunning " + isRunning, Toast.LENGTH_LONG).show();
+//                Toast.makeText(mainActivity, "last detected : " + lastTransitionType + " " + lastActivityType +
+//                        " . isRunning " + isRunning, Toast.LENGTH_LONG).show();
             }
         });
 
@@ -363,7 +363,7 @@ public class SingleModeFragment extends Fragment {
             } else {
                 initialPoint = new LatLng(37.55225, 126.9873);
             }
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPoint, 14));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPoint, 16));
         });
 //        Location initialLocation = mainActivity.getFusedLocationClient().getLastLocation().getResult();
 //        LatLng initialPoint = new LatLng(initialLocation.getLatitude(), initialLocation.getLongitude());
@@ -1037,6 +1037,7 @@ public class SingleModeFragment extends Fragment {
         int exp = ExpSystem.getExp("single", distance, duration, isMissionSucceeded);
         Log.d("got exp", exp + "");
         Toast.makeText(getActivity(), "경험치 " + exp + "를 획득하셨습니다.", Toast.LENGTH_SHORT).show();
+        Log.d("UAT:exp", "single " + distance + " " + duration + " " + isMissionSucceeded + " " + exp);
         HistoryData requestData = new HistoryData(userId, (float) distance, durationInSeconds,
                 true, startTimeString, finishTimeString, calories, false, maxSpeed, minSpeed,
                 calculateMedian(speedList), speedList, -1, isMissionSucceeded, exp);
@@ -1117,6 +1118,7 @@ public class SingleModeFragment extends Fragment {
                 if (response.isSuccessful()) {
                     try {
                         String responseData = response.body().string();
+                        Log.e("whole response", responseData);
 
                         JSONArray jsonArray = new JSONArray(responseData);
                         float wholeDistance = 0f;
@@ -1256,6 +1258,7 @@ public class SingleModeFragment extends Fragment {
                 Log.d("goalDistance", "finishPlaySingleMode6 " + finalGoalDistance);
 
                 bundle.putSerializable("updatedExp", updatedExp);
+                Log.d("UAT:exp", "confirm onClick exp " + updatedExp);
                 bundle.putSerializable("updatedBadgeCollection", updatedBadgeCollection);
                 bundle.putSerializable("goalDistance", finalGoalDistance);
                 bundle.putSerializable("goalTime", finalGoalTime);

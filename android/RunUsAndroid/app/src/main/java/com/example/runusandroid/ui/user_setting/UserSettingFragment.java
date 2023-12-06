@@ -90,7 +90,9 @@ public class UserSettingFragment extends Fragment {
         int userLevel = sharedPreferences.getInt("level", 1);
         String userLevelText = Integer.toString(userLevel);
         int exp = sharedPreferences.getInt("exp", 0);
+        Log.d("UAT:exp", Integer.toString(exp));
         int presentExp = ExpSystem.getPresentExp(exp);
+        Log.d("UAT:exp", Integer.toString(presentExp));
         int nextExp = ExpSystem.getNextExp(userLevel);
         String presentExpText = Integer.toString(presentExp);
         String nextExpText = Integer.toString(nextExp);
@@ -230,8 +232,8 @@ public class UserSettingFragment extends Fragment {
                 String transitionType = RunningState.getLastTransitionType();
                 boolean isRunning = RunningState.getIsRunning();
 
-                Toast.makeText(mainActivity, "last state:" + transitionType + " " + activityType + " " + isRunning,
-                        Toast.LENGTH_LONG).show();
+//                Toast.makeText(mainActivity, "last state:" + transitionType + " " + activityType + " " + isRunning,
+//                        Toast.LENGTH_LONG).show();
 
             }
 

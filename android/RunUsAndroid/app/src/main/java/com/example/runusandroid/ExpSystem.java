@@ -1,5 +1,7 @@
 package com.example.runusandroid;
 
+import android.util.Log;
+
 import java.time.Duration;
 
 public class ExpSystem {
@@ -28,10 +30,12 @@ public class ExpSystem {
             //거리는 1km를 기준으로 하여 1km 추가로 더 뛸 때마다 km당 1.05배의 가중치를 부여하여 합산. 등비수열의 합공식 이용
             exp = geometricSeries(exp, distance);
 
+
             //미션모드를 통해 러닝을 진행하여 성공했을 경우 추가 경험치(미션모드 많이 쓰라고)
             if (MissonSuccessed > 0) {
                 exp *= 1.1;
             }
+            Log.d("UAT:exp", "single " + distanceInMeter + " " +  seconds + " "+ avgerage_speed + " " + exp);
             return (int) exp;
         } else {
             int place = extraCheckValue;
