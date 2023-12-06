@@ -733,6 +733,7 @@ public class SingleModeFragment extends Fragment {
         boolean enoughHistory = modelInput[4][2] != 0;
         if (!enoughHistory || goalDistance < 0.1) {
             setStandard();
+            nowGoalDistance = goalDistance;
             missionInfo.setText("5회 러닝 전이나 기존 기록이 지나치게 짧을 때는 \n" + nickname + "님과 비슷한 그룹의 평균을 추천해요!");
         } else {
             nowGoalDistance = goalDistance;
