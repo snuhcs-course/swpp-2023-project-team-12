@@ -34,7 +34,7 @@ public class UserActivityBroadcastReceiver extends BroadcastReceiver {
                     transitionType = "EXIT";
                 else transitionType = "illegal";
 
-                Toast.makeText(context, "activity detected, " + transitionType + " " + activityType, Toast.LENGTH_LONG).show();
+                //Toast.makeText(context, "activity detected, " + transitionType + " " + activityType, Toast.LENGTH_LONG).show();
                 RunningState.saveState(activityType, transitionType);
             }
         }

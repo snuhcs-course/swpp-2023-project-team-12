@@ -141,7 +141,7 @@ public class LoginActivity extends AppCompatActivity {
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                         if (response.isSuccessful()) {
                             Log.d("Login", "Login Success");
-                            Toast.makeText(LoginActivity.this, "Login Success", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(LoginActivity.this, "반가워요!", Toast.LENGTH_SHORT).show();
                             JSONObject responseBody = null;
                             try {
                                 String responseBodyString = response.body().string();
@@ -198,14 +198,14 @@ public class LoginActivity extends AppCompatActivity {
                             }
                         } else {
                             Log.d("Login", "Login Failed, Status Code : " + response.code());
-                            Toast.makeText(LoginActivity.this, "Login Failed", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(LoginActivity.this, "로그인 실패", Toast.LENGTH_SHORT).show();
                         }
 
                     }
 
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        Toast.makeText(LoginActivity.this, "Login Failed", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this, "로그인 실패", Toast.LENGTH_SHORT).show();
                         Log.e("Retrofit", "Error: " + t.getMessage());
                     }
                 });
