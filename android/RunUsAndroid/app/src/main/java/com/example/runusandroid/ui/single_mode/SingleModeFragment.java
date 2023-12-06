@@ -1163,7 +1163,7 @@ public class SingleModeFragment extends Fragment {
                         Log.e("goalDistance&time", "goalDistance&time : "+goalDistance+ " " +goalTime);
 
                         // adjustment
-                        goalDistance *= 1.05f;
+                        goalDistance *= 1.02f;
                         if (goalDistance/goalTime >= 1.2*wholeDistance/wholeTime){
                             goalTime *= 1.2f;
                         }
