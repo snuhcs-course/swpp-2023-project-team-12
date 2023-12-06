@@ -257,16 +257,6 @@ public class SingleModeResultFragment extends Fragment {
         return decimalFormat.format(num);
     }
 
-    private String doubleToThirdDeciStr(double num) {
-        DecimalFormat decimalFormat = new DecimalFormat("#.###");
-        return decimalFormat.format(num);
-    }
-
-    private String doubleToFirstDeciStr(double num) {
-        DecimalFormat decimalFormat = new DecimalFormat("#.#");
-        return decimalFormat.format(num);
-    }
-
     private void updateMap() {
         if (mMap != null) {
             Log.d("mMapCheck", "mMap is not null");
