@@ -448,7 +448,7 @@ public class SingleModeFragment extends Fragment {
         params.width = WindowManager.LayoutParams.MATCH_PARENT; // 원하는 너비로 조절
         dialog.getWindow().setAttributes(params);
 
-        boolean enoughHistory = historyNum > 5;
+        boolean enoughHistory = historyNum>=5;
         if (!enoughHistory || goalDistance < 0.01) {
             setStandard();
         }
@@ -644,7 +644,7 @@ public class SingleModeFragment extends Fragment {
         params.width = WindowManager.LayoutParams.MATCH_PARENT; // 원하는 너비로 조절
         dialog.getWindow().setAttributes(params);
 
-        boolean enoughHistory = historyNum > 5;
+        boolean enoughHistory = historyNum>=5;
         if (!enoughHistory || goalDistance < 0.01) {
             setStandard();
             nowGoalDistance = goalDistance * 1.5f;
@@ -733,15 +733,15 @@ public class SingleModeFragment extends Fragment {
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", MODE_PRIVATE);
         String nickname = sharedPreferences.getString("nickname", "");
 
-        boolean enoughHistory = historyNum > 5;
+        boolean enoughHistory = historyNum>=5;
         if (!enoughHistory || goalDistance < 0.01) {
             setStandard();
             nowGoalDistance = goalDistance;
             missionInfo.setText("5회 러닝 전이나 기존 기록이 지나치게 짧을 때는 \n" + nickname + "님과 비슷한 그룹의 평균을 추천해요!");
         } else {
             nowGoalDistance = goalDistance;
-            float lastDistance = originalData[historyNum-1][1];
-            float lastTime = originalData[historyNum-1][2];
+            float lastDistance = originalData[historyNum-1][0];
+            float lastTime = originalData[historyNum-1][1];
 
             if (nowGoalDistance / goalTime > lastDistance * 1.1 / lastTime) {
                 missionInfo.setText(nickname + "님, 오늘은 더 바람을 느끼며 달려 보세요! \n 지난 기록보다 높은 목표를 추천해 드렸어요.");
@@ -1086,6 +1086,9 @@ public class SingleModeFragment extends Fragment {
         StringBuilder result = new StringBuilder();
 
         for (float[] row : array) {
+            if (row[0]==0){
+                break;
+            }
             for (float value : row) {
                 result.append(value).append(" ");
             }
@@ -1142,13 +1145,13 @@ public class SingleModeFragment extends Fragment {
                         }
 
 
-                        // Log.e("original input", "history num & input : "+historyNum+ " " +convertArrayToString(originalData));
+                        Log.e("original input", "history num & input : "+historyNum+ " " +convertArrayToString(originalData));
                         wholeTime /= historyNum;
                         wholeDistance /= historyNum;
 
                         tflite.run(modelInput, modelOutput);
                         goalDistance = modelOutput[0][historyNum-1][0] * (83.8955084972f - 0.0083549205f) + 0.0083549205f;
-                        goalTime = (int) (modelOutput[0][historyNum-1][1] * (4.9963888889f - 0.1391666667f) + 0.1391666667f);
+                        goalTime = (modelOutput[0][historyNum-1][1] * (4.9963888889f - 0.1391666667f) + 0.1391666667f);
                         Log.e("goalDistance&time", "goalDistance&time : "+goalDistance+ " " +goalTime);
 
                         if (goalDistance/goalTime >= 1.3*wholeDistance/wholeTime){
