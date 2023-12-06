@@ -446,7 +446,7 @@ public class SingleModeFragment extends Fragment {
         dialog.getWindow().setAttributes(params);
 
         boolean enoughHistory = modelInput[4][2] != 0;
-        if (!enoughHistory || goalDistance == 0) {
+        if (!enoughHistory || goalDistance < 0.1) {
             setStandard();
         }
 
@@ -462,7 +462,7 @@ public class SingleModeFragment extends Fragment {
         TextView MissionTimeValidationText = dialog.findViewById(R.id.MissionTimeValidationText);
 
 
-        textDistance.setText(floatTo1stDecimal(goalDistance));
+        textDistance.setText(floatTo1stDecimal(nowGoalDistance));
         textHour.setText(floatTo1stDecimal(goalHour));
         textMinute.setText(floatTo1stDecimal(goalMinute));
 
@@ -642,7 +642,7 @@ public class SingleModeFragment extends Fragment {
         dialog.getWindow().setAttributes(params);
 
         boolean enoughHistory = modelInput[4][2] != 0;
-        if (!enoughHistory || goalDistance == 0) {
+        if (!enoughHistory || goalDistance < 0.1) {
             setStandard();
             nowGoalDistance = goalDistance * 1.5f;
         } else {
@@ -731,10 +731,9 @@ public class SingleModeFragment extends Fragment {
         String nickname = sharedPreferences.getString("nickname", "");
 
         boolean enoughHistory = modelInput[4][2] != 0;
-        if (!enoughHistory || goalDistance == 0) {
+        if (!enoughHistory || goalDistance < 0.1) {
             setStandard();
-            nowGoalDistance = goalDistance;
-            missionInfo.setText("5회 러닝 전에는 " + nickname + "님과 비슷한 그룹의 \n평균 러닝이 추천돼요!");
+            missionInfo.setText("5회 러닝 전이나 기존 기록이 지나치게 짧을 때는 \n" + nickname + "님과 비슷한 그룹의 평균을 추천해요!");
         } else {
             nowGoalDistance = goalDistance;
             float lastDistance = modelInput[0][1] * 7.019781e+00f + 1.207809e+01f;
