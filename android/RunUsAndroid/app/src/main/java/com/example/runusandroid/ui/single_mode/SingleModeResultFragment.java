@@ -101,6 +101,7 @@ public class SingleModeResultFragment extends Fragment {
         speedList = (List<Float>) getArguments().getSerializable("userSpeedList");
         pathPoints = (List<LatLng>) getArguments().getSerializable("pathPointList");
         updatedExp = (int) getArguments().getSerializable("updatedExp");
+        Log.d("UAT:exp", "updatedExp OnCreate is " + updatedExp);
         updatedBadgeCollection = (int) getArguments().getSerializable("updatedBadgeCollection");
         if (pathPoints != null && pathPoints.size() != 0) {
             Log.d("mMapCheck", "lastpoint is not null");
@@ -141,7 +142,7 @@ public class SingleModeResultFragment extends Fragment {
             Log.d("response", "past level is " + pastLevel + ", and updated level is " + updatedLevel);
         }
         editor.apply();
-        Log.d("response", "update_exp is + " + sharedPreferences.getInt("exp", -1));
+        Log.d("UAT:exp", "update_exp is + " + sharedPreferences.getInt("exp", -1));
 
 
         // Finding the visual component displaying the map
