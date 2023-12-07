@@ -185,7 +185,6 @@ public class SingleModeResultFragment extends Fragment {
                 if (!isDialogOpenedBefore) {
                     Log.d("speedList", speedList.size() + "");
                     double section = 1.0;
-
                     while (true) {
                         if (currentDistance - section >= 0) {
                             float speed = speedList.get((int) section - 1);

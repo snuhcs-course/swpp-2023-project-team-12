@@ -535,6 +535,7 @@ public class MultiModePlayFragment extends Fragment {
             place = 3;
         }
         int exp = ExpSystem.getExp("multi", distance, selectedRoom.getDuration(), place);
+        Toast.makeText(getActivity(), "경험치 " + exp + "를 획득하셨습니다.", Toast.LENGTH_SHORT).show();
         HistoryData requestData = new HistoryData(user.getId(), distance, durationInSeconds,
                 true, startTimeString, finishTimeString, calories, true, maxSpeed, minSpeed, calculateMedian(speedList), speedList, groupHistoryId, 0, exp);
 
