@@ -6,10 +6,8 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -49,9 +47,8 @@ public class FindIdActivity extends AppCompatActivity {
             call.enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(FindIdActivity.this);
                     if (response.isSuccessful()) {
-                        // 성공적인 응답 처리: 이메일 전송 성공 대화 상자 표시
-                        AlertDialog.Builder builder = new AlertDialog.Builder(FindIdActivity.this);
                         builder.setTitle("이메일 전송 완료");
                         builder.setMessage("아이디를 입력하신 이메일로 보내드렸어요!");
                         builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
@@ -64,17 +61,33 @@ public class FindIdActivity extends AppCompatActivity {
                         });
                         AlertDialog dialog = builder.create();
                         dialog.show();
+                        Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                        if (positiveButton != null) {
+                            positiveButton.setTextColor(Color.BLACK);  // 원하는 색상으로 설정
+                        }
+                        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialogInterface) {
+                                // 다이얼로그가 닫히면 LoginActivity로 이동
+                                Intent intent = new Intent(FindIdActivity.this, LoginActivity.class);
+                                startActivity(intent);
+                                finish();
+                            }
+                        });
                     } else {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(FindIdActivity.this);
                         builder.setTitle("찾기 실패");
                         builder.setMessage("가입된 이메일이 없어요.");
                         builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                // 아무런 동작을 하지 않음
+                                dialog.dismiss();
                             }
                         });
                         AlertDialog dialog = builder.create();
                         dialog.show();
+                        Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                        if (positiveButton != null) {
+                            positiveButton.setTextColor(Color.BLACK);  // 원하는 색상으로 설정
+                        }
                     }
                 }
 
