@@ -434,7 +434,7 @@ public class MultiModeWaitFragment extends Fragment {
             boolean success = true;
             try {
                 ObjectOutputStream oos = socketManager.getOOS();
-                PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.EXIT_ROOM).user(user).selectedRoom(selectedRoom);
+                PacketBuilder packetBuilder = new PacketBuilder().buildProtocol(Protocol.EXIT_ROOM).buildUser(user).buildSelectedRoom(selectedRoom);
                 Packet requestPacket = packetBuilder.getPacket();
                 oos.reset();
                 oos.writeObject(requestPacket);
@@ -467,7 +467,7 @@ public class MultiModeWaitFragment extends Fragment {
         public Boolean doInBackground(Void... voids) {
             boolean success = true;
             try {
-                PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.EXIT_GAME).user(user).selectedRoom(selectedRoom);
+                PacketBuilder packetBuilder = new PacketBuilder().buildProtocol(Protocol.EXIT_GAME).buildUser(user).buildSelectedRoom(selectedRoom);
                 Packet requestPacket = packetBuilder.getPacket();
                 ObjectOutputStream oos = socketManager.getOOS();
                 oos.reset();
@@ -498,7 +498,7 @@ public class MultiModeWaitFragment extends Fragment {
             boolean success = true;
             try {
                 ObjectOutputStream oos = socketManager.getOOS();
-                PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.START_GAME).selectedRoom(selectedRoom);
+                PacketBuilder packetBuilder = new PacketBuilder().buildProtocol(Protocol.START_GAME).buildSelectedRoom(selectedRoom);
                 Packet requestPacket = packetBuilder.getPacket();
                 oos.reset();
                 oos.writeObject(requestPacket);

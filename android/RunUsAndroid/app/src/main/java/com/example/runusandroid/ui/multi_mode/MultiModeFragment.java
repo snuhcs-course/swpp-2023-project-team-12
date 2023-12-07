@@ -269,7 +269,7 @@ public class MultiModeFragment extends Fragment {
             boolean success = true;
             try {
                 ObjectOutputStream oos = socketManager.getOOS();
-                PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.ROOM_LIST).user(user);
+                PacketBuilder packetBuilder = new PacketBuilder().buildProtocol(Protocol.ROOM_LIST).buildUser(user);
                 Packet requestPacket = packetBuilder.getPacket();
                 oos.reset();
                 oos.writeObject(requestPacket);
@@ -294,7 +294,7 @@ public class MultiModeFragment extends Fragment {
             boolean success = false;
             try {
                 ObjectOutputStream oos = socketManager.getOOS();
-                PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.CREATE_ROOM).user(user).roomCreateInfo(roomInfo[0]);
+                PacketBuilder packetBuilder = new PacketBuilder().buildProtocol(Protocol.CREATE_ROOM).buildUser(user).buildRoomCreateInfo(roomInfo[0]);
                 Log.d("create_room", "before send packet + " + user.getNickname());
                 Packet requestPacket = packetBuilder.getPacket();
 

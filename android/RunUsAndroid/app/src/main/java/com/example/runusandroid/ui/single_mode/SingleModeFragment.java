@@ -67,10 +67,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.support.common.FileUtil;
-import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -80,7 +78,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -99,10 +96,6 @@ public class SingleModeFragment extends Fragment {
 
     static final String START_LOCATION_SERVICE = "start";
     static final String STOP_LOCATION_SERVICE = "stop";
-    private float[][] originalData;
-    private float[][][] modelInput;
-    private int historyNum;
-    private float[][][] modelOutput;
     private final String[] background_location_permission = {
             Manifest.permission.ACCESS_BACKGROUND_LOCATION
     };
@@ -110,7 +103,7 @@ public class SingleModeFragment extends Fragment {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
     };
-    private final float[][] standard = { { 2.41f, 2.38f, 2.32f, 2.21f }, { 2.04f, 1.96f, 1.88f, 1.79f } };
+    private final float[][] standard = {{2.41f, 2.38f, 2.32f, 2.21f}, {2.04f, 1.96f, 1.88f, 1.79f}};
     private final boolean timeLimitLess = true;
     Chronometer currentTimeText;
     TextView currentDistanceText;
@@ -131,6 +124,10 @@ public class SingleModeFragment extends Fragment {
     LinearLayout currentPace;
     Button startButton;
     double distance_for_pace;
+    private float[][] originalData;
+    private float[][][] modelInput;
+    private int historyNum;
+    private float[][][] modelOutput;
     private int updatedExp;
     private List<LatLng> pathPoints = new ArrayList<>();
     private List<Float> speedList = new ArrayList<>(); // 매 km 마다 속력 (km/h)
@@ -270,7 +267,7 @@ public class SingleModeFragment extends Fragment {
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
-            ViewGroup container, Bundle savedInstanceState) {
+                             ViewGroup container, Bundle savedInstanceState) {
         SingleModeViewModel singleModeViewModel = new ViewModelProvider(this).get(SingleModeViewModel.class);
 
         binding = FragmentSingleModeBinding.inflate(inflater, container, false);
@@ -397,16 +394,16 @@ public class SingleModeFragment extends Fragment {
         dialog.setCancelable(false);
 
         TextView modeTitle = dialogView.findViewById(R.id.textViewTitle);
-        setTextBold(modeTitle, new String[] { "AI", });
+        setTextBold(modeTitle, new String[]{"AI",});
 
         TextView textTimeAttack = dialogView.findViewById(R.id.textViewTimeAttack);
-        setTextBold(textTimeAttack, new String[] { "주어진", "AI가 추천한 거리" });
+        setTextBold(textTimeAttack, new String[]{"주어진", "AI가 추천한 거리"});
 
         TextView textMarathon = dialogView.findViewById(R.id.textViewMarathon);
-        setTextBold(textMarathon, new String[] { "긴 거리", "한계" });
+        setTextBold(textMarathon, new String[]{"긴 거리", "한계"});
 
         TextView textCustom = dialogView.findViewById(R.id.textViewCustom);
-        setTextBold(textCustom, new String[] { "직접" });
+        setTextBold(textCustom, new String[]{"직접"});
 
         dialog.show();
 
@@ -454,9 +451,9 @@ public class SingleModeFragment extends Fragment {
     }
 
     private void showCustomDialog() {
-        final boolean[] validationDistance = { true };
-        final boolean[] validationMinute = { true };
-        final boolean[] validationHour = { true };
+        final boolean[] validationDistance = {true};
+        final boolean[] validationMinute = {true};
+        final boolean[] validationHour = {true};
 
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_mission_custom, null);
         Dialog dialog = new Dialog(getContext());
