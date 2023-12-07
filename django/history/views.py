@@ -86,7 +86,7 @@ class RecentHistory(APIView):
         try:
             user_history = HistoryRecord.objects.filter(user_id=user_id).order_by(
                 "-start_time"
-            )[:5]
+            )[:20]
             serializer = RecentHistorySerializer(user_history, many=True)
             print(serializer.data)
 

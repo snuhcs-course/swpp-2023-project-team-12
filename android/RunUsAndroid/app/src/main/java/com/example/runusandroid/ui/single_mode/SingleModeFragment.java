@@ -110,7 +110,7 @@ public class SingleModeFragment extends Fragment {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
     };
-    private final float[][] standard = {{2.41f, 2.38f, 2.32f, 2.21f}, {2.04f, 1.96f, 1.88f, 1.79f}};
+    private final float[][] standard = { { 2.41f, 2.38f, 2.32f, 2.21f }, { 2.04f, 1.96f, 1.88f, 1.79f } };
     private final boolean timeLimitLess = true;
     Chronometer currentTimeText;
     TextView currentDistanceText;
@@ -165,7 +165,8 @@ public class SingleModeFragment extends Fragment {
                     // Update UI (draw line, zoom in)
                     if (mMap != null) {
                         mMap.clear(); // Remove previous polylines
-                        mMap.addPolyline(new PolylineOptions().addAll(pathPoints).color(Color.parseColor("#4AA570")).width(10));
+                        mMap.addPolyline(
+                                new PolylineOptions().addAll(pathPoints).color(Color.parseColor("#4AA570")).width(10));
                         if (newPoint != null) {
                             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPoint, 16));
                         }
@@ -188,11 +189,17 @@ public class SingleModeFragment extends Fragment {
                                 pace_distance_queue.add(last_distance_5s_kilometer);
                             }
                             distance_for_pace = sumQueue();
-                            Log.d("test:distance:5sec", "Last 5 second Distance :" + location.distanceTo(lastLocation) / (double) 1000);
+                            Log.d("test:distance:5sec",
+                                    "Last 5 second Distance :" + location.distanceTo(lastLocation) / (double) 1000);
                             if (last_distance_5s_kilometer > 0) {
-                                int paceMinute = (int) (1 / (distance_for_pace / (5 * pace_distance_queue.size()))) / 60;
-                                int paceSecond = (int) (1 / (distance_for_pace / (5 * pace_distance_queue.size()))) % 60;
-                                Log.d("test:distance:5sec", "distance : " + distance_for_pace + " and queue size is " + pace_distance_queue.size() + " pace :" + paceMinute + "' " + paceSecond + "''");
+                                int paceMinute = (int) (1 / (distance_for_pace / (5 * pace_distance_queue.size())))
+                                        / 60;
+                                int paceSecond = (int) (1 / (distance_for_pace / (5 * pace_distance_queue.size())))
+                                        % 60;
+                                Log.d("test:distance:5sec",
+                                        "distance : " + distance_for_pace + " and queue size is "
+                                                + pace_distance_queue.size() + " pace :" + paceMinute + "' "
+                                                + paceSecond + "''");
                                 if (paceMinute < 60) {
                                     String paceString = String.format("%02d'%02d\"", paceMinute, paceSecond);
                                     currentPaceText.setText(paceString);
@@ -206,14 +213,16 @@ public class SingleModeFragment extends Fragment {
                             }
 
                             // log distance into file
-                            FileLogger.logToFileAndLogcat(mainActivity, "test:distance:5sec", "" + location.distanceTo(lastLocation) / (double) 1000);
+                            FileLogger.logToFileAndLogcat(mainActivity, "test:distance:5sec",
+                                    "" + location.distanceTo(lastLocation) / (double) 1000);
                             Log.d("test:distance:total", "Distance:" + distance);
                         }
                     } else {
                         String paceString = "--'--\"";
                         currentPaceText.setText(paceString);
                     }
-                    currentDistanceText.setText(String.format(Locale.getDefault(), "%.1f " + "km", Math.floor(distance * 10) / 10));
+                    currentDistanceText.setText(
+                            String.format(Locale.getDefault(), "%.1f " + "km", Math.floor(distance * 10) / 10));
 
                     lastLocation = location;
                     if ((int) distance != lastDistanceInt) {
@@ -261,7 +270,7 @@ public class SingleModeFragment extends Fragment {
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
+            ViewGroup container, Bundle savedInstanceState) {
         SingleModeViewModel singleModeViewModel = new ViewModelProvider(this).get(SingleModeViewModel.class);
 
         binding = FragmentSingleModeBinding.inflate(inflater, container, false);
@@ -301,7 +310,8 @@ public class SingleModeFragment extends Fragment {
         dateFormat = new SimpleDateFormat("HH:mm:ss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 
-        // for debugging purpose, hidden button on right bottom corner shows toast about lastly detected activity transition and isRunning value
+        // for debugging purpose, hidden button on right bottom corner shows toast about
+        // lastly detected activity transition and isRunning value
         Button hiddenButton = binding.hiddenButton;
         hiddenButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -310,19 +320,14 @@ public class SingleModeFragment extends Fragment {
                 boolean isRunning = RunningState.getIsRunning();
                 String lastActivityType = RunningState.getLastActivityType();
                 String lastTransitionType = RunningState.getLastTransitionType();
-
-//                Toast.makeText(mainActivity, "last detected : " + lastTransitionType + " " + lastActivityType +
-//                        " . isRunning " + isRunning, Toast.LENGTH_LONG).show();
             }
         });
-
 
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 showModeChoice();
-
 
             }
         });
@@ -359,17 +364,21 @@ public class SingleModeFragment extends Fragment {
                     Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 mMap.setMyLocationEnabled(true);
             }
-            // set initial point to on saved already in mainActivity, if null, set to default location (남산타워)
+            // set initial point to on saved already in mainActivity, if null, set to
+            // default location (남산타워)
             LatLng initialPoint;
             if (mainActivity.initialLocation != null) {
-                initialPoint = new LatLng(mainActivity.initialLocation.getLatitude(), mainActivity.initialLocation.getLongitude());
+                initialPoint = new LatLng(mainActivity.initialLocation.getLatitude(),
+                        mainActivity.initialLocation.getLongitude());
             } else {
                 initialPoint = new LatLng(37.55225, 126.9873);
             }
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPoint, 16));
         });
-//        Location initialLocation = mainActivity.getFusedLocationClient().getLastLocation().getResult();
-//        LatLng initialPoint = new LatLng(initialLocation.getLatitude(), initialLocation.getLongitude());
+        // Location initialLocation =
+        // mainActivity.getFusedLocationClient().getLastLocation().getResult();
+        // LatLng initialPoint = new LatLng(initialLocation.getLatitude(),
+        // initialLocation.getLongitude());
 
         // Viewmodel contains status, and when status changes (observe), the text will
         // change
@@ -388,17 +397,16 @@ public class SingleModeFragment extends Fragment {
         dialog.setCancelable(false);
 
         TextView modeTitle = dialogView.findViewById(R.id.textViewTitle);
-        setTextBold(modeTitle, new String[]{"AI",});
-
+        setTextBold(modeTitle, new String[] { "AI", });
 
         TextView textTimeAttack = dialogView.findViewById(R.id.textViewTimeAttack);
-        setTextBold(textTimeAttack, new String[]{"주어진", "AI가 추천한 거리"});
+        setTextBold(textTimeAttack, new String[] { "주어진", "AI가 추천한 거리" });
 
         TextView textMarathon = dialogView.findViewById(R.id.textViewMarathon);
-        setTextBold(textMarathon, new String[]{"긴 거리", "한계"});
+        setTextBold(textMarathon, new String[] { "긴 거리", "한계" });
 
         TextView textCustom = dialogView.findViewById(R.id.textViewCustom);
-        setTextBold(textCustom, new String[]{"직접"});
+        setTextBold(textCustom, new String[] { "직접" });
 
         dialog.show();
 
@@ -446,9 +454,9 @@ public class SingleModeFragment extends Fragment {
     }
 
     private void showCustomDialog() {
-        final boolean[] validationDistance = {true};
-        final boolean[] validationMinute = {true};
-        final boolean[] validationHour = {true};
+        final boolean[] validationDistance = { true };
+        final boolean[] validationMinute = { true };
+        final boolean[] validationHour = { true };
 
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_mission_custom, null);
         Dialog dialog = new Dialog(getContext());
@@ -460,7 +468,7 @@ public class SingleModeFragment extends Fragment {
         params.width = WindowManager.LayoutParams.MATCH_PARENT; // 원하는 너비로 조절
         dialog.getWindow().setAttributes(params);
 
-        boolean enoughHistory = historyNum>=5;
+        boolean enoughHistory = historyNum >= 5;
         if (!enoughHistory || goalDistance < 0.01) {
             setStandard();
         }
@@ -476,7 +484,6 @@ public class SingleModeFragment extends Fragment {
         TextView MissionDistanceValidationText = dialog.findViewById(R.id.MissionDistanceValidationText);
         TextView MissionTimeValidationText = dialog.findViewById(R.id.MissionTimeValidationText);
 
-
         textDistance.setText(floatTo1stDecimal(nowGoalDistance));
         textHour.setText(floatTo1stDecimal(goalHour));
         textMinute.setText(floatTo1stDecimal(goalMinute));
@@ -491,12 +498,10 @@ public class SingleModeFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
 
-
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-
 
                 if (s != null && !s.toString().equals("")) {
                     try {
@@ -520,7 +525,6 @@ public class SingleModeFragment extends Fragment {
                     nowGoalDistance = new_distance;
                 }
 
-
             }
         });
 
@@ -533,12 +537,10 @@ public class SingleModeFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
 
-
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-
 
                 if (s != null && !s.toString().equals("")) {
                     try {
@@ -557,7 +559,6 @@ public class SingleModeFragment extends Fragment {
                     nowGoalTime = new_time;
                 }
 
-
             }
         });
 
@@ -570,12 +571,10 @@ public class SingleModeFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
 
-
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-
 
                 if (s != null && !s.toString().equals("")) {
                     try {
@@ -599,7 +598,6 @@ public class SingleModeFragment extends Fragment {
                     nowGoalTime = new_time;
                 }
 
-
             }
         });
 
@@ -612,7 +610,6 @@ public class SingleModeFragment extends Fragment {
                 showModeChoice();
             }
         });
-
 
         buttonConfirm.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
@@ -637,10 +634,8 @@ public class SingleModeFragment extends Fragment {
                     setRunningStart();
                 }
 
-
             }
         });
-
 
         dialog.show();
     }
@@ -656,10 +651,10 @@ public class SingleModeFragment extends Fragment {
         params.width = WindowManager.LayoutParams.MATCH_PARENT; // 원하는 너비로 조절
         dialog.getWindow().setAttributes(params);
 
-        boolean enoughHistory = historyNum>=5;
+        boolean enoughHistory = historyNum >= 5;
         if (!enoughHistory || goalDistance < 0.01) {
             setStandard();
-            nowGoalDistance = goalDistance * 1.5f;
+            nowGoalDistance = goalDistance * 1.3f;
         } else {
             float max_distance = 0;
             for (int i = 0; i < modelInput.length; i++) {
@@ -668,14 +663,13 @@ public class SingleModeFragment extends Fragment {
                     max_distance = tmp_distance;
                 }
             }
-            nowGoalDistance = goalDistance * 1.5f;
+            nowGoalDistance = goalDistance * 1.3f;
             if (nowGoalDistance > 2 * max_distance) {
                 nowGoalDistance = goalDistance * 0.6f + max_distance * 0.4f;
             } else if (nowGoalDistance < max_distance) {
                 nowGoalDistance = max_distance * 1.2f;
             }
         }
-
 
         SeekBar distanceSeekBar = dialogView.findViewById(R.id.distanceSeekBar);
         Button buttonConfirm = dialogView.findViewById(R.id.buttonConfirm);
@@ -690,7 +684,6 @@ public class SingleModeFragment extends Fragment {
                 showModeChoice();
             }
         });
-
 
         buttonConfirm.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
@@ -724,7 +717,6 @@ public class SingleModeFragment extends Fragment {
             }
         });
 
-
         dialog.show();
 
     }
@@ -745,26 +737,29 @@ public class SingleModeFragment extends Fragment {
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", MODE_PRIVATE);
         String nickname = sharedPreferences.getString("nickname", "");
 
-        boolean enoughHistory = historyNum>=5;
+        Log.e("goalDistance&time Timeattack", "goalDistance&time Timeattack : " + goalDistance + " " + goalTime);
+
+        boolean enoughHistory = historyNum >= 5;
         if (!enoughHistory || goalDistance < 0.01) {
             setStandard();
             nowGoalDistance = goalDistance;
             missionInfo.setText("5회 러닝 전이나 기존 기록이 지나치게 짧을 때는 \n" + nickname + "님과 비슷한 그룹의 평균을 추천해요!");
         } else {
             nowGoalDistance = goalDistance;
-            float lastDistance = originalData[historyNum-1][0];
-            float lastTime = originalData[historyNum-1][1];
+            float lastDistance = originalData[historyNum - 1][0];
+            float lastTime = originalData[historyNum - 1][1];
 
-            if (nowGoalDistance / goalTime > lastDistance * 1.1 / lastTime) {
+            if (nowGoalDistance / (goalTime / 60) > lastDistance * 1.1 / lastTime) {
+                Log.e("difficult running", nowGoalDistance + " " + goalTime + " " + lastDistance + " " + lastTime);
                 missionInfo.setText(nickname + "님, 오늘은 더 바람을 느끼며 달려 보세요! \n 지난 기록보다 높은 목표를 추천해 드렸어요.");
-            } else if (nowGoalDistance / goalTime < lastDistance * 0.9 / lastTime) {
+            } else if (nowGoalDistance / (goalTime / 60) < lastDistance * 0.8 / lastTime) {
+                Log.e("easy running", nowGoalDistance + " " + goalTime + " " + lastDistance + " " + lastTime);
                 missionInfo.setText(nickname + "님, 오늘은 쉬어가는 러닝을 가져 보세요! \n 지난 기록보다 편한 목표를 추천해 드렸어요.");
             } else {
                 missionInfo.setText("러닝은 꾸준함이 생명! \n 지난 러닝의 감각을 계속해서 익혀 보세요.");
             }
         }
         nowGoalTime = goalTime;
-
 
         Button buttonConfirm = dialogView.findViewById(R.id.buttonConfirm);
 
@@ -790,7 +785,8 @@ public class SingleModeFragment extends Fragment {
 
         final float revise_distance = Math.round(nowGoalDistance / 2f) / 10f;
         final float fixed_distance = nowGoalDistance;
-        final float revise_time = (int) (Math.round(nowGoalTime) / 20.0f) + ((int) (Math.round(nowGoalTime) / 20.0f) == 0 ? 1 : 0);
+        final float revise_time = (int) (Math.round(nowGoalTime) / 20.0f)
+                + ((int) (Math.round(nowGoalTime) / 20.0f) == 0 ? 1 : 0);
 
         distanceSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -840,7 +836,6 @@ public class SingleModeFragment extends Fragment {
             }
         });
 
-
         dialog.show();
 
     }
@@ -862,7 +857,8 @@ public class SingleModeFragment extends Fragment {
         goalDistanceText.setText(floatTo1stDecimal(goalDistance) + " km");
         if (ActivityCompat.checkSelfPermission(mainActivity,
                 Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            //ActivityCompat.requestPermissions(mainActivity, background_location_permission, 200);
+            // ActivityCompat.requestPermissions(mainActivity,
+            // background_location_permission, 200);
             showBackgroundLocationPermissionDialog();
         }
 
@@ -920,8 +916,10 @@ public class SingleModeFragment extends Fragment {
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("user_prefs", MODE_PRIVATE);
         int gender = sharedPreferences.getInt("gender", 0) - 1;
 
-        if (gender < 0) gender = 0;
-        if (gender > 1) gender = 1;
+        if (gender < 0)
+            gender = 0;
+        if (gender > 1)
+            gender = 1;
         int age = sharedPreferences.getInt("age", 0) / 10;
 
         float height = sharedPreferences.getFloat("height", 0.0f);
@@ -962,14 +960,12 @@ public class SingleModeFragment extends Fragment {
             public void handleOnBackPressed() {
                 if (runningNow) {
 
-
                     View finishDialog = getLayoutInflater().inflate(R.layout.dialog_single_play_finish, null);
                     Dialog dialog = new Dialog(getContext());
                     dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
                     dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
                     dialog.setContentView(finishDialog);
-
 
                     Button buttonConfirmClose = finishDialog.findViewById(R.id.buttonConfirmClose);
                     buttonConfirmClose.setOnClickListener(new View.OnClickListener() {
@@ -986,30 +982,34 @@ public class SingleModeFragment extends Fragment {
                     navController.navigate(R.id.navigation_home);
                 }
 
-
             }
         };
 
         requireActivity().getOnBackPressedDispatcher().addCallback(this, backPressedCallBack);
         Log.d("test:singlemode:lifecycle", "onResume, startlocation : " + startlocation);
         if (!startlocation) {
-//            if (ActivityCompat.checkSelfPermission(mainActivity,
-//                    Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//                ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-//                        1001);
-//            }
-//            if (ActivityCompat.checkSelfPermission(mainActivity,
-//                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//                ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-//                        1002);
-//            }
+            // if (ActivityCompat.checkSelfPermission(mainActivity,
+            // Manifest.permission.ACCESS_COARSE_LOCATION) !=
+            // PackageManager.PERMISSION_GRANTED) {
+            // ActivityCompat.requestPermissions(mainActivity, new
+            // String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+            // 1001);
+            // }
+            // if (ActivityCompat.checkSelfPermission(mainActivity,
+            // Manifest.permission.ACCESS_FINE_LOCATION) !=
+            // PackageManager.PERMISSION_GRANTED) {
+            // ActivityCompat.requestPermissions(mainActivity, new
+            // String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+            // 1002);
+            // }
             Log.d("test:singlemode:lifecycle", "initiate location service");
             Intent intent = new Intent(getContext(), BackGroundLocationService.class);
             intent.setAction(START_LOCATION_SERVICE);
             getActivity().startForegroundService(intent);
             startlocation = true;
 
-            LocalBroadcastManager.getInstance(requireContext()).registerReceiver(locationReceiver, new IntentFilter("location_update"));
+            LocalBroadcastManager.getInstance(requireContext()).registerReceiver(locationReceiver,
+                    new IntentFilter("location_update"));
 
         }
     }
@@ -1036,15 +1036,13 @@ public class SingleModeFragment extends Fragment {
         String finishTimeString = LocalDateTime.now().format(formatter);
         Duration duration = Duration.between(gameStartTime, LocalDateTime.now());
         long durationInSeconds = duration.getSeconds();
-        //NOTE: group_history_id에 null을 넣을 수 없어 싱글모드인 경우 -1로 관리
+        // NOTE: group_history_id에 null을 넣을 수 없어 싱글모드인 경우 -1로 관리
         int exp = ExpSystem.getExp("single", distance, duration, isMissionSucceeded);
-        Log.d("got exp", exp + "");
         Toast.makeText(getActivity(), "경험치 " + exp + "를 획득하셨습니다.", Toast.LENGTH_SHORT).show();
         Log.d("UAT:exp", "single " + distance + " " + duration + " " + isMissionSucceeded + " " + exp);
         HistoryData requestData = new HistoryData(userId, (float) distance, durationInSeconds,
                 true, startTimeString, finishTimeString, calories, false, maxSpeed, minSpeed,
                 calculateMedian(speedList), speedList, -1, isMissionSucceeded, exp);
-
 
         historyApi.postHistoryData(requestData).enqueue(new Callback<ResponseBody>() {
             @Override
@@ -1062,7 +1060,6 @@ public class SingleModeFragment extends Fragment {
                         updatedExp = expObject.getInt("exp");
                         JSONObject updatedBadgeCollectionObject = jsonObject.getJSONObject("badge_collection");
                         updatedBadgeCollection = updatedBadgeCollectionObject.getInt("badge_collection");
-
 
                     } catch (IOException e) {
                         throw new RuntimeException(e);
@@ -1101,7 +1098,7 @@ public class SingleModeFragment extends Fragment {
         StringBuilder result = new StringBuilder();
 
         for (float[] row : array) {
-            if (row[0]==0){
+            if (row[0] == 0) {
                 break;
             }
             for (float value : row) {
@@ -1131,7 +1128,7 @@ public class SingleModeFragment extends Fragment {
                         float wholeTime = 0f;
 
                         historyNum = jsonArray.length();
-                        if(historyNum==0){
+                        if (historyNum == 0) {
                             setStandard();
                             return;
                         }
@@ -1142,46 +1139,63 @@ public class SingleModeFragment extends Fragment {
                         modelOutput = new float[1][777][2];
                         for (int i = 0; i < jsonArray.length(); i++) {
                             JSONObject historyObject = jsonArray.getJSONObject(i);
+                            int idx = historyNum - 1 - i;
 
                             float recentDistance = (float) historyObject.getDouble("distance");
                             float recentDuration = convertTimetoHour(historyObject.getString("duration"));
 
-                            originalData[i][0] = recentDistance;
-                            originalData[i][1] = recentDuration;
-                            modelInput[0][i][0] = (recentDistance - 0.0083549205f) / (83.8955084972f - 0.0083549205f);
-                            modelInput[0][i][1] = (recentDuration - 0.1391666667f) / (4.9963888889f - 0.1391666667f);
+                            originalData[idx][0] = recentDistance;
+                            originalData[idx][1] = recentDuration;
+                            modelInput[0][idx][0] = (recentDistance - 0.0083549205f) / (83.8955084972f - 0.0083549205f);
+                            modelInput[0][idx][1] = (recentDuration - 0.1391666667f) / (4.9963888889f - 0.1391666667f);
                             wholeDistance += recentDistance;
                             wholeTime += recentDuration;
                         }
                         float alpha = 2f / (1f + 20);
-                        for (int i=1; i<jsonArray.length(); i++){
-                            modelInput[0][i][0] = modelInput[0][i-1][0]*alpha + modelInput[0][i][0]*(1-alpha);
-                            modelInput[0][i][1] = modelInput[0][i-1][1]*alpha + modelInput[0][i][1]*(1-alpha);
+                        for (int i = 1; i < jsonArray.length(); i++) {
+                            modelInput[0][i][0] = modelInput[0][i - 1][0] * alpha + modelInput[0][i][0] * (1 - alpha);
+                            modelInput[0][i][1] = modelInput[0][i - 1][1] * alpha + modelInput[0][i][1] * (1 - alpha);
+                            // Log.e("goalDistance&time", "goalDistance&time scaled : "+i+" "
+                            // +modelInput[0][i][0]+ " " +modelInput[0][i][1]);
+
                         }
 
-
-                        Log.e("original input", "history num & input : "+historyNum+ " " +convertArrayToString(originalData));
+                        Log.e("original input",
+                                "history num & input : " + historyNum + " " + convertArrayToString(originalData));
                         wholeTime /= historyNum;
                         wholeDistance /= historyNum;
 
                         tflite.run(modelInput, modelOutput);
-                        goalDistance = modelOutput[0][historyNum-1][0] * (83.8955084972f - 0.0083549205f) + 0.0083549205f;
-                        goalTime = (modelOutput[0][historyNum-1][1] * (4.9963888889f - 0.1391666667f) + 0.1391666667f);
-                        Log.e("goalDistance&time", "goalDistance&time : "+goalDistance+ " " +goalTime);
+                        Log.e("goalDistance&time", "modeloutput : " + modelOutput[0][historyNum - 1][0] + " "
+                                + modelOutput[0][historyNum - 1][1]);
+                        goalDistance = modelOutput[0][historyNum - 1][0] * (83.8955084972f - 0.0083549205f)
+                                + 0.0083549205f;
+                        goalTime = (modelOutput[0][historyNum - 1][1] * (4.9963888889f - 0.1391666667f)
+                                + 0.1391666667f);
+                        Log.e("goalDistance&time", "goalDistance&time : " + goalDistance + " " + goalTime);
 
-                        if (goalDistance/goalTime >= 1.3*wholeDistance/wholeTime){
-                            goalTime *= 1.3f;
+                        // adjustment
+                        goalDistance *= 1.02f;
+                        if (goalDistance / goalTime >= 1.2 * wholeDistance / wholeTime) {
+                            goalTime *= 1.2f;
                         }
-                        if (goalDistance >= 1.3f * wholeDistance) {
-                            goalDistance /= 1.3f;
-                            goalTime /= 1.3f;
+                        if (goalDistance >= 1.2f * wholeDistance) {
+                            goalDistance /= 1.2f;
+                            goalTime /= 1.2f;
                         }
-                        if (goalDistance <= 0.7f*wholeDistance){
-                            goalDistance /= 0.7f;
-                            goalTime /= 0.7f;
+                        if (goalDistance <= 0.8f * wholeDistance) {
+                            goalDistance /= 0.8f;
+                            goalTime /= 0.8f;
                         }
+                        Log.e("goalDistance&time2", "goalDistance&time2 : " + goalDistance + " " + goalTime);
                         goalTime *= 60;
+                        Log.e("goalDistance&time3", "goalDistance&time3 : " + goalDistance + " " + goalTime);
                         goalTime = (int) goalTime;
+                        Log.e("goalDistance&time4", "goalDistance&time3 : " + goalDistance + " " + goalTime);
+
+                        if (goalTime < 2 || goalDistance <= 0.01) {
+                            setStandard();
+                        }
                     } catch (Exception e) {
                         Log.e("modeloutput error", e.toString());
                         setStandard();
@@ -1203,7 +1217,7 @@ public class SingleModeFragment extends Fragment {
 
     public float convertTimetoHour(String timeString) {
         LocalTime localTime = LocalTime.parse(timeString);
-        return localTime.getHour() + (float) localTime.getMinute() / 60 + (float) localTime.getSecond()/3600;
+        return localTime.getHour() + (float) localTime.getMinute() / 60 + (float) localTime.getSecond() / 3600;
     }
 
     public void hideBottomNavigation(Boolean hide) {
@@ -1228,7 +1242,8 @@ public class SingleModeFragment extends Fragment {
         boolean missionCompleted = false;
         Log.d("goalDistance", "finishPlaySingleMode2 " + goalDistance);
 
-        float wholeDistance = Float.valueOf((String) currentDistanceText.getText().subSequence(0, currentDistanceText.getText().length() - 2));
+        float wholeDistance = Float.valueOf(
+                (String) currentDistanceText.getText().subSequence(0, currentDistanceText.getText().length() - 2));
         float wholeTime = (float) Duration.between(gameStartTime, LocalDateTime.now()).getSeconds();
 
         if (mode == 2) {
@@ -1269,7 +1284,6 @@ public class SingleModeFragment extends Fragment {
         dialog.setContentView(dialogView);
         Log.d("goalDistance", "finishPlaySingleMode5 " + goalDistance);
 
-
         confirmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1283,7 +1297,7 @@ public class SingleModeFragment extends Fragment {
                 }
                 Bundle bundle = new Bundle();
                 Log.d("goalDistance", "finishPlaySingleMode6 " + finalGoalDistance);
-                Log.e("time check", "currenttiime, wholeTime : "+currentTime+" "+wholeTime );
+                Log.e("time check", "currenttiime, wholeTime : " + currentTime + " " + wholeTime);
 
                 bundle.putSerializable("updatedExp", updatedExp);
                 Log.d("UAT:exp", "confirm onClick exp " + updatedExp);
