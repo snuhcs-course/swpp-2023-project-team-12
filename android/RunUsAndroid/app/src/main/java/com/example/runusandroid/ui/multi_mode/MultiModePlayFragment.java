@@ -238,7 +238,7 @@ public class MultiModePlayFragment extends Fragment {
         buttonConfirmPlayExit.setOnClickListener(v -> {
             dialog.dismiss();
             userExit = true;
-            PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.EXIT_GAME).user(user).selectedRoom(selectedRoom);
+            PacketBuilder packetBuilder = new PacketBuilder().buildProtocol(Protocol.EXIT_GAME).buildUser(user).buildSelectedRoom(selectedRoom);
             Packet requestPacket = packetBuilder.getPacket();
             new ExitGameTask().execute(requestPacket);
         });
@@ -285,7 +285,7 @@ public class MultiModePlayFragment extends Fragment {
                     timeHandler.postDelayed(this, 1000);
                 } else if (isFinished == 1) {
                     if (isVisible() && isAdded()) {
-                        PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.FINISH_GAME).user(user).selectedRoom(selectedRoom);
+                        PacketBuilder packetBuilder = new PacketBuilder().buildProtocol(Protocol.FINISH_GAME).buildUser(user).buildSelectedRoom(selectedRoom);
                         Packet requestPacket = packetBuilder.getPacket();
                         AccountAPIFactory accountFactory = AccountAPIFactory.getInstance();
                         accountFactory.refreshToken(MultiModePlayFragment.this.requireContext());
@@ -380,7 +380,7 @@ public class MultiModePlayFragment extends Fragment {
         sendDataRunnable = new Runnable() {
             @Override
             public void run() {
-                PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.UPDATE_USER_DISTANCE).user(user).distance(distance);
+                PacketBuilder packetBuilder = new PacketBuilder().buildProtocol(Protocol.UPDATE_USER_DISTANCE).buildUser(user).buildDistance(distance);
                 Packet requestPacket = packetBuilder.getPacket();
                 new SendDistanceTask().execute(requestPacket);
                 if (isFinished == 0) {
@@ -613,7 +613,7 @@ public class MultiModePlayFragment extends Fragment {
                         Log.d("response", responseBodyString);
                         groupHistoryId = (int) responseBody.getLong("id");
                         Log.d("groupHistoryId", Integer.toString(groupHistoryId));
-                        PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.SAVE_GROUP_HISTORY).user(user).selectedRoom(selectedRoom).groupHistoryId(groupHistoryId);
+                        PacketBuilder packetBuilder = new PacketBuilder().buildProtocol(Protocol.SAVE_GROUP_HISTORY).buildUser(user).buildSelectedRoom(selectedRoom).buildGroupHistoryId(groupHistoryId);
                         Packet requestPacket = packetBuilder.getPacket();
                         new SendSavedInfoTask().execute(requestPacket);
                     } catch (IOException | JSONException e) {

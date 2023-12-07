@@ -35,6 +35,7 @@ ALLOWED_HOSTS = [
     ".ap-northeast-2.compute.amazonaws.com",
     "google.com",
     "10.0.2.2",
+    "192.168.0.4",
 ]
 
 

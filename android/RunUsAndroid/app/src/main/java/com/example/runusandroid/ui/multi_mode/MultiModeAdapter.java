@@ -155,7 +155,7 @@ public class MultiModeAdapter extends RecyclerView.Adapter<MultiModeAdapter.View
             boolean success = true;
             try {
                 ObjectOutputStream oos = socketManager.getOOS(); // 서버로 바이트스트림을 직렬화하기 위해 필요.
-                PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.ENTER_ROOM).user(user).selectedRoom(selectedRoom);
+                PacketBuilder packetBuilder = new PacketBuilder().buildProtocol(Protocol.ENTER_ROOM).buildUser(user).buildSelectedRoom(selectedRoom);
                 Packet requestPacket = packetBuilder.getPacket();
                 oos.reset();
                 oos.writeObject(requestPacket);

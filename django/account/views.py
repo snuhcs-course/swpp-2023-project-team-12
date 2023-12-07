@@ -117,8 +117,8 @@ class FindUsernameAndSendEmailView(APIView):
 
 
 # 임시 비밀번호 생성기
-def generate_temp_password(length=10):
-    characters = string.ascii_letters + string.digits + string.punctuation
+def generate_temp_password(length=6):
+    characters = string.digits
     return "".join(secrets.choice(characters) for i in range(length))
 
 

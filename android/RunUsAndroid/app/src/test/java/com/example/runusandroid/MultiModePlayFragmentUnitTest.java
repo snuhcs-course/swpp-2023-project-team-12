@@ -85,7 +85,7 @@ public class MultiModePlayFragmentUnitTest {
 
     @Test
     public void testSendDistanceTask() throws IOException {
-        PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.UPDATE_USER_DISTANCE).user(user).distance(distance);
+        PacketBuilder packetBuilder = new PacketBuilder().buildProtocol(Protocol.UPDATE_USER_DISTANCE).buildUser(user).buildDistance(distance);
         Packet packet = packetBuilder.getPacket();
         //Packet packet = new Packet(Protocol.UPDATE_USER_DISTANCE, user, distance);
 
@@ -111,7 +111,7 @@ public class MultiModePlayFragmentUnitTest {
 
     @Test
     public void testSendFinishedTask() throws IOException {
-        PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.FINISH_GAME).user(user).selectedRoom(selectedRoom);
+        PacketBuilder packetBuilder = new PacketBuilder().buildProtocol(Protocol.FINISH_GAME).buildUser(user).buildSelectedRoom(selectedRoom);
         Packet packet = packetBuilder.getPacket();
         //Packet packet = new Packet(Protocol.FINISH_GAME, user, selectedRoom);
         Handler timeHandlerMock = mock(Handler.class);
@@ -128,7 +128,7 @@ public class MultiModePlayFragmentUnitTest {
     @Test
     public void testSendSavedInfoTask() throws IOException {
         int groupHistoryId = 1;
-        PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.SAVE_GROUP_HISTORY).user(user).selectedRoom(selectedRoom).groupHistoryId(groupHistoryId);
+        PacketBuilder packetBuilder = new PacketBuilder().buildProtocol(Protocol.SAVE_GROUP_HISTORY).buildUser(user).buildSelectedRoom(selectedRoom).buildGroupHistoryId(groupHistoryId);
         Packet packet = packetBuilder.getPacket();
         //Packet packet = new Packet(Protocol.SAVE_GROUP_HISTORY, user, selectedRoom, groupHistoryId);
         socketManager.openSocket();
@@ -140,7 +140,7 @@ public class MultiModePlayFragmentUnitTest {
 
     @Test
     public void testExitGameTask() throws IOException {
-        PacketBuilder packetBuilder = new PacketBuilder().protocol(Protocol.EXIT_GAME).user(user).selectedRoom(selectedRoom);
+        PacketBuilder packetBuilder = new PacketBuilder().buildProtocol(Protocol.EXIT_GAME).buildUser(user).buildSelectedRoom(selectedRoom);
         Packet packet = packetBuilder.getPacket();
         //Packet packet = new Packet(Protocol.EXIT_GAME, user, selectedRoom);
         socketManager.openSocket();

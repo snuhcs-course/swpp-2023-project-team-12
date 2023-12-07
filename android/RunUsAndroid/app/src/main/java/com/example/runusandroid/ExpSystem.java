@@ -35,7 +35,7 @@ public class ExpSystem {
             if (MissonSuccessed > 0) {
                 exp *= 1.1;
             }
-            Log.d("UAT:exp", "single " + distanceInMeter + " " +  seconds + " "+ avgerage_speed + " " + exp);
+            Log.d("UAT:exp", "single " + distanceInMeter + " " + seconds + " " + avgerage_speed + " " + exp);
             return (int) exp;
         } else {
             int place = extraCheckValue;
@@ -139,21 +139,21 @@ public class ExpSystem {
         if (level == 10) {
             nextExp = 999999;
         } else if (level == 9) {
-            nextExp = 300000;
+            nextExp = 100000;
         } else if (level == 8) {
-            nextExp = 200000;
+            nextExp = 80000;
         } else if (level == 7) {
-            nextExp = 120000;
+            nextExp = 50000;
         } else if (level == 6) {
-            nextExp = 70000;
+            nextExp = 30000;
         } else if (level == 5) {
-            nextExp = 40000;
-        } else if (level == 4) {
             nextExp = 20000;
-        } else if (level == 3) {
+        } else if (level == 4) {
             nextExp = 10000;
+        } else if (level == 3) {
+            nextExp = 6000;
         } else if (level == 2) {
-            nextExp = 4000;
+            nextExp = 3000;
         } else {
             nextExp = 1000;
         }

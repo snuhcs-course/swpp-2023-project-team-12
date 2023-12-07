@@ -73,12 +73,11 @@ public class UserSettingFragment extends Fragment {
     Button creditButton;
 
     CreditDialog dialog;
-
+    int expPercentage;
+    int userLevel;
     private FragmentUserSettingBinding binding;
     private Uri imageUri;
     private ActivityResultLauncher<String> imagePickerLauncher;
-
-
     private Button testButton;
     private int badgeCollection;
 
@@ -87,7 +86,7 @@ public class UserSettingFragment extends Fragment {
         //UserSettingViewModel userSettingViewModel = new ViewModelProvider(this).get(UserSettingViewModel.class);
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("user_prefs", MODE_PRIVATE);
         String userName = sharedPreferences.getString("username", "");
-        int userLevel = sharedPreferences.getInt("level", 1);
+        userLevel = sharedPreferences.getInt("level", 1);
         String userLevelText = Integer.toString(userLevel);
         int exp = sharedPreferences.getInt("exp", 0);
         Log.d("UAT:exp", Integer.toString(exp));
@@ -96,7 +95,7 @@ public class UserSettingFragment extends Fragment {
         int nextExp = ExpSystem.getNextExp(userLevel);
         String presentExpText = Integer.toString(presentExp);
         String nextExpText = Integer.toString(nextExp);
-        int expPercentage = (presentExp * 100 / nextExp);
+        expPercentage = (presentExp * 100 / nextExp);
 
         Log.d("expPercentage", Integer.toString(expPercentage));
         String expPercentageText = Integer.toString(expPercentage);
@@ -139,12 +138,13 @@ public class UserSettingFragment extends Fragment {
             userExpPercentTextView.setText(expPercentageText + "%");
             userExpPresentTextView.setText(presentExpText);
             userExpNextTextView.setText(nextExpText);
-            userExpProgressbar.setProgress(expPercentage);
+            Log.d("expPercentage", expPercentage + "");
+            //userExpProgressbar.setProgress(expPercentage, true);
         } else {
             userExpPercentTextView.setText("--");
             userExpPresentTextView.setText("Max");
             userExpNextTextView.setText("Max");
-            userExpProgressbar.setProgress(100);
+            //userExpProgressbar.setProgress(100);
 
         }
         updateBadge(badgeCollection);
@@ -394,4 +394,15 @@ public class UserSettingFragment extends Fragment {
 
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (userLevel < 10) {
+            userExpProgressbar.setProgress(expPercentage);
+        } else {
+            userExpProgressbar.setProgress(100);
+
+        }
+    }
 }

@@ -71,18 +71,18 @@ public class MultiModeRoom implements Serializable {
     public void enterUser(MultiModeUser user, ObjectOutputStream oos) throws IOException {
         addUser(user);
         Packet enterRoomPacket = new PacketBuilder()
-                .protocol(Protocol.ENTER_ROOM)
-                .user(user)
-                .selectedRoom(this)
+                .buildProtocol(Protocol.ENTER_ROOM)
+                .buildUser(user)
+                .buildSelectedRoom(this)
                 .getPacket();
         oos.reset();
         oos.writeObject(enterRoomPacket);
         oos.flush();
 
         Packet updateRoomPacket = new PacketBuilder()
-                .protocol(Protocol.UPDATE_ROOM)
-                .user(user)
-                .selectedRoom(this)
+                .buildProtocol(Protocol.UPDATE_ROOM)
+                .buildUser(user)
+                .buildSelectedRoom(this)
                 .getPacket();
         notifyObserver(updateRoomPacket);
         addOutputStream(oos);
@@ -136,9 +136,9 @@ public class MultiModeRoom implements Serializable {
 
         if(status == GAME_NOT_STARTED) {
             Packet exitRoomPacket = new PacketBuilder()
-                    .protocol(Protocol.EXIT_ROOM)
-                    .user(user)
-                    .selectedRoom(this)
+                    .buildProtocol(Protocol.EXIT_ROOM)
+                    .buildUser(user)
+                    .buildSelectedRoom(this)
                     .getPacket();
             notifyObserver(exitRoomPacket);
         }
@@ -308,8 +308,8 @@ public class MultiModeRoom implements Serializable {
         status = GAME_STARTED;
 
         Packet startGamePacket = new PacketBuilder()
-                .protocol(Protocol.START_GAME)
-                .selectedRoom(this)
+                .buildProtocol(Protocol.START_GAME)
+                .buildSelectedRoom(this)
                 .getPacket();
         notifyObserver(startGamePacket);
     }

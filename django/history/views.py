@@ -41,6 +41,7 @@ class HistoryDetail(APIView):
         group_history_id = request.data.get("group_history_id")
         is_mission_succeeded = request.data.get("is_mission_succeeded")
         exp = request.data.get("exp")
+        print(exp)
         history_instance = HistoryRecord.objects.create(
             user_id=user_id,
             distance=distance,
@@ -60,6 +61,7 @@ class HistoryDetail(APIView):
         user = CustomUser.objects.filter(id=user_id).last()
         if user is not None:
             user.exp = user.exp + exp
+            print(user.exp)
             print("past badge_collection : ", user.badge_collection)
             user.badge_collection = processBadgeCollection(
                 user.badge_collection, history_instance
