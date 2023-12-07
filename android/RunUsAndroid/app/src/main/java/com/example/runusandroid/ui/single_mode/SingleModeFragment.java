@@ -320,10 +320,6 @@ public class SingleModeFragment extends Fragment {
                 boolean isRunning = RunningState.getIsRunning();
                 String lastActivityType = RunningState.getLastActivityType();
                 String lastTransitionType = RunningState.getLastTransitionType();
-
-                // Toast.makeText(mainActivity, "last detected : " + lastTransitionType + " " +
-                // lastActivityType +
-                // " . isRunning " + isRunning, Toast.LENGTH_LONG).show();
             }
         });
 
@@ -1042,8 +1038,8 @@ public class SingleModeFragment extends Fragment {
         long durationInSeconds = duration.getSeconds();
         // NOTE: group_history_id에 null을 넣을 수 없어 싱글모드인 경우 -1로 관리
         int exp = ExpSystem.getExp("single", distance, duration, isMissionSucceeded);
-        Log.d("got exp", exp + "");
         Toast.makeText(getActivity(), "경험치 " + exp + "를 획득하셨습니다.", Toast.LENGTH_SHORT).show();
+        Log.d("UAT:exp", "single " + distance + " " + duration + " " + isMissionSucceeded + " " + exp);
         HistoryData requestData = new HistoryData(userId, (float) distance, durationInSeconds,
                 true, startTimeString, finishTimeString, calories, false, maxSpeed, minSpeed,
                 calculateMedian(speedList), speedList, -1, isMissionSucceeded, exp);
