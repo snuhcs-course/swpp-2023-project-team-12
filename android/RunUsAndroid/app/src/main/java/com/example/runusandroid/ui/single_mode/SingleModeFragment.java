@@ -1039,7 +1039,7 @@ public class SingleModeFragment extends Fragment {
         Log.d("UAT:exp", "single " + distance + " " + duration + " " + isMissionSucceeded + " " + exp);
         HistoryData requestData = new HistoryData(userId, (float) distance, durationInSeconds,
                 true, startTimeString, finishTimeString, calories, false, maxSpeed, minSpeed,
-                calculateMedian(speedList), speedList, -1, isMissionSucceeded, 10000);
+                calculateMedian(speedList), speedList, -1, isMissionSucceeded, exp);
 
         historyApi.postHistoryData(requestData).enqueue(new Callback<ResponseBody>() {
             @Override
