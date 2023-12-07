@@ -59,12 +59,11 @@ public class SignUpStep3Activity extends AppCompatActivity {
         signUpHeightInput.setText(height);
         signUpWeightInput.setText(weight);
         signUpAgeInput.setText(age);
-        if (gender != null){
-            if(gender.equals("남성")){
-            radioGroupGender.check(R.id.radioButtonMale);
-            selectedGender="남성";
-            }
-            else if(gender.equals("여성")) {
+        if (gender != null) {
+            if (gender.equals("남성")) {
+                radioGroupGender.check(R.id.radioButtonMale);
+                selectedGender = "남성";
+            } else if (gender.equals("여성")) {
                 radioGroupGender.check(R.id.radioButtonFemale);
                 selectedGender = "여성";
             }
@@ -97,22 +96,24 @@ public class SignUpStep3Activity extends AppCompatActivity {
                 } else {
                     gender = 1;
                 }
+                boolean loginValidator = true;
 
                 if (height < 100 || height > 230) {
                     signUpHeightInput.setError("키는 100cm에서 230cm 사이여야 합니다");
-                    return;
+                    loginValidator = false;
                 }
 
                 if (weight < 20 || weight > 200) {
                     signUpWeightInput.setError("체중은 20kg에서 200kg 사이여야 합니다");
-                    return;
+                    loginValidator = false;
                 }
 
                 if (age < 10 || age > 180) {
                     signUpAgeInput.setError("나이는 10세에서 180세 사이여야 합니다");
-                    return;
+                    loginValidator = false;
                 }
-                
+                if (!loginValidator) return;
+
                 // Create sign up data object
                 SignUpData requestData = new SignUpData(
                         userName,
