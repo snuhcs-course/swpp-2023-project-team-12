@@ -121,7 +121,10 @@ public class MainActivity2 extends AppCompatActivity {
 
             }).start();
         }
-        getLastLocation();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            getLastLocation();
+        }
     }
 
     @Override
