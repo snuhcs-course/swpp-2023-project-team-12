@@ -2,6 +2,8 @@ package com.example.runusandroid.ui.single_mode;
 
 import static android.content.Context.MODE_PRIVATE;
 
+import static com.google.android.material.internal.ViewUtils.hideKeyboard;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -27,10 +29,12 @@ import android.text.TextWatcher;
 import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.EditText;
@@ -633,7 +637,15 @@ public class SingleModeFragment extends Fragment {
 
             }
         });
-
+        dialogView.setOnTouchListener(new View.OnTouchListener() {
+            @SuppressLint("RestrictedApi")
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                // Hide keyboard when tapped outside EditText
+                hideKeyboard(dialogView);
+                return false;
+            }
+        });
         dialog.show();
     }
 
