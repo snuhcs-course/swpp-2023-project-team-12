@@ -1130,7 +1130,7 @@ public class SingleModeFragment extends Fragment {
                 if (response.isSuccessful()) {
                     try {
                         String responseData = response.body().string();
-                        Log.e("whole response", responseData);
+                        Log.d("whole response", responseData);
 
                         JSONArray jsonArray = new JSONArray(responseData);
                         float wholeDistance = 0f;
@@ -1152,7 +1152,6 @@ public class SingleModeFragment extends Fragment {
 
                             float recentDistance = (float) historyObject.getDouble("distance");
                             float recentDuration = convertTimetoHour(historyObject.getString("duration"));
-                            Log.e("history", recentDistance + " " + recentDuration);
 
                             if (recentDistance>=0.01 &&  recentDuration>=0.016){
                                 originalData[cleansedNum][0] = recentDistance;
@@ -1164,34 +1163,35 @@ public class SingleModeFragment extends Fragment {
                             }
                         }
                         historyNum = cleansedNum;
+                        float alpha = 2f / (1f + 20);
 
                         for (int i=0; i<cleansedNum; i++){
                             int idx = cleansedNum - i - 1;
-                            modelInput[0][idx][0] = (originalData[i][0] - 0.0083549205f) / (83.8955084972f - 0.0083549205f);
-                            modelInput[0][idx][1] = (originalData[i][1] - 0.1391666667f) / (4.9963888889f - 0.1391666667f);
+                            float tmpDistance = (originalData[idx][0] - 0.0083549205f) / (83.8955084972f - 0.0083549205f);
+                            float tmpTime = (originalData[idx][1] - 0.1391666667f) / (4.9963888889f - 0.1391666667f);
+                            if (i>0){
+                                modelInput[0][i][0] = modelInput[0][i - 1][0] * alpha + tmpDistance * (1 - alpha);
+                                modelInput[0][i][1] = modelInput[0][i - 1][1] * alpha + tmpTime * (1 - alpha);
+                            }
+                            else{
+                                modelInput[0][i][0] = tmpDistance;
+                                modelInput[0][i][1] = tmpTime;
+                            }
                         }
-                        float alpha = 2f / (1f + 20);
-                        for (int i = 1; i < jsonArray.length(); i++) {
-                            modelInput[0][i][0] = modelInput[0][i - 1][0] * alpha + modelInput[0][i][0] * (1 - alpha);
-                            modelInput[0][i][1] = modelInput[0][i - 1][1] * alpha + modelInput[0][i][1] * (1 - alpha);
-                            // Log.e("goalDistance&time", "goalDistance&time scaled : "+i+" "
-                            // +modelInput[0][i][0]+ " " +modelInput[0][i][1]);
 
-                        }
-
-                        Log.e("original input",
+                        Log.d("original input",
                                 "history num & input : " + historyNum + " " + convertArrayToString(originalData));
                         wholeTime /= historyNum;
                         wholeDistance /= historyNum;
 
                         tflite.run(modelInput, modelOutput);
-                        Log.e("goalDistance&time", "modeloutput : " + modelOutput[0][historyNum - 1][0] + " "
+                        Log.d("goalDistance&time", "modeloutput : " + modelOutput[0][historyNum - 1][0] + " "
                                 + modelOutput[0][historyNum - 1][1]);
                         goalDistance = modelOutput[0][historyNum - 1][0] * (83.8955084972f - 0.0083549205f)
                                 + 0.0083549205f;
                         goalTime = (modelOutput[0][historyNum - 1][1] * (4.9963888889f - 0.1391666667f)
                                 + 0.1391666667f);
-                        Log.e("goalDistance&time", "goalDistance&time : " + goalDistance + " " + goalTime);
+                        Log.d("goalDistance&time", "goalDistance&time : " + goalDistance + " " + goalTime);
 
                         // adjustment
                         goalDistance *= 1.02f;
@@ -1206,11 +1206,11 @@ public class SingleModeFragment extends Fragment {
                             goalDistance /= 0.8f;
                             goalTime /= 0.8f;
                         }
-                        Log.e("goalDistance&time2", "goalDistance&time2 : " + goalDistance + " " + goalTime);
+                        Log.d("goalDistance&time2", "goalDistance&time2 : " + goalDistance + " " + goalTime);
                         goalTime *= 60;
-                        Log.e("goalDistance&time3", "goalDistance&time3 : " + goalDistance + " " + goalTime);
+                        Log.d("goalDistance&time3", "goalDistance&time3 : " + goalDistance + " " + goalTime);
                         goalTime = (int) goalTime;
-                        Log.e("goalDistance&time4", "goalDistance&time3 : " + goalDistance + " " + goalTime);
+                        Log.d("goalDistance&time4", "goalDistance&time4 : " + goalDistance + " " + goalTime);
 
                         if (goalTime < 2 || goalDistance <= 0.01) {
                             setStandard();
