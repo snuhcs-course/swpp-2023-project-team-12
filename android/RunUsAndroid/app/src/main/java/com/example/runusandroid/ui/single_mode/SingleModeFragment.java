@@ -1153,7 +1153,8 @@ public class SingleModeFragment extends Fragment {
                             float recentDistance = (float) historyObject.getDouble("distance");
                             float recentDuration = convertTimetoHour(historyObject.getString("duration"));
 
-                            if (recentDistance>=0.01 &&  recentDuration>=0.016){
+
+                            if (recentDistance>=0.01 &&  recentDuration>=0.008){
                                 originalData[cleansedNum][0] = recentDistance;
                                 originalData[cleansedNum][1] = recentDuration;
                                 wholeDistance += recentDistance;
