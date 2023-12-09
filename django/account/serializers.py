@@ -26,6 +26,16 @@ class UserCreateSerializer(serializers.ModelSerializer):
             "age",
         ]
 
+class IdValidationSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=255, write_only=True)
+
+    def validate(self, data):
+        username = data.get("username", None)
+
+        if CustomUser.objects.filter(username=username).exists():
+            raise serializers.ValidationError("Duplicate Id Error")
+
+        return data
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=255, write_only=True)

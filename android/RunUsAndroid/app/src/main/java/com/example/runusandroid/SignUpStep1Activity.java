@@ -3,6 +3,7 @@ package com.example.runusandroid;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.view.MotionEvent;
@@ -15,12 +16,19 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class SignUpStep1Activity extends AppCompatActivity {
     private TextView signUpIdInput;
     private TextView signUpPasswordInput;
     private TextView signUpEmailInput;
     private Button nextButton1;
     private ImageButton backButton;
+    private AccountApi accountApi;
+    private long nextButtonLastClickTime = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,6 +57,8 @@ public class SignUpStep1Activity extends AppCompatActivity {
         signUpPasswordInput.setText(password);
         signUpEmailInput.setText(email);
 
+        accountApi = RetrofitClient.getClient().create(AccountApi.class);
+
         //아이디는 영어 대,소문자와 숫자만 입력 가능함.
         InputFilter Idfilter = new InputFilter() {
             public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
@@ -63,43 +73,61 @@ public class SignUpStep1Activity extends AppCompatActivity {
         IdText.setFilters(new InputFilter[]{Idfilter});
 
 
-        nextButton1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String Id = signUpIdInput.getText().toString();
-                String password = signUpPasswordInput.getText().toString();
-                String email = signUpEmailInput.getText().toString();
-
-                // 이메일 주소가 올바르지 않으면 다음으로 넘어가지 않는다.
-                if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                    signUpEmailInput.setError("유효한 이메일 주소를 입력하세요");
-                    return;
-                }
-
-                // 비밀번호는 8자리 이상이어야 한다.
-                if (password.length() < 8) {
-                    signUpPasswordInput.setError("비밀번호는 8자리 이상이어야 합니다");
-                    return;
-                }
-
-                // 아이디는 있는지만 검사한다.
-                if (Id.length() == 0) {
-                    signUpIdInput.setError("아이디를 입력하세요.");
-                    return;
-                }
-
-                Intent intent = new Intent(SignUpStep1Activity.this, SignUpStep2Activity.class);
-                intent.putExtra("userName", Id);
-                intent.putExtra("password", password);
-                intent.putExtra("email", email);
-                intent.putExtra("nickname", nickname);
-                intent.putExtra("phoneNumber", phoneNumber);
-                intent.putExtra("height", height);
-                intent.putExtra("weight", weight);
-                intent.putExtra("gender", gender);
-                intent.putExtra("age",age);
-                startActivity(intent);
+        nextButton1.setOnClickListener(view -> {
+            if (SystemClock.elapsedRealtime() - nextButtonLastClickTime < 2000) {
+                return;
             }
+            nextButtonLastClickTime = SystemClock.elapsedRealtime();
+            String Id = signUpIdInput.getText().toString();
+            String password1 = signUpPasswordInput.getText().toString();
+            String email1 = signUpEmailInput.getText().toString();
+
+            // 이메일 주소가 올바르지 않으면 다음으로 넘어가지 않는다.
+            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email1).matches()) {
+                signUpEmailInput.setError("유효한 이메일 주소를 입력하세요");
+                return;
+            }
+
+            // 비밀번호는 8자리 이상이어야 한다.
+            if (password1.length() < 8) {
+                signUpPasswordInput.setError("비밀번호는 8자리 이상이어야 합니다");
+                return;
+            }
+
+            // 아이디는 있는지만 검사한다.
+            if (Id.length() == 0) {
+                signUpIdInput.setError("아이디를 입력하세요.");
+                return;
+            }
+            IdValidationData requestData = new IdValidationData(Id);
+            accountApi.postIdValidationData(requestData).enqueue(new Callback<ResponseBody>(){
+
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    if(response.isSuccessful()) {
+                        Intent intent1 = new Intent(SignUpStep1Activity.this, SignUpStep2Activity.class);
+                        intent1.putExtra("userName", Id);
+                        intent1.putExtra("password", password1);
+                        intent1.putExtra("email", email1);
+                        intent1.putExtra("nickname", nickname);
+                        intent1.putExtra("phoneNumber", phoneNumber);
+                        intent1.putExtra("height", height);
+                        intent1.putExtra("weight", weight);
+                        intent1.putExtra("gender", gender);
+                        intent1.putExtra("age", age);
+                        startActivity(intent1);
+                    }
+                    else {
+                        signUpIdInput.setError("동일한 아이디가 이미 존재합니다.");
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    signUpIdInput.setError("동일한 아이디가 이미 존재합니다.");
+                }
+            });
+
         });
 
         backButton.setOnClickListener(new View.OnClickListener() {

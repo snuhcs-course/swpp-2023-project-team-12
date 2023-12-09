@@ -15,6 +15,9 @@ public interface AccountApi {
     @POST("/account/signup/")
     Call<ResponseBody> postSignUpData(@Body SignUpData data);
 
+    @POST("/account/validate_id/")
+    Call<ResponseBody> postIdValidationData(@Body IdValidationData data);
+
     @POST("/account/login/")
     Call<ResponseBody> postLoginData(@Body AccountData data);
 
