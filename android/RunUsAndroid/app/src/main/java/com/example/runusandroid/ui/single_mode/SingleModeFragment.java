@@ -1144,21 +1144,31 @@ public class SingleModeFragment extends Fragment {
 
                         originalData = new float[777][2];
                         modelInput = new float[1][777][2];
-
                         modelOutput = new float[1][777][2];
+
+                        int cleansedNum = 0;
                         for (int i = 0; i < jsonArray.length(); i++) {
                             JSONObject historyObject = jsonArray.getJSONObject(i);
-                            int idx = historyNum - 1 - i;
 
                             float recentDistance = (float) historyObject.getDouble("distance");
                             float recentDuration = convertTimetoHour(historyObject.getString("duration"));
+                            Log.e("history", recentDistance + " " + recentDuration);
 
-                            originalData[idx][0] = recentDistance;
-                            originalData[idx][1] = recentDuration;
-                            modelInput[0][idx][0] = (recentDistance - 0.0083549205f) / (83.8955084972f - 0.0083549205f);
-                            modelInput[0][idx][1] = (recentDuration - 0.1391666667f) / (4.9963888889f - 0.1391666667f);
-                            wholeDistance += recentDistance;
-                            wholeTime += recentDuration;
+                            if (recentDistance>=0.01 &&  recentDuration>=0.016){
+                                originalData[cleansedNum][0] = recentDistance;
+                                originalData[cleansedNum][1] = recentDuration;
+                                wholeDistance += recentDistance;
+                                wholeTime += recentDuration;
+                                cleansedNum += 1;
+
+                            }
+                        }
+                        historyNum = cleansedNum;
+
+                        for (int i=0; i<cleansedNum; i++){
+                            int idx = cleansedNum - i - 1;
+                            modelInput[0][idx][0] = (originalData[i][0] - 0.0083549205f) / (83.8955084972f - 0.0083549205f);
+                            modelInput[0][idx][1] = (originalData[i][1] - 0.1391666667f) / (4.9963888889f - 0.1391666667f);
                         }
                         float alpha = 2f / (1f + 20);
                         for (int i = 1; i < jsonArray.length(); i++) {
