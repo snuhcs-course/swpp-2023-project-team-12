@@ -14,6 +14,7 @@ from .serializers import (
     LoginSerializer,
     UserProfileSerializer,
     UsernameEmailSerializer,
+    IdValidationSerializer,
 )
 from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -40,6 +41,16 @@ class SignupView(APIView):
             return Response({"name": user.username}, status=201)
         return Response({"message": "Signup Failed"}, status=400)
 
+class IdValidationView(APIView):
+    authentication_classes = []
+    permission_classes = []
+    serializer_class = IdValidationSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            return Response({"message": "Unique Id"}, status=201)
+        return Response({"message": "Duplicate Id"}, status=400)
 
 class LoginView(APIView):
     authentication_classes = []

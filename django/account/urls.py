@@ -6,6 +6,7 @@ from .views import (
     SignupView,
     LoginView,
     UserProfileView,
+    IdValidationView,
 )
 from . import views
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -14,6 +15,7 @@ appname = "accounts"
 
 urlpatterns = [
     path("signup/", SignupView.as_view(), name="signup"),
+    path("validate_id/", IdValidationView.as_view(), name="idvalidation"),
     path("login/", LoginView.as_view(), name="login"),
     path("get-user-info/", views.get_user_info, name="get_user_info"),
     path(
