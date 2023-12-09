@@ -3,6 +3,7 @@ package com.example.runusandroid;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -32,6 +33,7 @@ public class SignUpStep3Activity extends AppCompatActivity {
     private ImageButton backButton;
 
     private String selectedGender = "남성"; //NOTE: Set default value to male
+    private long completeButtonLastClickTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,74 +86,75 @@ public class SignUpStep3Activity extends AppCompatActivity {
             }
         });
 
-        completeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Get values from input fields
-                float height = Float.parseFloat(signUpHeightInput.getText().toString());
-                float weight = Float.parseFloat(signUpWeightInput.getText().toString());
-                int age = Integer.parseInt(signUpAgeInput.getText().toString());
-                int gender;
-                if (selectedGender.equals("남성")) {
-                    gender = 1;
-                } else if (selectedGender.equals("여성")) {
-                    gender = 2;
-                } else {
-                    gender = 1;
-                }
-                boolean loginValidator = true;
-
-                if (height < 100 || height > 230) {
-                    signUpHeightInput.setError("키는 100cm에서 230cm 사이여야 합니다");
-                    loginValidator = false;
-                }
-
-                if (weight < 20 || weight > 200) {
-                    signUpWeightInput.setError("체중은 20kg에서 200kg 사이여야 합니다");
-                    loginValidator = false;
-                }
-
-                if (age < 10 || age > 180) {
-                    signUpAgeInput.setError("나이는 10세에서 180세 사이여야 합니다");
-                    loginValidator = false;
-                }
-                if (!loginValidator) return;
-
-                // Create sign up data object
-                SignUpData requestData = new SignUpData(
-                        userName,
-                        password,
-                        nickname,
-                        email,
-                        phoneNumber,
-                        gender,
-                        height,
-                        weight,
-                        age
-                );
-
-                // Make a network request to sign up
-                accountApi.postSignUpData(requestData).enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        if (response.isSuccessful()) {
-                            Toast.makeText(SignUpStep3Activity.this, "회원가입 되었습니다", Toast.LENGTH_SHORT).show();
-                            // Redirect to login activity after successful sign up
-                            Intent loginIntent = new Intent(SignUpStep3Activity.this, LoginActivity.class);
-                            startActivity(loginIntent);
-                            finish();
-                        } else {
-                            Toast.makeText(SignUpStep3Activity.this, "회원가입 실패", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        Toast.makeText(SignUpStep3Activity.this, "네트워크 에러, 다시 시도해 주세요", Toast.LENGTH_SHORT).show();
-                        Log.e("Retrofit", "Error: " + t.getMessage());
-                    }
-                });
+        completeButton.setOnClickListener(view -> {
+            if (SystemClock.elapsedRealtime() - completeButtonLastClickTime < 2000) {
+                return;
             }
+            completeButtonLastClickTime = SystemClock.elapsedRealtime();
+            // Get values from input fields
+            float height1 = Float.parseFloat(signUpHeightInput.getText().toString());
+            float weight1 = Float.parseFloat(signUpWeightInput.getText().toString());
+            int age1 = Integer.parseInt(signUpAgeInput.getText().toString());
+            int gender1;
+            if (selectedGender.equals("남성")) {
+                gender1 = 1;
+            } else if (selectedGender.equals("여성")) {
+                gender1 = 2;
+            } else {
+                gender1 = 1;
+            }
+            boolean loginValidator = true;
+
+            if (height1 < 100 || height1 > 230) {
+                signUpHeightInput.setError("키는 100cm에서 230cm 사이여야 합니다");
+                loginValidator = false;
+            }
+
+            if (weight1 < 20 || weight1 > 200) {
+                signUpWeightInput.setError("체중은 20kg에서 200kg 사이여야 합니다");
+                loginValidator = false;
+            }
+
+            if (age1 < 10 || age1 > 180) {
+                signUpAgeInput.setError("나이는 10세에서 180세 사이여야 합니다");
+                loginValidator = false;
+            }
+            if (!loginValidator) return;
+
+            // Create sign up data object
+            SignUpData requestData = new SignUpData(
+                    userName,
+                    password,
+                    nickname,
+                    email,
+                    phoneNumber,
+                    gender1,
+                    height1,
+                    weight1,
+                    age1
+            );
+
+            // Make a network request to sign up
+            accountApi.postSignUpData(requestData).enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(SignUpStep3Activity.this, "회원가입 되었습니다", Toast.LENGTH_SHORT).show();
+                        // Redirect to login activity after successful sign up
+                        Intent loginIntent = new Intent(SignUpStep3Activity.this, LoginActivity.class);
+                        startActivity(loginIntent);
+                        finish();
+                    } else {
+                        Toast.makeText(SignUpStep3Activity.this, "회원가입 실패", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    Toast.makeText(SignUpStep3Activity.this, "네트워크 에러, 다시 시도해 주세요", Toast.LENGTH_SHORT).show();
+                    Log.e("Retrofit", "Error: " + t.getMessage());
+                }
+            });
         });
 
         backButton.setOnClickListener(new View.OnClickListener() {
