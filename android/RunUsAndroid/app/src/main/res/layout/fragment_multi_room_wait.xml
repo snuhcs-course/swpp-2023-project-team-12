@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.runus.runusandroid.ui.multi_mode.MultiModeWaitFragment">
+    tools:context=".ui.multi_mode.MultiModeWaitFragment">
 
     <TextView
         android:id="@+id/multi_room_duration"
