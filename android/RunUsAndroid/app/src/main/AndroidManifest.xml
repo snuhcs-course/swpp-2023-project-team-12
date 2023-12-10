@@ -29,7 +29,7 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity2"
+            android:name="com.runus.runusandroid.MainActivity2"
             android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -39,40 +39,40 @@
         </activity>
 
         <service
-            android:name=".ui.single_mode.BackGroundLocationService"
+            android:name="com.runus.runusandroid.ui.single_mode.BackGroundLocationService"
             android:enabled="true"
             android:exported="true"
             android:screenOrientation="portrait" />
         <service
-            android:name=".ui.multi_mode.BackGroundSocketService"
+            android:name="com.runus.runusandroid.ui.multi_mode.BackGroundSocketService"
             android:enabled="true"
             android:exported="true"
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.runus.runusandroid.MainActivity"
             android:exported="false"
             android:screenOrientation="portrait"></activity>
         <activity
-            android:name=".LoginActivity"
+            android:name="com.runus.runusandroid.LoginActivity"
             android:screenOrientation="portrait"></activity>
         <activity
-            android:name=".SignUpStep1Activity"
+            android:name="com.runus.runusandroid.SignUpStep1Activity"
             android:screenOrientation="portrait"></activity>
         <activity
-            android:name=".SignUpStep2Activity"
+            android:name="com.runus.runusandroid.SignUpStep2Activity"
             android:screenOrientation="portrait"></activity>
         <activity
-            android:name=".SignUpStep3Activity"
+            android:name="com.runus.runusandroid.SignUpStep3Activity"
             android:screenOrientation="portrait"></activity>
         <activity
-            android:name=".FindIdActivity"
+            android:name="com.runus.runusandroid.FindIdActivity"
             android:screenOrientation="portrait"></activity>
         <activity
-            android:name=".ResetPasswordActivity1"
+            android:name="com.runus.runusandroid.ResetPasswordActivity1"
             android:screenOrientation="portrait"></activity>
         <activity
-            android:name=".ResetPasswordActivity2"
+            android:name="com.runus.runusandroid.ResetPasswordActivity2"
             android:screenOrientation="portrait"></activity>
 
         <meta-data
