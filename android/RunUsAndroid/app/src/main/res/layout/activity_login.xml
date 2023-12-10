@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.runus.runusandroid.LoginActivity">
+    tools:context=".LoginActivity">
 
     <ImageView
         android:id="@+id/logoInLogIn"
@@ -59,8 +59,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="15dp"
-        android:layout_marginTop="70dp"
         android:layout_marginRight="15dp"
+        android:layout_marginTop="70dp"
         android:background="@drawable/round_shape_for_field"
         android:fontFamily="@font/pretendardregular"
         android:hint="비밀번호를 입력해 주세요."
@@ -100,10 +100,10 @@
         android:id="@+id/ForgotIdText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginRight="15dp"
         android:clickable="true"
-        android:fontFamily="@font/pretendardregular"
+        android:layout_marginRight="15dp"
         android:padding="5dp"
+        android:fontFamily="@font/pretendardregular"
         android:text="아이디를 잊어버리셨나요? 아이디 찾기"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/IdInput" />
@@ -112,8 +112,8 @@
         android:id="@+id/forgotPasswordText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginRight="15dp"
         android:fontFamily="@font/pretendardregular"
+        android:layout_marginRight="15dp"
         android:padding="5dp"
         android:text="비밀번호를 잊어버리셨나요? 비밀번호 찾기"
         app:layout_constraintEnd_toEndOf="parent"

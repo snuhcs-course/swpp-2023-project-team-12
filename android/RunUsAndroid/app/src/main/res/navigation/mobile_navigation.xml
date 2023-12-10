@@ -7,54 +7,54 @@
 
     <fragment
         android:id="@+id/navigation_home"
-        android:name="com.runus.runusandroid.ui.home.HomeFragment"
+        android:name="com.example.runusandroid.ui.home.HomeFragment"
         android:label="@string/title_home"
         tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/navigation_history"
-        android:name="com.runus.runusandroid.ui.history.HistoryFragment"
+        android:name="com.example.runusandroid.ui.history.HistoryFragment"
         android:label="@string/title_history"
         tools:layout="@layout/fragment_history" />
 
     <fragment
         android:id="@+id/navigation_single_mode"
-        android:name="com.runus.runusandroid.ui.single_mode.SingleModeFragment"
+        android:name="com.example.runusandroid.ui.single_mode.SingleModeFragment"
         android:label="@string/title_single_mode_result"
         tools:layout="@layout/fragment_single_mode_result" />
     <fragment
         android:id="@+id/navigation_single_mode_result"
-        android:name="com.runus.runusandroid.ui.single_mode.SingleModeResultFragment"
+        android:name="com.example.runusandroid.ui.single_mode.SingleModeResultFragment"
         android:label="@string/title_single_mode"
         tools:layout="@layout/fragment_single_mode" />
 
     <fragment
         android:id="@+id/navigation_multi_mode"
-        android:name="com.runus.runusandroid.ui.multi_mode.MultiModeFragment"
+        android:name="com.example.runusandroid.ui.multi_mode.MultiModeFragment"
         android:label="@string/title_multi_mode"
         tools:layout="@layout/fragment_multi_mode" />
 
     <fragment
         android:id="@+id/navigation_multi_room_wait"
-        android:name="com.runus.runusandroid.ui.multi_mode.MultiModeWaitFragment"
+        android:name="com.example.runusandroid.ui.multi_mode.MultiModeWaitFragment"
         android:label="@string/title_multi_mode_wait"
         tools:layout="@layout/fragment_multi_room_wait" />
 
     <fragment
         android:id="@+id/navigation_multi_room_play"
-        android:name="com.runus.runusandroid.ui.multi_mode.MultiModePlayFragment"
+        android:name="com.example.runusandroid.ui.multi_mode.MultiModePlayFragment"
         android:label="@string/title_multi_mode_play"
         tools:layout="@layout/fragment_multi_room_play" />
 
     <fragment
         android:id="@+id/navigation_multi_room_result"
-        android:name="com.runus.runusandroid.ui.multi_mode.MultiModeResultFragment"
+        android:name="com.example.runusandroid.ui.multi_mode.MultiModeResultFragment"
         android:label="@string/title_multi_mode_result"
         tools:layout="@layout/fragment_multi_room_result" />
 
     <fragment
         android:id="@+id/navigation_user_setting"
-        android:name="com.runus.runusandroid.ui.user_setting.UserSettingFragment"
+        android:name="com.example.runusandroid.ui.user_setting.UserSettingFragment"
         android:label="@string/title_user_setting"
         tools:layout="@layout/fragment_user_setting" />
 </navigation>
