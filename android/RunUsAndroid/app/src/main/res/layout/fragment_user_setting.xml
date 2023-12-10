@@ -6,7 +6,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    tools:context=".ui.user_setting.UserSettingFragment">
+    tools:context="com.runus.runusandroid.ui.user_setting.UserSettingFragment">
 
     <TextView
         android:id="@+id/userSettingTitle"
